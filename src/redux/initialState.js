@@ -1,1 +1,3 @@
-export const defaultState = {}
+export const defaultState = {
+    data: Array()
+}

@@ -1,9 +1,10 @@
-import { Container, useTheme } from '@mui/material'
+import { Box, Container, useTheme } from '@mui/material'
 import React from 'react'
 
-import { createTool, joinTool, showCompletedEventsTool, profileTool } from './tools'
+import { createTool, joinTool, showCompletedEventsTool, profileTool } from './toolbar/tools'
 import Footer from './footer/Footer'
 import Toolbar from './toolbar/Toolbar'
+import ContentList from './contentList/ContentList'
 
 export default function App() {
     const theme = useTheme()
@@ -15,12 +16,12 @@ export default function App() {
     ]
 
     return (
-        <Container maxWidth="sm" sx={{
+        <Container maxWidth={false} disableGutters sx={{
             backgroundColor: theme.palette.secondary,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center'
+            margin: 'auto',
+            height: '100vh'
         }}>
             <Toolbar tools={tools} />
             <ContentList />

@@ -7,32 +7,47 @@ import useButtonColors from '../../hooks/useButtonColors'
 export default function Tool(props) {
     const getButtonColors = useButtonColors()
 
-    const {backgroundColor, color, hover} = getButtonColors(props.data)
+    const {color, hoverColor} = getButtonColors(props.data)
     const {label, icon, type} = props.data
 
+    const checkBoxLabel = <Typography variant="subtitle2" 
+    fontSize="0.8em" color="secondary">
+        {label}
+    </Typography>
+
     return (
-        <div className="Tool">
+        <div className="Tool" style={{
+            marginLeft: props.data === profileTool? 'auto' : 0
+        }}>
             {
                 type == toolTypes.checkbox?
-                <FormControlLabel control={<Checkbox />} label={label} />
+                <FormControlLabel sx={{display: 'flex', alignItems: 'center'}} 
+                control={<Checkbox sx={{
+                    color,
+                    "&.Mui-checked": {
+                        color: hoverColor,
+                    }
+                }}/>} label={checkBoxLabel} />
                 :
                 <Button sx={{
                     display: 'flex',
-                    marginLeft: props.data === profileTool? 'auto' : 0,
+                    flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
                     transition: '0.3s ease-out',
-                    backgroundColor,
                     color,
-                    ":hover": hover
+                    ":hover": {
+                        color: hoverColor
+                    }
                 }}>
                     {
                         icon !== null?
-                        <SvgIcon sx={{marginBottom: 15}} component={icon} inheritViewBox />
+                        <SvgIcon sx={{fontSize: '2em'}} 
+                            component={icon} inheritViewBox />
                         :
                         null
                     }
-                    <Typography variant="subtitle1" display="block">
+                    <Typography variant="subtitle2" display="block" fontSize="0.8em">
                         {label}
                     </Typography>
                 </Button>

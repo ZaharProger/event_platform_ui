@@ -6,22 +6,28 @@ import {v4 as uuidV4} from "uuid"
 import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
 import ListItemButtons from './ListItemButtons'
-import {readMoreButton, editButton, deleteButton} from './buttons'
+import NotFound from '../notFound/NotFound'
+import {readMoreButton, editButton, deleteButton} from '../buttons'
 
 export default function ContentList() {
     const theme = useTheme()
     const listData = useSelector(state => state.data)
 
+    const eventsCaption = 'Создайте новое мероприятие или присоединитесь к существующему'
+
     return (
-        <Container maxWidth="sm" sx={{
+        <Container maxWidth="lg" sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: theme.palette.info,
+            backgroundColor: listData.length != 0? theme.palette.info.main : theme.palette.primary.main,
             borderRadius: 10,
-            padding: '20 0'
+            width: '100%',
+            padding: '20px 0',
+            margin: 'auto'
         }}>
             {
+                listData.length != 0?
                 listData.map(listItem => {
                     const buttons = [readMoreButton]
                     buttons.push(listItem.is_complete? deleteButton : editButton)
@@ -32,6 +38,8 @@ export default function ContentList() {
                     }
                     return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
                 })
+                :
+                <NotFound additional_caption={eventsCaption} />
             }
         </Container>
     )

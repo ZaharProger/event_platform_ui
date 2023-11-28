@@ -12,12 +12,12 @@ import defaultTheme from './theme'
 
 const root = createRoot(document.getElementById('root'))
 root.render(
-    <Router>
-        <Provider store={ defaultStore }>
-            <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={defaultTheme}>
+        <Router>
+            <Provider store={ defaultStore }>
                 <CssBaseline />
                 <App />
-            </ThemeProvider>,
-        </Provider>
-    </Router>
+            </Provider>
+        </Router>
+    </ThemeProvider>
 )

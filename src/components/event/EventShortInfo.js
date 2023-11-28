@@ -8,13 +8,15 @@ export default function EventShortInfo(props) {
 
     return (
         <Stack spacing={2} justifyContent="flex-start" alignItems="center">
-            <Typography variant="subtitle1" display="block" sx={{fontWeight: 'bold'}}>
+            <Typography variant="subtitle1" color="secondary"
+                display="block" sx={{fontWeight: 'bold'}}>
                 {name}
             </Typography>
-            <Typography variant="subtitle1" display="block">
+            <Typography variant="subtitle1" color="secondary" display="block">
                 {place}
             </Typography>
-            <Typography variant="subtitle1" display="block" sx={{marginTop: 20}}>
+            <Typography variant="subtitle1" color="secondary"
+                display="block" sx={{marginTop: 20}}>
             {
                 datetime_end !== null?
                 `${datetime_start} - ${datetime_end}`
@@ -28,13 +30,13 @@ export default function EventShortInfo(props) {
                     justifyContent="flex-end" alignItems="center">
                     {
                         is_complete?
-                        <CheckCircleIcon />
+                        <CheckCircleIcon color="success" />
                         :
                         null
                     }
                     {
                         secret_code !== null?
-                        <LockIcon />
+                        <LockIcon color="info" />
                         :
                         null
                     }

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 import {defaultState} from './initialState'
-import {defaultReducer} from './reducer.js'
+import {defaultReducer} from './reducers.js'
 
 export const defaultStore = configureStore({
      reducer: defaultReducer, 

@@ -1,21 +1,22 @@
 import React from 'react'
 
 import logo from '../../assets/images/logo-full.svg'
-import { Stack, SvgIcon, Typography, useTheme } from '@mui/material'
+import { Stack, Icon, Typography, Box } from '@mui/material'
 
 export default function Footer() {
-    const theme = useTheme()
-
     return (
-        <Stack spacing={1} justifyContent="center" alignItems="center">
-            <SvgIcon component={logo} inheritViewBox />
-            <Typography variant="caption" display="block" 
-                gutterBottom sx={{color: theme.palette.secondary}}>
-                Платформа поддержки организации научных мероприятий
-                <br />
-                <br />
-                2023
-            </Typography>
-        </Stack>
+        <Box display="flex" marginTop="auto" flexDirection="column">
+            <Stack spacing={2} justifyContent="center" alignItems="center">
+                <Icon sx={{transform: 'scale(1.8)', width: 100}}>
+                    <img src={logo} />
+                </Icon>
+                <Typography variant="caption" display="block" color='secondary'
+                    gutterBottom textAlign='center'>
+                    Платформа поддержки организации научных мероприятий
+                    <br />
+                    2023
+                </Typography>
+            </Stack>
+        </Box>
     )
 }

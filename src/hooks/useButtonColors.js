@@ -1,6 +1,6 @@
 import { useTheme } from "@mui/material"
 import { unpinButton, deleteButton, cancelButton, 
-    excludeButton, signOutButton } from "../components/contentList/buttons"
+    excludeButton, signOutButton } from "../components/buttons"
 import { deleteTool } from "../components/toolbar/tools"
 
 export default function useButtonColors() {
@@ -16,12 +16,8 @@ export default function useButtonColors() {
         const hoverButtonColor = isNegativeButton? theme.palette.error : theme.palette.action
 
         return {
-            backgroundColor: buttonColor,
-            color: buttonColor,
-            hover: {
-                backgroundColor: hoverButtonColor,
-                color: hoverButtonColor
-            }
+            color: buttonColor.main,
+            hoverColor: hoverButtonColor.main
         }
     }
 }

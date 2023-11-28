@@ -12,15 +12,16 @@ export default function ListItemButtons(props) {
             justifyContent="center" alignItems="center">
                 {
                     props.buttons.map(button => {
-                        const {backgroundColor, color, hover} = getButtonColors(button)
+                        const {color, hoverColor} = getButtonColors(button)
 
                         return <Button key={`button_${uuidV4()}`} 
                             variant="contained" startIcon={button.icon}
                             sx={{
-                                backgroundColor,
                                 color,
                                 transition: '0.3s ease-out',
-                                ":hover": hover
+                                ":hover": {
+                                    color: hoverColor
+                                }
                             }}>
                             {
                                 button.label
