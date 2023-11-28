@@ -11,7 +11,7 @@ import NotFound from '../notFound/NotFound'
 import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
 import ListItemButtons from './ListItemButtons'
-import { createTool, joinTool, showCompletedEventsTool, profileTool } from '../toolbar/tools'
+import { createTool, joinTool, showCompletedEventsTool, profileTool, addTool } from '../toolbar/tools'
 import {readMoreButton, editButton, deleteButton} from '../buttons'
 import { routes } from '../routes'
 import EventForm from '../event/EventForm'
@@ -19,16 +19,29 @@ import EventForm from '../event/EventForm'
 export default function ContentWrap() {
     const theme = useTheme()
     const listData = useSelector(state => state.data)
+    const userData = useSelector(state => state.user)
     const location = useLocation()
 
     const tools = [
-        createTool,
-        joinTool,
-        showCompletedEventsTool,
         profileTool
     ]
+    if (!userData.is_superuser) {
+        tools.unshift([joinTool, showCompletedEventsTool])
+        if (userData.is_staff) {
+            tools.unshift([createTool])
+        }
+    }
+    else {
+        tools.unshift([addTool])
+    }
 
-    const eventsCaption = 'Создайте новое мероприятие или присоединитесь к существующему'
+    const eventsCaption = userData.is_staff?
+        'Создайте новое мероприятие или присоединитесь к существующему'
+        :
+        userData.is_superuser?
+        'Добавьте шаблоны документов согласно СТО вашей организации'
+        :
+        'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
 
     return (
         <Container maxWidth={false} disableGutters sx={{
@@ -54,7 +67,14 @@ export default function ContentWrap() {
                     listData.length != 0?
                     <ContentList data={listData.map(listItem => {
                         const buttons = [readMoreButton]
-                        buttons.push(listItem.is_complete? deleteButton : editButton)
+                        if (listItem.is_complete) {
+                            if (listItem.organizer.id == userData.id) {
+                                buttons.push(deleteButton)
+                            }
+                        }
+                        else {
+                            buttons.push(editButton)
+                        }
                             
                         const itemData = {
                             item_info: <EventShortInfo data={listItem} />,

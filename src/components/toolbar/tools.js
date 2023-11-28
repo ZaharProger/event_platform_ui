@@ -26,6 +26,13 @@ export const createTool = {
     route: routes.create_event
 }
 
+export const addTool = {
+    label: 'Добавить',
+    icon: AddCircleRoundedIcon,
+    type: toolTypes.button,
+    route: null
+}
+
 export const joinTool = {
     label: 'Присоединиться',
     icon: GroupAddRoundedIcon,
@@ -44,7 +51,7 @@ export const profileTool = {
     label: 'Профиль',
     icon: AccountCircleRoundedIcon,
     type: toolTypes.button,
-    route: routes.profile
+    route: null
 }
 
 export const backTool = {

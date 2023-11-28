@@ -1,5 +1,6 @@
 import { Stack, Icon, Button, TextField, Container, useTheme, Fade, Typography } from '@mui/material'
 import React, { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import logo from '../../assets/images/logo-full.svg'
 import useButton from '../../hooks/useButton'
@@ -7,14 +8,20 @@ import { signInButton } from '../buttons'
 import { helpTool, backTool } from '../toolbar/tools'
 import Tool from '../toolbar/Tool'
 import useValidation from '../../hooks/useValidation'
+import useApi from '../../hooks/useApi'
+import { routes } from '../routes'
 
 export default function Auth() {
     const [isHelpOpened, setIsHelpOpened] = useState(false)
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [errorResponse, setErrorResponse] = useState(null)
 
     const theme = useTheme()
     const validate = useValidation(/^[A-Za-z0-9!]+$/)
+
+    const callApi = useApi()
+    const navigate = useNavigate()
 
     const getButtonColors = useButton()
     const buttonColors = getButtonColors(signInButton)
@@ -32,7 +39,20 @@ export default function Auth() {
     }
 
     const authButtonHandler = useCallback(() => {
+        const formData = new FormData()
+        document.querySelectorAll('input').forEach(input => {
+            formData.set(input.id, input.value)
+        })
 
+        callApi('/users/auth', 'POST', formData, null).then(responseData => {
+            if (responseData.status == 200) {
+                setErrorResponse(null)
+                navigate(routes.home)
+            }
+            else {
+                setErrorResponse(responseData.data.message)
+            }
+        })
     }, [username, password, isHelpOpened])
 
     return (
@@ -72,6 +92,17 @@ export default function Auth() {
                             }} onClick={() => authButtonHandler()}>
                                 Войти
                         </Button>
+                        {
+                            errorResponse !== null?
+                            <Typography variant="subtitle2" display="block" 
+                                color="error" textAlign="center">
+                                {
+                                    errorResponse
+                                }
+                            </Typography>
+                            :
+                            null
+                        }
                     </Stack>
                 </Fade>
                 <Fade in={isHelpOpened}>

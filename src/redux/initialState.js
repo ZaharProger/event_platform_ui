@@ -1,3 +1,4 @@
 export const defaultState = {
-    data: Array()
+    data: Array(),
+    user: null
 }
