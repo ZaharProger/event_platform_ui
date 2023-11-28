@@ -1,14 +1,14 @@
 import { Button, Checkbox, FormControlLabel, SvgIcon, Typography } from '@mui/material'
 import React from 'react'
-import { profileTool, toolTypes } from './tools'
 
-import useButtonColors from '../../hooks/useButtonColors'
+import { profileTool, toolTypes } from './tools'
+import useTool from '../../hooks/useTool'
 
 export default function Tool(props) {
-    const getButtonColors = useButtonColors()
+    const getToolColors = useTool()
 
-    const {color, hoverColor} = getButtonColors(props.data)
-    const {label, icon, type} = props.data
+    const toolColors = getToolColors(props.data)
+    const {tool: {label, icon, type}, callback} = props.data
 
     const checkBoxLabel = <Typography variant="subtitle2" 
     fontSize="0.8em" color="secondary">
@@ -16,16 +16,16 @@ export default function Tool(props) {
     </Typography>
 
     return (
-        <div className="Tool" style={{
-            marginLeft: props.data === profileTool? 'auto' : 0
+        <div className="Tool" onClick={() => callback()} style={{
+            marginLeft: props.data.tool === profileTool? 'auto' : 0
         }}>
             {
                 type == toolTypes.checkbox?
                 <FormControlLabel sx={{display: 'flex', alignItems: 'center'}} 
                 control={<Checkbox sx={{
-                    color,
+                    color: toolColors.color,
                     "&.Mui-checked": {
-                        color: hoverColor,
+                        color: toolColors[':hover'].color,
                     }
                 }}/>} label={checkBoxLabel} />
                 :
@@ -35,10 +35,7 @@ export default function Tool(props) {
                     justifyContent: 'center',
                     alignItems: 'center',
                     transition: '0.3s ease-out',
-                    color,
-                    ":hover": {
-                        color: hoverColor
-                    }
+                    ...toolColors
                 }}>
                     {
                         icon !== null?
@@ -47,9 +44,14 @@ export default function Tool(props) {
                         :
                         null
                     }
-                    <Typography variant="subtitle2" display="block" fontSize="0.8em">
-                        {label}
-                    </Typography>
+                    {
+                        label !== null?
+                        <Typography variant="subtitle2" display="block" fontSize="0.8em">
+                            {label}
+                        </Typography>
+                        :
+                        null
+                    }
                 </Button>
             }
         </div>

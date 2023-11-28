@@ -64,6 +64,11 @@ export const resetButton = {
     label: 'Сбросить данные для входа'
 }
 
+export const signInButton = {
+    icon: null,
+    label: 'Войти'
+}
+
 export const signOutButton = {
     icon: null,
     label: 'Выйти из аккаунта'

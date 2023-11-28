@@ -25,7 +25,7 @@ module.exports = {
     },
     devtool: "source-map",
     devServer: {
-        historyApiFallback: true,
+        historyApiFallback: { index: "/", disableDotRule: true },
         port: 3000,
         hot: true,
         open: true

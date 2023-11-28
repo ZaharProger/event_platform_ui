@@ -1,19 +1,14 @@
-import { Box, Container, useTheme } from '@mui/material'
+import { Container, useTheme } from '@mui/material'
 import React from 'react'
+import { Route, Routes } from 'react-router-dom'
 
-import { createTool, joinTool, showCompletedEventsTool, profileTool } from './toolbar/tools'
-import Footer from './footer/Footer'
-import Toolbar from './toolbar/Toolbar'
-import ContentList from './contentList/ContentList'
+import ContentWrap from './content/contentWrap'
+import { routes } from './routes'
+import NotFound from './notFound/NotFound'
+import Auth from './auth/Auth'
 
 export default function App() {
     const theme = useTheme()
-    const tools = [
-        createTool,
-        joinTool,
-        showCompletedEventsTool,
-        profileTool
-    ]
 
     return (
         <Container maxWidth={false} disableGutters sx={{
@@ -23,9 +18,13 @@ export default function App() {
             margin: 'auto',
             height: '100vh'
         }}>
-            <Toolbar tools={tools} />
-            <ContentList />
-            <Footer />
+            <Routes>
+                <Route path={routes.home} element={<ContentWrap />} />
+                <Route path={routes.auth} element={<Auth />} />
+                <Route path={routes.create_event} element={<ContentWrap />} />
+                <Route path='*' 
+                element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
+            </Routes>
         </Container>
     )
 }

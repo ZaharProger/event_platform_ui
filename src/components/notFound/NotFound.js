@@ -4,7 +4,7 @@ import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDiss
 
 export default function NotFound(props) {
     return (
-        <Stack spacing={3} justifyContent="center" alignItems="center">
+        <Stack spacing={3} justifyContent="center" alignItems="center" margin="auto">
             <SentimentVeryDissatisfiedIcon color="secondary" sx={{
                 fontSize: '3.5em',
             }} />
