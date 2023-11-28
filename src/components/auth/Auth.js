@@ -1,16 +1,20 @@
 import { Stack, Icon, Button, TextField, Container, useTheme, Fade, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import logo from '../../assets/images/logo-full.svg'
 import useButton from '../../hooks/useButton'
 import { signInButton } from '../buttons'
 import { helpTool, backTool } from '../toolbar/tools'
 import Tool from '../toolbar/Tool'
+import useValidation from '../../hooks/useValidation'
 
 export default function Auth() {
     const [isHelpOpened, setIsHelpOpened] = useState(false)
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
 
     const theme = useTheme()
+    const validate = useValidation(/^[A-Za-z0-9!]+$/)
 
     const getButtonColors = useButton()
     const buttonColors = getButtonColors(signInButton)
@@ -26,6 +30,10 @@ export default function Auth() {
             borderBottomColor: `${buttonColors.backgroundColor}!important`
         }
     }
+
+    const authButtonHandler = useCallback(() => {
+
+    }, [username, password, isHelpOpened])
 
     return (
         <Container maxWidth="lg" sx={{
@@ -46,17 +54,22 @@ export default function Auth() {
                         </Icon>
                         <Stack direction="column" spacing={1} 
                             justifyContent="center" alignItems="center">
-                            <TextField id="username" label="Ваш логин" 
+                            <TextField id="username" label="Ваш логин"
+                                onInput={(event) => setUsername(event.target.value)}
                                 variant="standard" color="secondary" sx={{...textFieldStyles}} />
-                            <TextField id="password" label="Ваш пароль" 
+                            <TextField id="password" label="Ваш пароль" type="password"
+                                onInput={(event) => setPassword(event.target.value)}
                                 variant="standard" color="secondary" sx={{...textFieldStyles}} />
                         </Stack>
-                        <Button variant="contained" disableElevation sx={{
-                            padding: '8px 20px',
-                            width: '100%',
-                            transition: '0.3s ease-out',
-                            ...buttonColors
-                            }}>
+                        <Button variant="contained" 
+                            disabled={!(validate(username) && validate(password))} 
+                            disableElevation 
+                            sx={{
+                                padding: '8px 20px',
+                                width: '100%',
+                                transition: '0.3s ease-out',
+                                ...buttonColors
+                            }} onClick={() => authButtonHandler()}>
                                 Войти
                         </Button>
                     </Stack>
