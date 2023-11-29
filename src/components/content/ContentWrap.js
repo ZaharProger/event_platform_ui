@@ -104,7 +104,7 @@ export default function ContentWrap() {
                 }
             </Container>
             <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>
-                <Profile close_callback={() => setIsProfileOpened(false)} />
+                <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
             </Drawer>
             <Footer />
         </Container>
