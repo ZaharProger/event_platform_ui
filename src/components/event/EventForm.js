@@ -20,8 +20,8 @@ export default function EventForm(props) {
                     gutterBottom textAlign='start' fontWeight="bold">
                         Организатор
                 </Typography>
-                <div className="form-block" style={
-                    {display: 'flex', 
+                <div className="form-block" style={{
+                    display: 'flex', 
                     flexDirection: 'column'
                 }}>
                     

@@ -4,7 +4,7 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 import ContentWrap from './content/contentWrap'
-import { routes } from './routes'
+import { backendEndpoints, host, routes } from './routes'
 import NotFound from './notFound/NotFound'
 import Auth from './auth/Auth'
 import useApi from '../hooks/useApi'
@@ -14,15 +14,18 @@ export default function App() {
     const location = useLocation()
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const userData = useSelector()
+    const userData = useSelector(state => state.user)
     const callApi = useApi()
     const theme = useTheme()
 
     useEffect(() => {
-        callApi('/users/account', 'GET', null, null).then(responseData => {
+        callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
             if (responseData.status == 200) {
                 if (responseData.data !== userData) {
-                    dispatch(changeUser(responseData.data))
+                    dispatch(changeUser(responseData.data.data))
+                }
+                if (location.pathname === routes.auth) {
+                    navigate(routes.home)
                 }
             }
             else {

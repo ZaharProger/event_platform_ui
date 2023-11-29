@@ -1,4 +1,4 @@
-import { Stack, Icon, Button, TextField, Container, useTheme, Fade, Typography } from '@mui/material'
+import { Stack, Icon, Button, TextField, Container, useTheme, Fade, Typography, useMediaQuery } from '@mui/material'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -9,7 +9,7 @@ import { helpTool, backTool } from '../toolbar/tools'
 import Tool from '../toolbar/Tool'
 import useValidation from '../../hooks/useValidation'
 import useApi from '../../hooks/useApi'
-import { routes } from '../routes'
+import { backendEndpoints, host, routes } from '../routes'
 
 export default function Auth() {
     const [isHelpOpened, setIsHelpOpened] = useState(false)
@@ -17,6 +17,7 @@ export default function Auth() {
     const [password, setPassword] = useState('')
     const [errorResponse, setErrorResponse] = useState(null)
 
+    const isMobile = useMediaQuery('(max-width: 1000px)')
     const theme = useTheme()
     const validate = useValidation(/^[A-Za-z0-9!]+$/)
 
@@ -44,7 +45,7 @@ export default function Auth() {
             formData.set(input.id, input.value)
         })
 
-        callApi('/users/auth', 'POST', formData, null).then(responseData => {
+        callApi(`${host}${backendEndpoints.auth}`, 'POST', formData, null).then(responseData => {
             if (responseData.status == 200) {
                 setErrorResponse(null)
                 navigate(routes.home)
@@ -61,7 +62,7 @@ export default function Auth() {
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme.palette.info.main,
-            borderRadius: '100%',
+            borderRadius: isMobile? '0' : '100%',
             padding: '50px 100px',
             margin: 'auto'
         }}>
@@ -85,12 +86,13 @@ export default function Auth() {
                             disabled={!(validate(username) && validate(password))} 
                             disableElevation 
                             sx={{
-                                padding: '8px 20px',
-                                width: '100%',
+                                padding: '8px 80px',
                                 transition: '0.3s ease-out',
                                 ...buttonColors
                             }} onClick={() => authButtonHandler()}>
-                                Войти
+                            {
+                                signInButton.label
+                            }
                         </Button>
                         {
                             errorResponse !== null?

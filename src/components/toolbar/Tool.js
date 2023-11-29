@@ -1,23 +1,36 @@
 import { Button, Checkbox, FormControlLabel, SvgIcon, Typography } from '@mui/material'
-import React from 'react'
+import React, { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { profileTool, toolTypes } from './tools'
 import useTool from '../../hooks/useTool'
 
 export default function Tool(props) {
+    const navigate = useNavigate()
     const getToolColors = useTool()
 
     const toolColors = getToolColors(props.data)
-    const {tool: {label, icon, type}, callback} = props.data
+    const {label, icon, type, route} = props.data
 
     const checkBoxLabel = <Typography variant="subtitle2" 
     fontSize="0.8em" color="secondary">
         {label}
     </Typography>
 
+    const toolClickHandler = useCallback(() => {
+        if (props.data.callback != undefined) {
+            props.data.callback()
+        }
+        else {
+            if (route !== null) {
+                navigate(route)
+            }
+        }
+    }, [])
+
     return (
-        <div className="Tool" onClick={() => callback()} style={{
-            marginLeft: props.data.tool === profileTool? 'auto' : 0
+        <div className="Tool" onClick={() => toolClickHandler()} style={{
+            marginLeft: props.data === profileTool? 'auto' : 0
         }}>
             {
                 type == toolTypes.checkbox?

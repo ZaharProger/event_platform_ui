@@ -13,7 +13,7 @@ export default function useApi() {
             method: requestTypes.includes(method)? method : requestTypes[0],
             credentials: 'include',
 	        headers: {
-	            'X-CSRFToken': getCookie('csrftoken')
+	            'X-CSRFToken': getCookie('csrftoken'),
 	        }
         }
         if (body !== null) {

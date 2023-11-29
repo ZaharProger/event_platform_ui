@@ -1,5 +1,5 @@
-import { Container, useTheme } from '@mui/material'
-import React from 'react'
+import { Container, Drawer, useTheme } from '@mui/material'
+import React, { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
@@ -15,6 +15,7 @@ import { createTool, joinTool, showCompletedEventsTool, profileTool, addTool } f
 import {readMoreButton, editButton, deleteButton} from '../buttons'
 import { routes } from '../routes'
 import EventForm from '../event/EventForm'
+import Profile from '../profile/Profile'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -22,26 +23,39 @@ export default function ContentWrap() {
     const userData = useSelector(state => state.user)
     const location = useLocation()
 
-    const tools = [
-        profileTool
-    ]
-    if (!userData.is_superuser) {
-        tools.unshift([joinTool, showCompletedEventsTool])
-        if (userData.is_staff) {
-            tools.unshift([createTool])
-        }
-    }
-    else {
-        tools.unshift([addTool])
-    }
+    const [isProfileOpened, setIsProfileOpened] = useState(false)
 
-    const eventsCaption = userData.is_staff?
-        'Создайте новое мероприятие или присоединитесь к существующему'
-        :
-        userData.is_superuser?
-        'Добавьте шаблоны документов согласно СТО вашей организации'
-        :
-        'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
+    const buildTools = useCallback(() => {
+        profileTool.callback = () => setIsProfileOpened(true)
+        const tools = [
+            profileTool,
+        ]
+
+        if (userData !== null) {
+            if (!userData.is_superuser) {
+                tools.unshift(showCompletedEventsTool)
+                tools.unshift(joinTool)
+                if (userData.is_staff) {
+                    tools.unshift(createTool)
+                }
+            }
+            else {
+                tools.unshift(addTool)
+            }
+        }
+        return tools
+    }, [userData])
+
+    let eventsCaption = ''
+    if (userData !== null) {
+        eventsCaption = userData.is_staff?
+            'Создайте новое мероприятие или присоединитесь к существующему'
+            :
+            userData.is_superuser?
+            'Добавьте шаблоны документов согласно СТО вашей организации'
+            :
+            'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
+    }
 
     return (
         <Container maxWidth={false} disableGutters sx={{
@@ -51,7 +65,7 @@ export default function ContentWrap() {
             margin: 'auto',
             height: '100vh'
         }}>
-            <Toolbar tools={tools} />
+            <Toolbar tools={buildTools()} />
             <Container maxWidth="lg" sx={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -89,6 +103,9 @@ export default function ContentWrap() {
                     <NotFound additional_caption={eventsCaption} />
                 }
             </Container>
+            <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>
+                <Profile close_callback={() => setIsProfileOpened(false)} />
+            </Drawer>
             <Footer />
         </Container>
     )
