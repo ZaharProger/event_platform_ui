@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
-import {v4 as uuidV4} from "uuid"
+import { v4 as uuidV4 } from "uuid"
 import ContentList from './ContentList'
 import Footer from '../footer/Footer'
 import Toolbar from '../toolbar/Toolbar'
@@ -12,7 +12,7 @@ import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
 import ListItemButtons from './ListItemButtons'
 import { createTool, joinTool, showCompletedEventsTool, profileTool, addTool } from '../toolbar/tools'
-import {readMoreButton, editButton, deleteButton} from '../buttons'
+import { readMoreButton, editButton, deleteButton } from '../buttons'
 import { routes } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
@@ -48,13 +48,13 @@ export default function ContentWrap() {
 
     let eventsCaption = ''
     if (userData !== null) {
-        eventsCaption = userData.is_staff?
+        eventsCaption = userData.is_staff ?
             'Создайте новое мероприятие или присоединитесь к существующему'
             :
-            userData.is_superuser?
-            'Добавьте шаблоны документов согласно СТО вашей организации'
-            :
-            'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
+            userData.is_superuser ?
+                'Добавьте шаблоны документов согласно СТО вашей организации'
+                :
+                'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
     }
 
     return (
@@ -70,7 +70,7 @@ export default function ContentWrap() {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: listData.length != 0 || location.pathname === routes.create_event? 
+                backgroundColor: listData.length != 0 || location.pathname === routes.create_event ?
                     theme.palette.info.main : theme.palette.primary.main,
                 borderRadius: 10,
                 width: '100%',
@@ -78,29 +78,29 @@ export default function ContentWrap() {
                 margin: 'auto'
             }}>
                 {
-                    listData.length != 0?
-                    <ContentList data={listData.map(listItem => {
-                        const buttons = [readMoreButton]
-                        if (listItem.is_complete) {
-                            if (listItem.organizer.id == userData.id) {
-                                buttons.push(deleteButton)
+                    listData.length != 0 ?
+                        <ContentList data={listData.map(listItem => {
+                            const buttons = [readMoreButton]
+                            if (listItem.is_complete) {
+                                if (listItem.organizer.id == userData.id) {
+                                    buttons.push(deleteButton)
+                                }
                             }
-                        }
-                        else {
-                            buttons.push(editButton)
-                        }
-                            
-                        const itemData = {
-                            item_info: <EventShortInfo data={listItem} />,
-                            item_buttons: <ListItemButtons buttons={buttons} />
-                        }
-                        return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                            else {
+                                buttons.push(editButton)
+                            }
+
+                            const itemData = {
+                                item_info: <EventShortInfo data={listItem} />,
+                                item_buttons: <ListItemButtons buttons={buttons} />
+                            }
+                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
                         })} />
-                    :
-                    location.pathname === routes.create_event?
-                    <EventForm data={null} />
-                    :
-                    <NotFound additional_caption={eventsCaption} />
+                        :
+                        location.pathname === routes.create_event ?
+                            <EventForm data={null} />
+                            :
+                            <NotFound additional_caption={eventsCaption} />
                 }
             </Container>
             <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>

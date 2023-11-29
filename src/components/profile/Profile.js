@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom'
 import useValidation from '../../hooks/useValidation'
 
 export default function Profile(props) {
-    const [name, setName] = useState(props.data !== null? props.data.user.name : '')
-    const [email, setEmail] = useState(props.data !== null? props.data.user.email : '')
+    const [name, setName] = useState(props.data !== null ? props.data.user.name : '')
+    const [email, setEmail] = useState(props.data !== null ? props.data.user.email : '')
     const validateName = useValidation(/^[A-Za-zА-Яа-я\s-]+$/)
     const validateEmail = useValidation(/^[a-z\d._-]+@[a-z\d_-]+\.[a-z]+$/)
 
@@ -30,20 +30,20 @@ export default function Profile(props) {
     const saveButtonColors = getSaveButtonColors(saveButton)
     const resetButtonColors = getResetButtonColors(resetButton)
     const signOutButtonColors = getSignOutButtonColors(signOutButton)
-  
+
     backTool.callback = () => props.close_callback()
 
     const textFieldStyles = {
         '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: saveButtonColors.backgroundColor,
-          },
-          '&:hover fieldset': {
-            borderColor: saveButtonColors.backgroundColor,
-          },
-          '&.Mui-focused fieldset': {
-            borderColor: saveButtonColors[':hover'].backgroundColor,
-          },
+            '& fieldset': {
+                borderColor: saveButtonColors.backgroundColor,
+            },
+            '&:hover fieldset': {
+                borderColor: saveButtonColors.backgroundColor,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: saveButtonColors[':hover'].backgroundColor,
+            },
         }
     }
 
@@ -79,7 +79,7 @@ export default function Profile(props) {
             <Stack direction="row" spacing={2}>
                 <Typography variant="h6" color='secondary'
                     gutterBottom textAlign='start' margin="auto!important">
-                        Ваш профиль
+                    Ваш профиль
                 </Typography>
                 <Tool data={backTool} />
             </Stack>
@@ -89,43 +89,43 @@ export default function Profile(props) {
                         <Typography variant="body1" display="flex" color='secondary'
                             gutterBottom marginRight="auto!important"
                             textAlign='start' fontWeight="bold">
-                                Настройки
-                    </Typography>
+                            Настройки
+                        </Typography>
                     </Grid>
                     <Grid direction="row" md spacing={3} item container>
                         <Grid item marginTop="40px" width="400px">
                             <Stack direction="column" spacing={2}>
                                 <TextField id="name" required
                                     onInput={(event) => setName(event.target.value)}
-                                    defaultValue={props.data !== null? props.data.user.name : ''}
-                                    fullWidth label="ФИО" variant="outlined" 
-                                    color="secondary" sx={{...textFieldStyles}} />
+                                    defaultValue={props.data !== null ? props.data.user.name : ''}
+                                    fullWidth label="ФИО" variant="outlined"
+                                    color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="email" fullWidth required
                                     onInput={(event) => setEmail(event.target.value)}
-                                    defaultValue={props.data !== null? props.data.user.email : ''}
-                                    label="E-mail" variant="outlined" 
-                                    color="secondary" sx={{...textFieldStyles}} />
+                                    defaultValue={props.data !== null ? props.data.user.email : ''}
+                                    label="E-mail" variant="outlined"
+                                    color="secondary" sx={{ ...textFieldStyles }} />
                             </Stack>
                         </Grid>
                         <Grid item width="500px">
                             <Stack direction="column" spacing={2}>
                                 <TextField id="phone" label="Номер телефона" variant="outlined"
-                                    defaultValue={props.data !== null? props.data.user.phone : ''} 
-                                    color="secondary" sx={{...textFieldStyles}} />
-                                <TextField id="telegram" label="Аккаунт Telegram" variant="outlined" 
-                                    defaultValue={props.data !== null? props.data.user.telegram : ''}
-                                    color="secondary" sx={{...textFieldStyles}} />
-                                <TextField id="organization" fullWidth 
-                                    defaultValue={props.data !== null? props.data.user.organization : ''}
-                                    label="Организация" variant="outlined" 
-                                    color="secondary" sx={{...textFieldStyles}} />
+                                    defaultValue={props.data !== null ? props.data.user.phone : ''}
+                                    color="secondary" sx={{ ...textFieldStyles }} />
+                                <TextField id="telegram" label="Аккаунт Telegram" variant="outlined"
+                                    defaultValue={props.data !== null ? props.data.user.telegram : ''}
+                                    color="secondary" sx={{ ...textFieldStyles }} />
+                                <TextField id="organization" fullWidth
+                                    defaultValue={props.data !== null ? props.data.user.organization : ''}
+                                    label="Организация" variant="outlined"
+                                    color="secondary" sx={{ ...textFieldStyles }} />
                             </Stack>
                         </Grid>
                     </Grid>
                     <Grid item>
                         <Button variant="contained"
                             disabled={!(validateName(name) && validateEmail(email))}
-                            disableElevation 
+                            disableElevation
                             sx={{
                                 fontSize: '0.8em',
                                 padding: '8px 50px',
@@ -138,15 +138,15 @@ export default function Profile(props) {
                         </Button>
                     </Grid>
                     {
-                        errorResponse !== null?
-                        <Typography variant="subtitle2" display="block" 
-                            color="error" textAlign="center">
-                            {
-                                errorResponse
-                            }
-                        </Typography>
-                        :
-                        null
+                        errorResponse !== null ?
+                            <Typography variant="subtitle2" display="block"
+                                color="error" textAlign="center">
+                                {
+                                    errorResponse
+                                }
+                            </Typography>
+                            :
+                            null
                     }
                 </Grid>
             </Grid>
@@ -154,27 +154,27 @@ export default function Profile(props) {
                 <Typography variant="body1" display="flex" color='secondary'
                     gutterBottom marginRight="auto!important"
                     textAlign='start' fontWeight="bold">
-                        Дополнительно
+                    Дополнительно
                 </Typography>
                 <Stack direction="row" useFlexGap flexWrap="wrap"
                     marginLeft="auto!important" spacing={2}>
                     <Button variant="contained"
-                        disableElevation 
+                        disableElevation
                         sx={{
-                            width: isMobile? '100%' : 'auto',
+                            width: isMobile ? '100%' : 'auto',
                             fontSize: '0.8em',
                             padding: '8px 80px',
                             transition: '0.3s ease-out',
                             ...resetButtonColors
                         }} onClick={() => resetButtonHandler()}>
                         {
-                           resetButton.label
+                            resetButton.label
                         }
                     </Button>
                     <Button variant="contained"
-                        disableElevation 
+                        disableElevation
                         sx={{
-                            width: isMobile? '100%' : 'auto',
+                            width: isMobile ? '100%' : 'auto',
                             fontSize: '0.8em',
                             padding: '8px 80px',
                             transition: '0.3s ease-out',

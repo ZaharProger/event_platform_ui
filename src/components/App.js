@@ -8,7 +8,7 @@ import { backendEndpoints, host, routes } from './routes'
 import NotFound from './notFound/NotFound'
 import Auth from './auth/Auth'
 import useApi from '../hooks/useApi'
-import {changeUser} from '../redux/actions'
+import { changeUser } from '../redux/actions'
 
 export default function App() {
     const location = useLocation()
@@ -49,8 +49,8 @@ export default function App() {
                 <Route path={routes.home} element={<ContentWrap />} />
                 <Route path={routes.auth} element={<Auth />} />
                 <Route path={routes.create_event} element={<ContentWrap />} />
-                <Route path='*' 
-                element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
+                <Route path='*'
+                    element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
             </Routes>
         </Container>
     )
