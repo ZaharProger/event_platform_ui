@@ -31,7 +31,10 @@ export default function Profile(props) {
     const resetButtonColors = getResetButtonColors(resetButton)
     const signOutButtonColors = getSignOutButtonColors(signOutButton)
 
-    backTool.callback = () => props.close_callback()
+    const profileBackTool = {
+        ...backTool,
+        callback: () => props.close_callback()
+    }
 
     const textFieldStyles = {
         '& .MuiOutlinedInput-root': {
@@ -81,7 +84,7 @@ export default function Profile(props) {
                     gutterBottom textAlign='start' margin="auto!important">
                     Ваш профиль
                 </Typography>
-                <Tool data={backTool} />
+                <Tool data={profileBackTool} />
             </Stack>
             <Grid direction="row" container>
                 <Grid direction="column" spacing={3} item container>

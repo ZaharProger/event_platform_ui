@@ -11,7 +11,7 @@ import NotFound from '../notFound/NotFound'
 import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
 import ListItemButtons from './ListItemButtons'
-import { createTool, joinTool, showCompletedEventsTool, profileTool, addTool } from '../toolbar/tools'
+import { createTool, joinTool, showCompletedEventsTool, profileTool, addTool, backTool } from '../toolbar/tools'
 import { readMoreButton, editButton, deleteButton } from '../buttons'
 import { routes } from '../routes'
 import EventForm from '../event/EventForm'
@@ -27,24 +27,28 @@ export default function ContentWrap() {
 
     const buildTools = useCallback(() => {
         profileTool.callback = () => setIsProfileOpened(true)
-        const tools = [
-            profileTool,
-        ]
+        const tools = [profileTool]
 
-        if (userData !== null) {
-            if (!userData.is_superuser) {
-                tools.unshift(showCompletedEventsTool)
-                tools.unshift(joinTool)
-                if (userData.is_staff) {
-                    tools.unshift(createTool)
+        if ([routes.home].includes(location.pathname)) {
+            if (userData !== null) {
+                if (!userData.is_superuser) {
+                    tools.unshift(showCompletedEventsTool)
+                    tools.unshift(joinTool)
+                    if (userData.is_staff) {
+                        tools.unshift(createTool)
+                    }
+                }
+                else {
+                    tools.unshift(addTool)
                 }
             }
-            else {
-                tools.unshift(addTool)
-            }
         }
+        else {
+            tools.unshift(backTool)
+        }
+
         return tools
-    }, [userData])
+    }, [userData, location])
 
     let eventsCaption = ''
     if (userData !== null) {
