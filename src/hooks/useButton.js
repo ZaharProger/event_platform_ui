@@ -3,9 +3,8 @@ import { unpinButton, deleteButton, cancelButton,
     excludeButton, signOutButton } from "../components/buttons"
 
 export default function useButton() {
+    const theme = useTheme()
     return function(button) {
-        const theme = useTheme()
-
         const negativeButtons = [
             deleteButton, unpinButton, cancelButton, 
             excludeButton, signOutButton

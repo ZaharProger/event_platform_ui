@@ -1,11 +1,11 @@
-import ReadMoreIcon from '@mui/icons-material/ReadMore'
+import InfoIcon from '@mui/icons-material/Info'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 
 export const readMoreButton = {
-    icon: ReadMoreIcon,
+    icon: InfoIcon,
     label: 'Подробнее'
 }
 

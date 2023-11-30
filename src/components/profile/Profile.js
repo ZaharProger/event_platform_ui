@@ -169,7 +169,7 @@ export default function Profile(props) {
                             padding: '8px 80px',
                             transition: '0.3s ease-out',
                             ...resetButtonColors
-                        }} onClick={() => resetButtonHandler()}>
+                        }} onClick={() => console.log('1')}>
                         {
                             resetButton.label
                         }

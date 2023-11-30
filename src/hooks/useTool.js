@@ -2,9 +2,9 @@ import { useTheme } from "@mui/material"
 import { deleteTool } from "../components/toolbar/tools"
 
 export default function useTool() {
+    const theme = useTheme()
+    
     return function(tool) {
-        const theme = useTheme()
-
         const negativeTools= [deleteTool]
         const isNegativeTool = negativeTools.includes(tool)
         const toolColor = isNegativeTool? 

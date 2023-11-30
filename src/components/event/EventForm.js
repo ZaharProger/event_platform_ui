@@ -109,7 +109,7 @@ export default function EventForm(props) {
                 </Grid>
                 <Grid direction="row" md spacing={3} item container>
                     <Grid item width="500px">
-                        <Stack direction="column" spacing={2}>
+                        <Stack direction="column" spacing={2} useFlexGap flexWrap="wrap">
                             <TextField id="name" required
                                 onInput={(event) => setName(event.target.value)}
                                 defaultValue={props.event_data !== null ? props.event_data.name : ''}
@@ -126,7 +126,7 @@ export default function EventForm(props) {
                         </Stack>
                     </Grid>
                     <Grid item width="600px">
-                        <Stack direction="column" spacing={2}>
+                        <Stack direction="column" spacing={2} useFlexGap flexWrap="wrap">
                             <Stack direction="row" spacing={2}>
                                 <TextField
                                     id="event_type"
@@ -155,7 +155,7 @@ export default function EventForm(props) {
                                         }} />}
                                     label={checkboxLabel} />
                             </Stack>
-                            <Stack direction="row" spacing={2}>
+                            <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
                                 <TextField id="datetime_start" required
                                     defaultValue={''} type="datetime-local"
                                     fullWidth helperText={datetimeStartLabel} variant="outlined"

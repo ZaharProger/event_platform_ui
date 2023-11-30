@@ -1,6 +1,6 @@
 import { Container, Drawer, useTheme } from '@mui/material'
 import React, { useCallback, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
 import { v4 as uuidV4 } from "uuid"
@@ -16,12 +16,16 @@ import { readMoreButton, editButton, deleteButton } from '../buttons'
 import { routes } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
+import { changeShowCompletedEvents } from '../../redux/actions'
 
 export default function ContentWrap() {
     const theme = useTheme()
     const listData = useSelector(state => state.data)
     const userData = useSelector(state => state.user)
+    const showCompletedEvents = useSelector(state => state.show_completed_events)
     const location = useLocation()
+
+    const dispatch = useDispatch()
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
 
@@ -32,6 +36,10 @@ export default function ContentWrap() {
         if ([routes.home].includes(location.pathname)) {
             if (userData !== null) {
                 if (!userData.is_superuser) {
+                    showCompletedEventsTool.callback = () => {
+                        console.log(showCompletedEvents);
+                        dispatch(changeShowCompletedEvents(!showCompletedEvents))
+                    }
                     tools.unshift(showCompletedEventsTool)
                     tools.unshift(joinTool)
                     if (userData.is_staff) {
@@ -48,52 +56,66 @@ export default function ContentWrap() {
         }
 
         return tools
-    }, [userData, location])
+    }, [userData, location, showCompletedEvents])
 
     const getContent = useCallback(() => {
         let content
+        let caption = ''
         switch (location.pathname) {
             case routes.home:
-                content = <ContentList data={listData.map(listItem => {
-                    const buttons = Array()
-                    buttons.push(readMoreButton)
-                    if (listItem.is_complete) {
-                        if (listItem.organizer.id == userData.id) {
-                            buttons.push(deleteButton)
-                        }
+                if (listData.length == 0) {
+                    if (userData !== null) {
+                        caption = userData.is_staff ?
+                        'Создайте новое мероприятие или присоединитесь к существующему'
+                        :
+                        userData.is_superuser ?
+                            'Добавьте шаблоны документов согласно СТО вашей организации'
+                            :
+                            'Присоединитесь к мероприятию по коду приглашения'
+                    }
+                    content = <NotFound additional_caption={caption} />
+                }
+                else {
+                    let preparedListData = listData
+                    if (showCompletedEvents) {
+                        preparedListData = listData.filter(listItem => listItem.is_complete)
+                    }
+                    if (preparedListData.length == 0) {
+                        caption = 'Вы не завершили ни одного мероприятия'
+                        content = <NotFound additional_caption={caption} />
                     }
                     else {
-                        buttons.push(editButton)
-                    }
+                        content = <ContentList data={preparedListData.map(listItem => {
+                            const buttons = Array()
+                            buttons.push(readMoreButton)
+                            if (listItem.is_complete) {
+                                if (listItem.organizer.id == userData.id) {
+                                    buttons.push(deleteButton)
+                                }
+                            }
+                            else {
+                                buttons.push(editButton)
+                            }
 
-                    const itemData = {
-                        item_info: <EventShortInfo data={listItem} />,
-                        item_buttons: <ListItemButtons buttons={buttons} />
+                            const itemData = {
+                                item_info: <EventShortInfo data={listItem} />,
+                                item_buttons: <ListItemButtons buttons={buttons} />
+                            }
+                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                        })} />
                     }
-                    return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
-                })} />
+                }
                 break
             case routes.create_event:
                 content = <EventForm event_data={null} />
                 break
             default:
-                content = <NotFound additional_caption={eventsCaption} />
+                content = null
                 break
         }
 
         return content
-    }, [location, listData, userData])
-
-    let eventsCaption = ''
-    if (userData !== null) {
-        eventsCaption = userData.is_staff ?
-            'Создайте новое мероприятие или присоединитесь к существующему'
-            :
-            userData.is_superuser ?
-                'Добавьте шаблоны документов согласно СТО вашей организации'
-                :
-                'Присоединитесь к мероприятию по коду приглашения, который вам выслали организаторы мероприятия'
-    }
+    }, [location, listData, userData, showCompletedEvents])
 
     return (
         <Container maxWidth={false} disableGutters sx={{

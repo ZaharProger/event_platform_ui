@@ -1,4 +1,5 @@
 export const defaultState = {
     data: Array(),
-    user: null
+    user: null,
+    show_completed_events: false
 }

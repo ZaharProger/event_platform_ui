@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
-import ContentWrap from './content/contentWrap'
+import ContentWrap from './content/ContentWrap'
 import { backendEndpoints, host, routes } from './routes'
 import NotFound from './notFound/NotFound'
 import Auth from './auth/Auth'
