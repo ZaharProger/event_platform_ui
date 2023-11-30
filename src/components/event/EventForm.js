@@ -12,10 +12,10 @@ import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 
 export default function EventForm(props) {
-    const validateName = useValidation(/^[\w\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/)
-    const [name, setName] = useState(props.data !== null ? props.data.event.name : '')
+    const validateName = useValidation(/^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/)
+    const [name, setName] = useState(props.event_data !== null ? props.event_data.name : '')
 
-    const [isOnline, setIsOnline] = useState(props.data !== null ? props.data.event.is_online : false)
+    const [isOnline, setIsOnline] = useState(props.event_data !== null ? props.event_data.is_online : false)
 
     const [errorResponse, setErrorResponse] = useState(null)
     const getSaveButtonColors = useButton()
@@ -26,7 +26,7 @@ export default function EventForm(props) {
 
     const saveButtonHandler = useCallback(() => {
         const formData = new FormData()
-        document.querySelector('.Event-form').querySelectorAll('input, select').forEach(input => {
+        document.querySelector('.Event-form').querySelectorAll('input, select, textarea').forEach(input => {
             let formValue = input.value
 
             if (input.id.includes('datetime')) {
@@ -35,7 +35,6 @@ export default function EventForm(props) {
                     formValue = timestamp
                 }
             }
-
             formData.set(input.id, formValue)
         })
         formData.set('is_online', document.querySelector('#is_online').checked? '1' : '0')
@@ -113,15 +112,15 @@ export default function EventForm(props) {
                         <Stack direction="column" spacing={2}>
                             <TextField id="name" required
                                 onInput={(event) => setName(event.target.value)}
-                                defaultValue={props.data !== null ? props.data.event.name : ''}
+                                defaultValue={props.event_data !== null ? props.event_data.name : ''}
                                 fullWidth label="Название" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
                             <TextField id="place" fullWidth
-                                defaultValue={props.data !== null ? props.data.event.place : ''}
+                                defaultValue={props.event_data !== null ? props.event_data.place : ''}
                                 label="Место проведения" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
                             <TextField id="description" fullWidth
-                                defaultValue={props.data !== null ? props.data.event.description : ''}
+                                defaultValue={props.event_data !== null ? props.event_data.description : ''}
                                 label="Описание" variant="outlined"
                                 multiline rows={7} color="secondary" sx={{ ...textFieldStyles }} />
                         </Stack>
@@ -158,7 +157,6 @@ export default function EventForm(props) {
                             </Stack>
                             <Stack direction="row" spacing={2}>
                                 <TextField id="datetime_start" required
-                                    onInput={(event) => setName(event.target.value)}
                                     defaultValue={''} type="datetime-local"
                                     fullWidth helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />

@@ -3,25 +3,29 @@ import { Stack, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import LockIcon from '@mui/icons-material/Lock'
 
+import {prepareDatetime} from '../../utils'
+
 export default function EventShortInfo(props) {
     const {name, place, datetime_start, datetime_end, is_complete, secret_code} = props.data
 
     return (
         <Stack spacing={2} justifyContent="flex-start" alignItems="center">
-            <Typography variant="subtitle1" color="secondary"
+            <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
                 display="block" sx={{fontWeight: 'bold'}}>
                 {name}
             </Typography>
-            <Typography variant="subtitle1" color="secondary" display="block">
+            <Typography variant="subtitle1" marginRight="auto!important"
+                color="secondary" display="block">
                 {place}
             </Typography>
             <Typography variant="subtitle1" color="secondary"
+                marginRight="auto!important"
                 display="block" sx={{marginTop: 20}}>
             {
                 datetime_end !== null?
-                `${datetime_start} - ${datetime_end}`
+                `Мероприятие пройдет с ${prepareDatetime(datetime_start)} по ${prepareDatetime(datetime_end)}`
                 :
-                datetime_start
+                `Мероприятие начнется ${prepareDatetime(datetime_start)}`
             }
             </Typography>
             {

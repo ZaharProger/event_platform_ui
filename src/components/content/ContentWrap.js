@@ -50,6 +50,40 @@ export default function ContentWrap() {
         return tools
     }, [userData, location])
 
+    const getContent = useCallback(() => {
+        let content
+        switch (location.pathname) {
+            case routes.home:
+                content = <ContentList data={listData.map(listItem => {
+                    const buttons = Array()
+                    buttons.push(readMoreButton)
+                    if (listItem.is_complete) {
+                        if (listItem.organizer.id == userData.id) {
+                            buttons.push(deleteButton)
+                        }
+                    }
+                    else {
+                        buttons.push(editButton)
+                    }
+
+                    const itemData = {
+                        item_info: <EventShortInfo data={listItem} />,
+                        item_buttons: <ListItemButtons buttons={buttons} />
+                    }
+                    return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                })} />
+                break
+            case routes.create_event:
+                content = <EventForm event_data={null} />
+                break
+            default:
+                content = <NotFound additional_caption={eventsCaption} />
+                break
+        }
+
+        return content
+    }, [location, listData, userData])
+
     let eventsCaption = ''
     if (userData !== null) {
         eventsCaption = userData.is_staff ?
@@ -78,33 +112,11 @@ export default function ContentWrap() {
                     theme.palette.info.main : theme.palette.primary.main,
                 borderRadius: 10,
                 width: '100%',
-                padding: '20px 0',
+                padding: '20px',
                 margin: 'auto'
             }}>
                 {
-                    listData.length != 0 ?
-                        <ContentList data={listData.map(listItem => {
-                            const buttons = [readMoreButton]
-                            if (listItem.is_complete) {
-                                if (listItem.organizer.id == userData.id) {
-                                    buttons.push(deleteButton)
-                                }
-                            }
-                            else {
-                                buttons.push(editButton)
-                            }
-
-                            const itemData = {
-                                item_info: <EventShortInfo data={listItem} />,
-                                item_buttons: <ListItemButtons buttons={buttons} />
-                            }
-                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
-                        })} />
-                        :
-                        location.pathname === routes.create_event ?
-                            <EventForm data={null} />
-                            :
-                            <NotFound additional_caption={eventsCaption} />
+                    getContent()
                 }
             </Container>
             <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>

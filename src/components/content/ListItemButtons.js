@@ -1,4 +1,4 @@
-import { Button, Stack } from '@mui/material'
+import { Button, Stack, SvgIcon } from '@mui/material'
 import React from 'react'
 
 import {v4 as uuidV4} from "uuid"
@@ -15,7 +15,7 @@ export default function ListItemButtons(props) {
                         const buttonColors = getButtonColors(button)
 
                         return <Button key={`button_${uuidV4()}`} 
-                            variant="contained" startIcon={button.icon}
+                            variant="contained" startIcon={<SvgIcon inheritViewBox component={button.icon} />}
                             sx={{
                                 transition: '0.3s ease-out',
                                 ...buttonColors
