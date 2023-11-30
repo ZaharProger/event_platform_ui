@@ -113,7 +113,7 @@ export default function ContentWrap() {
                 borderRadius: 10,
                 width: '100%',
                 padding: '20px',
-                margin: 'auto'
+                margin: 'auto auto 20px auto'
             }}>
                 {
                     getContent()
