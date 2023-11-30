@@ -8,7 +8,7 @@ import { backendEndpoints, host, routes } from './routes'
 import NotFound from './notFound/NotFound'
 import Auth from './auth/Auth'
 import useApi from '../hooks/useApi'
-import { changeUser } from '../redux/actions'
+import { changeData, changeUser } from '../redux/actions'
 
 export default function App() {
     const location = useLocation()
@@ -21,6 +21,9 @@ export default function App() {
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
             if (responseData.status == 200) {
+                callApi(`${host}${backendEndpoints.events}`, 'GET', null, null).then(resData => {
+                    dispatch(changeData(resData.status == 200? resData.data.data : Array()))
+                })
                 if (responseData.data !== userData) {
                     dispatch(changeUser(responseData.data.data))
                 }

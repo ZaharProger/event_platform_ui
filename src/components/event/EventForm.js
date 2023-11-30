@@ -2,11 +2,14 @@ import {
     Stack, Typography, Button, TextField,
     Grid, FormControlLabel, Checkbox
 } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import useButton from '../../hooks/useButton'
 import { saveButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
+import useApi from '../../hooks/useApi'
+import { host, backendEndpoints, routes } from '../routes'
+import { useNavigate } from 'react-router-dom'
 
 export default function EventForm(props) {
     const validateName = useValidation(/^[\w\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/)
@@ -17,6 +20,57 @@ export default function EventForm(props) {
     const [errorResponse, setErrorResponse] = useState(null)
     const getSaveButtonColors = useButton()
     const saveButtonColors = getSaveButtonColors(saveButton)
+
+    const callApi = useApi()
+    const navigate = useNavigate()
+
+    const saveButtonHandler = useCallback(() => {
+        const formData = new FormData()
+        document.querySelector('.Event-form').querySelectorAll('input, select').forEach(input => {
+            let formValue = input.value
+
+            if (input.id.includes('datetime')) {
+                const timestamp = (new Date(input.value).getTime() / 1000).toString()
+                if (timestamp !== 'NaN') {
+                    formValue = timestamp
+                }
+            }
+
+            formData.set(input.id, formValue)
+        })
+        formData.set('is_online', document.querySelector('#is_online').checked? '1' : '0')
+
+        callApi(`${host}${backendEndpoints.events}`, 'POST', formData, null)
+            .then(responseData => {
+                if (responseData.status == 200) {
+                    setErrorResponse(null)
+                    navigate(routes.home)
+                }
+                else {
+                    setErrorResponse(responseData.data.message)
+                }
+            })
+    }, [])
+
+    const selectLabel = <Typography variant="subtitle2"
+        fontSize="0.8em" color="secondary">
+        Тип мероприятия
+    </Typography>
+
+    const checkboxLabel = <Typography variant="subtitle2"
+        fontSize="0.8em" color="secondary">
+        Онлайн мероприятие
+    </Typography>
+
+    const datetimeStartLabel = <Typography variant="subtitle2"
+        fontSize="0.8em" color="secondary">
+        Дата начала
+    </Typography>
+
+    const datetimeEndLabel = <Typography variant="subtitle2"
+        fontSize="0.8em" color="secondary">
+        Дата окончания
+    </Typography>
 
     const textFieldStyles = {
         '& .MuiOutlinedInput-root': {
@@ -66,6 +120,10 @@ export default function EventForm(props) {
                                 defaultValue={props.data !== null ? props.data.event.place : ''}
                                 label="Место проведения" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
+                            <TextField id="description" fullWidth
+                                defaultValue={props.data !== null ? props.data.event.description : ''}
+                                label="Описание" variant="outlined"
+                                multiline rows={7} color="secondary" sx={{ ...textFieldStyles }} />
                         </Stack>
                     </Grid>
                     <Grid item width="600px">
@@ -74,10 +132,7 @@ export default function EventForm(props) {
                                 <TextField
                                     id="event_type"
                                     select
-                                    label={<Typography variant="subtitle2"
-                                        fontSize="0.8em" color="secondary">
-                                        Тип мероприятия
-                                    </Typography>}
+                                    label={selectLabel}
                                     sx={{ ...textFieldStyles }}
                                     defaultValue={eventTypes[0].value}
                                     SelectProps={{
@@ -99,20 +154,17 @@ export default function EventForm(props) {
                                                 color: saveButtonColors[':hover'].backgroundColor,
                                             }
                                         }} />}
-                                    label={<Typography variant="subtitle2"
-                                        fontSize="0.8em" color="secondary">
-                                        Онлайн мероприятие
-                                    </Typography>} />
+                                    label={checkboxLabel} />
                             </Stack>
                             <Stack direction="row" spacing={2}>
                                 <TextField id="datetime_start" required
                                     onInput={(event) => setName(event.target.value)}
                                     defaultValue={''} type="datetime-local"
-                                    fullWidth helperText="Дата и время начала" variant="outlined"
+                                    fullWidth helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="datetime_end" fullWidth
                                     defaultValue={''} type="datetime-local"
-                                    helperText="Дата и время окончания" variant="outlined"
+                                    helperText={datetimeEndLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                             </Stack>
                         </Stack>
