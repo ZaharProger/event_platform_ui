@@ -17,6 +17,7 @@ import { routes } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
 import { changeShowCompletedEvents } from '../../redux/actions'
+import JoinModal from '../joinModal/JoinModal'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -28,6 +29,7 @@ export default function ContentWrap() {
     const dispatch = useDispatch()
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
+    const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
 
     const buildTools = useCallback(() => {
         profileTool.callback = () => setIsProfileOpened(true)
@@ -37,10 +39,12 @@ export default function ContentWrap() {
             if (userData !== null) {
                 if (!userData.is_superuser) {
                     showCompletedEventsTool.callback = () => {
-                        console.log(showCompletedEvents);
                         dispatch(changeShowCompletedEvents(!showCompletedEvents))
                     }
                     tools.unshift(showCompletedEventsTool)
+                    joinTool.callback = () => {
+                        setIsJoinModalOpened(true)
+                    }
                     tools.unshift(joinTool)
                     if (userData.is_staff) {
                         tools.unshift(createTool)
@@ -65,13 +69,16 @@ export default function ContentWrap() {
             case routes.home:
                 if (listData.length == 0) {
                     if (userData !== null) {
-                        caption = userData.is_staff ?
+                        caption = showCompletedEvents?
+                        'Вы не завершили ни одного мероприятия'
+                        :
+                        userData.is_staff ?
                         'Создайте новое мероприятие или присоединитесь к существующему'
                         :
                         userData.is_superuser ?
-                            'Добавьте шаблоны документов согласно СТО вашей организации'
-                            :
-                            'Присоединитесь к мероприятию по коду приглашения'
+                        'Добавьте шаблоны документов согласно СТО вашей организации'
+                        :
+                        'Присоединитесь к мероприятию по коду приглашения'
                     }
                     content = <NotFound additional_caption={caption} />
                 }
@@ -98,7 +105,10 @@ export default function ContentWrap() {
                             }
 
                             const itemData = {
-                                item_info: <EventShortInfo data={listItem} />,
+                                item_info: <EventShortInfo data={{
+                                    event_info: listItem,
+                                    user: userData
+                                }} />,
                                 item_buttons: <ListItemButtons buttons={buttons} />
                             }
                             return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
@@ -144,6 +154,7 @@ export default function ContentWrap() {
             <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>
                 <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
             </Drawer>
+            <JoinModal is_opened={isJoinModalOpened} close_callback={() => setIsJoinModalOpened(false)} />
             <Footer />
         </Container>
     )

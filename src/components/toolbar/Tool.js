@@ -29,7 +29,7 @@ export default function Tool(props) {
                 navigate(route)
             }
         }
-    }, [])
+    }, [props.data])
 
     return (
         <div className="Tool" onClick={() => toolClickHandler()} style={{

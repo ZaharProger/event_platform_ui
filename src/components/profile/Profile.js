@@ -1,5 +1,5 @@
 import { Stack, Typography, Button, TextField, Grid, useMediaQuery } from '@mui/material'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
 import { resetButton, saveButton, signOutButton } from '../buttons'
@@ -9,14 +9,19 @@ import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 import useValidation from '../../hooks/useValidation'
+import useError from '../../hooks/useError'
 
 export default function Profile(props) {
-    const [name, setName] = useState(props.data !== null ? props.data.user.name : '')
-    const [email, setEmail] = useState(props.data !== null ? props.data.user.email : '')
-    const validateName = useValidation(/^[A-Za-zА-Яа-я\s-]+$/)
-    const validateEmail = useValidation(/^[a-z\d._-]+@[a-z\d_-]+\.[a-z]+$/)
+    const nameValidation = useValidation(
+        props.data !== null ? props.data.user.name : '',
+        /^[A-Za-zА-Яа-я\s-]+$/
+    )
+    const emailValidation = useValidation(
+        props.data !== null ? props.data.user.email : '',
+        /^[a-z\d._-]+@[a-z\d_-]+\.[a-z]+$/
+    )
 
-    const [errorResponse, setErrorResponse] = useState(null)
+    const errorMessage = useError()
 
     const callApi = useApi()
     const navigate = useNavigate()
@@ -60,11 +65,11 @@ export default function Profile(props) {
             'Content-Type': 'application/json'
         }).then(responseData => {
             if (responseData.status == 200) {
-                setErrorResponse(null)
+                errorMessage.set(null)
                 window.location.reload()
             }
             else {
-                setErrorResponse(responseData.data.message)
+                errorMessage.set(responseData.data.message)
             }
         })
     }, [])
@@ -99,12 +104,12 @@ export default function Profile(props) {
                         <Grid item marginTop="40px" width="400px">
                             <Stack direction="column" spacing={2}>
                                 <TextField id="name" required
-                                    onInput={(event) => setName(event.target.value)}
+                                    onInput={(event) => nameValidation.set(event.target.value)}
                                     defaultValue={props.data !== null ? props.data.user.name : ''}
                                     fullWidth label="ФИО" variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="email" fullWidth required
-                                    onInput={(event) => setEmail(event.target.value)}
+                                    onInput={(event) => emailValidation.set(event.target.value)}
                                     defaultValue={props.data !== null ? props.data.user.email : ''}
                                     label="E-mail" variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
@@ -127,7 +132,7 @@ export default function Profile(props) {
                     </Grid>
                     <Grid item>
                         <Button variant="contained"
-                            disabled={!(validateName(name) && validateEmail(email))}
+                            disabled={!(nameValidation.validate() && emailValidation.validate())}
                             disableElevation
                             sx={{
                                 fontSize: '0.8em',
@@ -141,11 +146,11 @@ export default function Profile(props) {
                         </Button>
                     </Grid>
                     {
-                        errorResponse !== null ?
+                        errorMessage.get() !== null ?
                             <Typography variant="subtitle2" display="block"
                                 color="error" textAlign="center">
                                 {
-                                    errorResponse
+                                    errorMessage.get()
                                 }
                             </Typography>
                             :

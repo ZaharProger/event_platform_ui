@@ -2,22 +2,24 @@ import {
     Stack, Typography, Button, TextField,
     Grid, FormControlLabel, Checkbox
 } from '@mui/material'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
 import { saveButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
+import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 
 export default function EventForm(props) {
-    const validateName = useValidation(/^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/)
-    const [name, setName] = useState(props.event_data !== null ? props.event_data.name : '')
+    const nameValidation = useValidation(
+        props.event_data !== null ? props.event_data.name : '', 
+        /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
+    )
+    const errorMessage = useError()
+    const isOnline = useValidation(props.event_data !== null ? props.event_data.is_online : false, null)
 
-    const [isOnline, setIsOnline] = useState(props.event_data !== null ? props.event_data.is_online : false)
-
-    const [errorResponse, setErrorResponse] = useState(null)
     const getSaveButtonColors = useButton()
     const saveButtonColors = getSaveButtonColors(saveButton)
 
@@ -42,11 +44,11 @@ export default function EventForm(props) {
         callApi(`${host}${backendEndpoints.events}`, 'POST', formData, null)
             .then(responseData => {
                 if (responseData.status == 200) {
-                    setErrorResponse(null)
+                    errorMessage.set(null)
                     navigate(routes.home)
                 }
                 else {
-                    setErrorResponse(responseData.data.message)
+                    errorMessage.set(responseData.data.message)
                 }
             })
     }, [])
@@ -110,8 +112,8 @@ export default function EventForm(props) {
                 <Grid direction="row" md spacing={3} item container>
                     <Grid item width="500px">
                         <Stack direction="column" spacing={2} useFlexGap flexWrap="wrap">
-                            <TextField id="name" required
-                                onInput={(event) => setName(event.target.value)}
+                            <TextField id="name" required autoFocus
+                                onInput={(event) => nameValidation.set(event.target.value)}
                                 defaultValue={props.event_data !== null ? props.event_data.name : ''}
                                 fullWidth label="Название" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
@@ -145,8 +147,8 @@ export default function EventForm(props) {
                                 </TextField>
                                 <FormControlLabel sx={{ display: 'flex', alignItems: 'center' }}
                                     control={<Checkbox id="is_online"
-                                        onChange={() => setIsOnline(!isOnline)}
-                                        checked={isOnline}
+                                        onChange={() => isOnline.set(!isOnline.get())}
+                                        checked={isOnline.get()}
                                         sx={{
                                             color: saveButtonColors.backgroundColor,
                                             "&.Mui-checked": {
@@ -170,7 +172,7 @@ export default function EventForm(props) {
                 </Grid>
                 <Grid item>
                     <Button variant="contained"
-                        disabled={!validateName(name)}
+                        disabled={!nameValidation.validate()}
                         disableElevation
                         sx={{
                             fontSize: '0.8em',
@@ -184,11 +186,11 @@ export default function EventForm(props) {
                     </Button>
                 </Grid>
                 {
-                    errorResponse !== null ?
+                    errorMessage.get() !== null ?
                         <Typography variant="subtitle2" display="block"
                             color="error" textAlign="center">
                             {
-                                errorResponse
+                                errorMessage.get()
                             }
                         </Typography>
                         :

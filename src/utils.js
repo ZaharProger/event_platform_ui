@@ -1,10 +1,10 @@
 export const prepareDatetime = (datetime) => {
     const datetimeObject = new Date(datetime * 1000)
-    const preparedDate = [
-        datetimeObject.getDate(),
-        datetimeObject.getMonth(),
-        datetimeObject.getFullYear()
-    ].join('.')
+    const preparedDate = datetimeObject.toLocaleDateString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    })
 
     let hours = datetimeObject.getHours()
     hours = hours < 10? `0${hours}` : hours

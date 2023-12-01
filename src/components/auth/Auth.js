@@ -8,21 +8,30 @@ import { signInButton } from '../buttons'
 import { helpTool, backTool } from '../toolbar/tools'
 import Tool from '../toolbar/Tool'
 import useValidation from '../../hooks/useValidation'
+import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host, routes } from '../routes'
 
 export default function Auth() {
     const [isHelpOpened, setIsHelpOpened] = useState(false)
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [errorResponse, setErrorResponse] = useState(null)
+    const usernameValidation = useValidation('', /^[A-Za-z0-9!]+$/)
+    const passwordValidation = useValidation('', /^[A-Za-z0-9!]+$/)
+    const errorMessage = useError()
 
     const isMobile = useMediaQuery('(max-width: 1000px)')
     const theme = useTheme()
-    const validate = useValidation(/^[A-Za-z0-9!]+$/)
 
     const callApi = useApi()
     const navigate = useNavigate()
+
+    const preparedBackTool = {
+        ...backTool,
+        callback: () => setIsHelpOpened(false)
+    }
+    const preparedHelpTool = {
+        ...helpTool,
+        callback: () => setIsHelpOpened(true)
+    }
 
     const getButtonColors = useButton()
     const buttonColors = getButtonColors(signInButton)
@@ -31,8 +40,11 @@ export default function Auth() {
         "& label.Mui-focused": {
             color: `${buttonColors.backgroundColor}!important`
         },
-        "& .MuiInput-underline:after": {
+        "& .MuiInput-underline:before": {
             borderBottomColor: `${buttonColors.backgroundColor}!important`
+        },
+        "& .MuiInput-underline::after": {
+            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
         },
         "& .MuiInput-underline:hover:before": {
             borderBottomColor: `${buttonColors.backgroundColor}!important`
@@ -47,14 +59,14 @@ export default function Auth() {
 
         callApi(`${host}${backendEndpoints.auth}`, 'POST', formData, null).then(responseData => {
             if (responseData.status == 200) {
-                setErrorResponse(null)
+                errorMessage.set(null)
                 navigate(routes.home)
             }
             else {
-                setErrorResponse(responseData.data.message)
+                errorMessage.set(responseData.data.message)
             }
         })
-    }, [username, password, isHelpOpened])
+    }, [isHelpOpened])
 
     return (
         <Container maxWidth="lg" sx={{
@@ -76,14 +88,15 @@ export default function Auth() {
                         <Stack direction="column" spacing={1} 
                             justifyContent="center" alignItems="center">
                             <TextField id="username" label="Ваш логин"
-                                onInput={(event) => setUsername(event.target.value)}
+                                onInput={(event) => usernameValidation.set(event.target.value)}
                                 variant="standard" color="secondary" sx={{...textFieldStyles}} />
                             <TextField id="password" label="Ваш пароль" type="password"
-                                onInput={(event) => setPassword(event.target.value)}
+                                onInput={(event) => passwordValidation.set(event.target.value)}
                                 variant="standard" color="secondary" sx={{...textFieldStyles}} />
                         </Stack>
                         <Button variant="contained" 
-                            disabled={!(validate(username) && validate(password))} 
+                            disabled={!(usernameValidation.validate() && 
+                                passwordValidation.validate())} 
                             disableElevation 
                             sx={{
                                 padding: '8px 80px',
@@ -95,11 +108,11 @@ export default function Auth() {
                             }
                         </Button>
                         {
-                            errorResponse !== null?
+                            errorMessage.get() !== null?
                             <Typography variant="subtitle2" display="block" 
                                 color="error" textAlign="center">
                                 {
-                                    errorResponse
+                                    errorMessage.get()
                                 }
                             </Typography>
                             :
@@ -122,10 +135,7 @@ export default function Auth() {
                         </Typography>
                     </Stack>
                 </Fade>
-                <Tool data={{
-                    tool: isHelpOpened? backTool : helpTool,
-                    callback: () => setIsHelpOpened(!isHelpOpened)
-                }} />
+                <Tool data={isHelpOpened? preparedBackTool : preparedHelpTool} />
             </Stack>
         </Container>
     )
