@@ -15,6 +15,7 @@ export default function ListItemButtons(props) {
                         const buttonColors = getButtonColors(button)
 
                         return <Button key={`button_${uuidV4()}`} 
+                            onClick={() => button.callback()}
                             variant="contained" startIcon={<SvgIcon inheritViewBox component={button.icon} />}
                             sx={{
                                 transition: '0.3s ease-out',

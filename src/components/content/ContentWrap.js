@@ -18,6 +18,7 @@ import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
 import { changeShowCompletedEvents } from '../../redux/actions'
 import JoinModal from '../joinModal/JoinModal'
+import MoreModal from '../moreModal/MoreModal'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -30,6 +31,7 @@ export default function ContentWrap() {
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
+    const [openedEvent, setOpenedEvent] = useState(null)
 
     const buildTools = useCallback(() => {
         profileTool.callback = () => setIsProfileOpened(true)
@@ -94,7 +96,13 @@ export default function ContentWrap() {
                     else {
                         content = <ContentList data={preparedListData.map(listItem => {
                             const buttons = Array()
-                            buttons.push(readMoreButton)
+
+                            const listItemReadMoreButton = {
+                                ...readMoreButton,
+                                callback: () => setOpenedEvent(listItem)
+                            }
+
+                            buttons.push(listItemReadMoreButton)
                             if (listItem.is_complete) {
                                 if (listItem.organizer.id == userData.id) {
                                     buttons.push(deleteButton)
@@ -155,6 +163,10 @@ export default function ContentWrap() {
                 <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
             </Drawer>
             <JoinModal is_opened={isJoinModalOpened} close_callback={() => setIsJoinModalOpened(false)} />
+            <MoreModal is_opened={openedEvent !== null} data={{
+                event_info: listData,
+                user: userData
+            }} close_callback={() => setOpenedEvent(null)} />
             <Footer />
         </Container>
     )

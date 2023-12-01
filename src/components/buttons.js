@@ -29,6 +29,11 @@ export const cancelButton = {
     label: 'Отменить'
 }
 
+export const closeButton = {
+    icon: null,
+    label: 'Закрыть'
+}
+
 export const applyButton = {
     icon: null,
     label: 'Применить'
