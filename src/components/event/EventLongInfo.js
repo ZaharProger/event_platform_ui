@@ -98,9 +98,9 @@ export default function EventLongInfo(props) {
             }
             <Typography variant="caption" marginRight="auto!important"
                 color="secondary" display="block" fontSize="0.8em">
-                    {
-                        isOrganizer? 'Вы создали это мероприятие' : 'Вы вступили по коду приглашения'
-                    }
+                {
+                    isOrganizer? 'Вы создали это мероприятие' : 'Вы вступили по коду приглашения'
+                }
             </Typography>
             <Typography variant="subtitle1" marginRight="auto!important"
                 color="secondary" display="block" fontSize="0.8em">
