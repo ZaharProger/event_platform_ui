@@ -96,18 +96,12 @@ export default function EventLongInfo(props) {
                     :
                     null
             }
-            {
-                isOrganizer ?
-                    <Typography variant="caption" marginRight="auto!important"
-                        color="secondary" display="block" fontSize="0.8em">
-                        Вы создали это мероприятие
-                    </Typography>
-                    :
-                    <Typography variant="caption" marginRight="auto!important"
-                        color="secondary" display="block" fontSize="0.8em">
-                        Вы вступили по коду приглашения
-                    </Typography>
-            }
+            <Typography variant="caption" marginRight="auto!important"
+                color="secondary" display="block" fontSize="0.8em">
+                    {
+                        isOrganizer? 'Вы создали это мероприятие' : 'Вы вступили по коду приглашения'
+                    }
+            </Typography>
             <Typography variant="subtitle1" marginRight="auto!important"
                 color="secondary" display="block" fontSize="0.8em">
                 {
