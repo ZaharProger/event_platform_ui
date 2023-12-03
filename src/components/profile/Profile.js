@@ -1,15 +1,15 @@
-import { Stack, Typography, Button, TextField, Grid, useMediaQuery } from '@mui/material'
+import { Stack, Typography, TextField, Grid, useMediaQuery } from '@mui/material'
 import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
 import { resetButton, saveButton, signOutButton } from '../buttons'
-import Tool from '../toolbar/Tool'
 import { backTool } from '../toolbar/tools'
 import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
+import useColors from '../../hooks/useColors'
 
 export default function Profile(props) {
     const nameValidation = useValidation(
@@ -27,30 +27,20 @@ export default function Profile(props) {
     const navigate = useNavigate()
 
     const isMobile = useMediaQuery('(max-width: 1000px)')
-
-    const getSaveButtonColors = useButton()
-    const getResetButtonColors = useButton()
-    const getSignOutButtonColors = useButton()
-
-    const saveButtonColors = getSaveButtonColors(saveButton)
-    const resetButtonColors = getResetButtonColors(resetButton)
-    const signOutButtonColors = getSignOutButtonColors(signOutButton)
-
-    const profileBackTool = {
-        ...backTool,
-        callback: () => props.close_callback()
-    }
+    
+    const getColors = useColors()
+    const buttonColors = getColors(saveButton)
 
     const textFieldStyles = {
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
-                borderColor: saveButtonColors.backgroundColor,
+                borderColor: buttonColors.backgroundColor,
             },
             '&:hover fieldset': {
-                borderColor: saveButtonColors.backgroundColor,
+                borderColor: buttonColors.backgroundColor,
             },
             '&.Mui-focused fieldset': {
-                borderColor: saveButtonColors[':hover'].backgroundColor,
+                borderColor: buttonColors[':hover'].backgroundColor,
             },
         }
     }
@@ -82,6 +72,9 @@ export default function Profile(props) {
         })
     }, [])
 
+    const getButton = useButton(false)
+    const getTool = useButton(true)
+
     return (
         <Stack className="Profile" direction="column" spacing={5} padding="20px">
             <Stack direction="row" spacing={2}>
@@ -89,7 +82,9 @@ export default function Profile(props) {
                     gutterBottom textAlign='start' margin="auto!important">
                     Ваш профиль
                 </Typography>
-                <Tool data={profileBackTool} />
+                {
+                    getTool(backTool, () => props.close_callback())
+                }
             </Stack>
             <Grid direction="row" container>
                 <Grid direction="column" spacing={3} item container>
@@ -131,19 +126,13 @@ export default function Profile(props) {
                         </Grid>
                     </Grid>
                     <Grid item>
-                        <Button variant="contained"
-                            disabled={!(nameValidation.validate() && emailValidation.validate())}
-                            disableElevation
-                            sx={{
-                                fontSize: '0.8em',
-                                padding: '8px 50px',
-                                transition: '0.3s ease-out',
-                                ...saveButtonColors
-                            }} onClick={() => saveButtonHandler()}>
-                            {
-                                saveButton.label
-                            }
-                        </Button>
+                        {
+                            getButton(
+                                saveButton, 
+                                () => saveButtonHandler(), 
+                                () => !(nameValidation.validate() && emailValidation.validate())
+                            )
+                        }
                     </Grid>
                     {
                         errorMessage.get() !== null ?
@@ -166,32 +155,16 @@ export default function Profile(props) {
                 </Typography>
                 <Stack direction="row" useFlexGap flexWrap="wrap"
                     marginLeft="auto!important" spacing={2}>
-                    <Button variant="contained"
-                        disableElevation
-                        sx={{
-                            width: isMobile ? '100%' : 'auto',
-                            fontSize: '0.8em',
-                            padding: '8px 80px',
-                            transition: '0.3s ease-out',
-                            ...resetButtonColors
-                        }} onClick={() => console.log('1')}>
-                        {
-                            resetButton.label
-                        }
-                    </Button>
-                    <Button variant="contained"
-                        disableElevation
-                        sx={{
-                            width: isMobile ? '100%' : 'auto',
-                            fontSize: '0.8em',
-                            padding: '8px 80px',
-                            transition: '0.3s ease-out',
-                            ...signOutButtonColors
-                        }} onClick={() => signOutButtonHandler()}>
-                        {
-                            signOutButton.label
-                        }
-                    </Button>
+                    {
+                        getButton(resetButton, () => console.log(1), null, {
+                            width: isMobile ? '100%' : 'auto'
+                        })
+                    }
+                    {
+                        getButton(signOutButton, () => signOutButtonHandler(), null, {
+                            width: isMobile ? '100%' : 'auto'
+                        })
+                    }
                 </Stack>
             </Stack>
         </Stack>

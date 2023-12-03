@@ -9,8 +9,14 @@ export default function EventShortInfo(props) {
         is_complete, users } = props.data.event_info
     const { user } = props.data.user
 
+    const isOrganizer = users.filter(eventUser => eventUser.user.id === user.id
+        && eventUser.is_organizer).length != 0
+    const eventOrganizer = users.filter(eventUser => {
+        return eventUser.is_organizer
+    })[0]
+
     return (
-        <Stack spacing={1} justifyContent="flex-start" alignItems="center">
+        <Stack spacing={1} justifyContent="flex-start" alignItems="center" width="100%">
             <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
                 display="block" sx={{ fontWeight: 'bold' }}>
                 {name}
@@ -35,19 +41,15 @@ export default function EventShortInfo(props) {
                         justifyContent="center" alignItems="center">
                         <Stack direction="row" spacing={3} marginLeft="auto!important"
                             justifyContent="center" alignItems="center">
-                            {
-                                users.filter(eventUser => eventUser.user.id === user.id
-                                    && eventUser.is_organizer).length != 0 ?
-                                    <Typography variant="caption" marginLeft="auto!important"
-                                        color="secondary" display="block">
-                                        Вы создали это мероприятие
-                                    </Typography>
-                                    :
-                                    <Typography variant="caption" marginLeft="auto!important"
-                                        color="secondary" display="block">
-                                        Вы вступили по коду приглашения
-                                    </Typography>
-                            }
+                            <Typography variant="caption" marginLeft="auto!important"
+                                color="secondary" display="block">
+                                {
+                                    isOrganizer ?
+                                        'Вы создатель мероприятия'
+                                        :
+                                        `Создатель мероприятия: ${eventOrganizer.user.name}`
+                                }
+                            </Typography>
                         </Stack>
                         {
                             is_complete ?

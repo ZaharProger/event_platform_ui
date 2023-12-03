@@ -1,5 +1,5 @@
 import {
-    Stack, Typography, Button, TextField,
+    Stack, Typography, TextField,
     Grid, FormControlLabel, Checkbox
 } from '@mui/material'
 import React, { useCallback } from 'react'
@@ -11,23 +11,47 @@ import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
+import { prepareDatetime } from '../../utils'
+import useColors from '../../hooks/useColors'
 
 export default function EventForm(props) {
     const nameValidation = useValidation(
-        props.event_data !== null ? props.event_data.name : '', 
+        props.event_data !== null ? props.event_data.name : '',
+        /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
+    )
+    const placeValidation = useValidation(
+        props.event_data !== null ? props.event_data.place : '',
         /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
     )
     const errorMessage = useError()
     const isOnline = useValidation(props.event_data !== null ? props.event_data.is_online : false, null)
+    const eventTypes = [
+        {
+            value: 'С индивидуальным участием',
+            id: 1
+        },
+        {
+            value: 'Командное участие',
+            id: 2
+        }
+    ]
+    const eventType = useValidation(
+        props.event_data !== null ? 
+            eventTypes.filter(type => type.value == props.event_data.event_type)[0].value 
+            :
+            eventTypes[0].value
+    )
 
-    const getSaveButtonColors = useButton()
-    const saveButtonColors = getSaveButtonColors(saveButton)
+    const getButton = useButton(false)
+    
+    const getColors = useColors()
+    const saveButtonColors = getColors(saveButton)
 
     const callApi = useApi()
     const navigate = useNavigate()
 
     const saveButtonHandler = useCallback(() => {
-        const formData = new FormData()
+        const bodyData = props.is_edit ? {} : new FormData()
         document.querySelector('.Event-form').querySelectorAll('input, select, textarea').forEach(input => {
             let formValue = input.value
 
@@ -37,21 +61,49 @@ export default function EventForm(props) {
                     formValue = timestamp
                 }
             }
-            formData.set(input.id, formValue)
+            if (props.is_edit) {
+                bodyData[input.id] = formValue
+            }
+            else {
+                bodyData.set(input.id, formValue)
+            }
         })
-        formData.set('is_online', document.querySelector('#is_online').checked? '1' : '0')
 
-        callApi(`${host}${backendEndpoints.events}`, 'POST', formData, null)
+        const checkboxValue = document.querySelector('#is_online').checked ? '1' : '0'
+        if (props.is_edit) {
+            bodyData['id'] = props.event_data.id
+            bodyData['is_online'] = checkboxValue
+        }
+        else {
+            bodyData.set('is_online', checkboxValue)
+        }
+
+        const method = props.is_edit ? 'PUT' : 'POST'
+        const requestData = props.is_edit ? JSON.stringify(bodyData) : bodyData
+        const headers = props.is_edit? {'Content-Type': 'application/json'} : null
+        
+        callApi(`${host}${backendEndpoints.events}`, method, requestData, headers)
             .then(responseData => {
                 if (responseData.status == 200) {
                     errorMessage.set(null)
-                    navigate(routes.home)
+                    if (props.is_edit) {
+                        window.location.reload()
+                    }
+                    else {
+                        navigate(`${routes.event_card}${responseData.data.data.id}`)
+                    }
                 }
                 else {
                     errorMessage.set(responseData.data.message)
                 }
             })
     }, [])
+
+    const button = getButton(
+        saveButton, 
+        () => saveButtonHandler(), 
+        () => !(placeValidation.validate() && nameValidation.validate())
+    )
 
     const selectLabel = <Typography variant="subtitle2"
         fontSize="0.8em" color="secondary">
@@ -88,17 +140,6 @@ export default function EventForm(props) {
         }
     }
 
-    const eventTypes = [
-        {
-            value: 'С индивидуальным участием',
-            id: 1
-        },
-        {
-            value: 'Командное участие',
-            id: 2
-        }
-    ]
-
     return (
         <Grid className="Event-form" direction="column" container>
             <Grid direction="column" spacing={3} item container>
@@ -117,7 +158,8 @@ export default function EventForm(props) {
                                 defaultValue={props.event_data !== null ? props.event_data.name : ''}
                                 fullWidth label="Название" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
-                            <TextField id="place" fullWidth
+                            <TextField id="place" fullWidth required
+                                onInput={(event) => placeValidation.set(event.target.value)}
                                 defaultValue={props.event_data !== null ? props.event_data.place : ''}
                                 label="Место проведения" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
@@ -135,7 +177,8 @@ export default function EventForm(props) {
                                     select
                                     label={selectLabel}
                                     sx={{ ...textFieldStyles }}
-                                    defaultValue={eventTypes[0].value}
+                                    onChange={(event) => eventType.set(event.target.value)}                                   
+                                    defaultValue={eventType.get()}
                                     SelectProps={{
                                         native: true,
                                     }}>
@@ -159,11 +202,15 @@ export default function EventForm(props) {
                             </Stack>
                             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
                                 <TextField id="datetime_start" required
-                                    defaultValue={''} type="datetime-local"
+                                    defaultValue={props.event_data !== null ? 
+                                        prepareDatetime(props.event_data.datetime_start, true) : ''} 
+                                    type="datetime-local"
                                     fullWidth helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="datetime_end" fullWidth
-                                    defaultValue={''} type="datetime-local"
+                                    defaultValue={props.event_data !== null ? 
+                                        prepareDatetime(props.event_data.datetime_end, true) : ''} 
+                                    type="datetime-local"
                                     helperText={datetimeEndLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                             </Stack>
@@ -171,19 +218,9 @@ export default function EventForm(props) {
                     </Grid>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained"
-                        disabled={!nameValidation.validate()}
-                        disableElevation
-                        sx={{
-                            fontSize: '0.8em',
-                            padding: '8px 50px',
-                            transition: '0.3s ease-out',
-                            ...saveButtonColors
-                        }} onClick={() => saveButtonHandler()}>
-                        {
-                            saveButton.label
-                        }
-                    </Button>
+                    {
+                        button
+                    }
                 </Grid>
                 {
                     errorMessage.get() !== null ?

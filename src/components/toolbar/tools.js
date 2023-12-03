@@ -89,14 +89,14 @@ export const completeTool = {
     route: null
 }
 
-export const leaderIdButton = {
-    label: 'Leader ID',
+export const publishTool = {
+    label: 'Опубликовать',
     icon: ShareRoundedIcon,
     type: toolTypes.button,
     route: null
 }
 
-export const downloadButton = {
+export const downloadTool = {
     label: 'Выгрузить',
     icon: DownloadForOfflineIcon,
     type: toolTypes.button,

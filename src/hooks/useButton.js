@@ -1,27 +1,69 @@
-import { useTheme } from "@mui/material"
-import { unpinButton, deleteButton, cancelButton, 
-    excludeButton, signOutButton } from "../components/buttons"
+import { SvgIcon, Button } from "@mui/material"
+import { v4 as uuidV4 } from "uuid"
+import { useNavigate } from "react-router-dom"
 
-export default function useButton() {
-    const theme = useTheme()
-    return function(button) {
-        const negativeButtons = [
-            deleteButton, unpinButton, cancelButton, 
-            excludeButton, signOutButton
-        ]
-        const isNegativeButton = negativeButtons.includes(button)
-        const buttonBackgroundColor = isNegativeButton? 
-            theme.palette.error.main : theme.palette.secondary.main
-        const buttonTextColor = theme.palette.primary.main
-        const hoverButtonBackgroundColor = isNegativeButton? 
-            theme.palette.error.main : theme.palette.action.main
+import Tool from "../components/toolbar/Tool"
+import useColors from './useColors'
 
-        return {
-            backgroundColor: buttonBackgroundColor,
-            color: buttonTextColor,
-            ":hover": {
-                backgroundColor: hoverButtonBackgroundColor
+export default function useButton(isTool) {
+    const getColors = useColors()
+    const navigate = useNavigate()
+
+    return isTool? function (tool, custom_callback=null, additional_styles={}) {
+        let component = null
+        const callback = custom_callback === null ?
+            () => {
+                if (tool.route !== null) {
+                    navigate(tool.route)
+                }
             }
+            :
+            () => custom_callback()
+        const colors = getColors(tool, isTool)
+
+        const toolData = {
+            ...tool,
+            colors,
+            callback,
+            additional_styles
         }
+
+        component = <Tool key={`tool_${uuidV4()}`} data={toolData} />
+
+        return component
+    }
+    :
+    function (button, custom_callback=null, validation=null, additional_styles={}) {
+        let component = null
+        const callback = custom_callback === null ?
+            () => {
+                if (button.route !== null) {
+                    navigate(button.route)
+                }
+            }
+            :
+            () => custom_callback()
+        const colors = getColors(button, isTool)
+
+
+        component = <Button key={`button_${uuidV4()}`}
+            disableElevation
+            disabled={validation !== null? validation() : false}
+            onClick={() => callback()}
+            variant="contained" 
+            startIcon={button.icon === null? null : <SvgIcon inheritViewBox component={button.icon} />}
+            sx={{
+                fontSize: '0.8em',
+                padding: '8px 40px',
+                transition: '0.3s ease-out',
+                ...colors,
+                ...additional_styles
+            }}>
+            {
+                button.label
+            }
+        </Button>
+
+        return component
     }
 }

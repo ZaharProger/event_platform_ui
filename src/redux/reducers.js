@@ -1,5 +1,5 @@
 import { defaultState } from "./initialState"
-import {DATA, SHOW_COMPLETED_EVENTS, USER} from './constants'
+import {DATA, SELECTED_CARD_TAB, SHOW_COMPLETED_EVENTS, USER} from './constants'
 
 export function defaultReducer(state=defaultState, action) {
     switch(action.type) {
@@ -17,6 +17,11 @@ export function defaultReducer(state=defaultState, action) {
             return {
                 ...state,
                 show_completed_events: action.show_completed_events
+            }
+        case SELECTED_CARD_TAB:
+            return {
+                ...state,
+                selected_card_tab: action.selected_card_tab
             }
         default:
             return state

@@ -1,12 +1,13 @@
 import { useTheme } from '@emotion/react'
-import { Container, Stack } from '@mui/material'
+import { Container, Stack, useMediaQuery } from '@mui/material'
 import React from 'react'
 
 export default function ContentListItem(props) {
     const theme = useTheme()
+    const isMobile = useMediaQuery('(max-width: 1000px)')
 
     return (
-        <Stack direction="row" spacing={8} width="100%"
+        <Stack direction={isMobile? 'column' : 'row'} spacing={8} width="100%"
             justifyContent="center" alignItems="center">
                 <Container maxWidth="sm" sx={{
                     display: 'flex',

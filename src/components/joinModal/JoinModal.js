@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import {
     Dialog, DialogTitle, DialogContentText, TextField,
-    Button, DialogContent, DialogActions, Typography
+    DialogContent, DialogActions, Typography
 } from '@mui/material'
 import useButton from '../../hooks/useButton'
 import { cancelButton, continueButton } from '../buttons'
@@ -9,6 +9,7 @@ import useValidation from '../../hooks/useValidation'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host } from '../routes'
 import useError from '../../hooks/useError'
+import useColors from '../../hooks/useColors'
 
 export default function JoinModal(props) {
     const callApi = useApi()
@@ -16,23 +17,21 @@ export default function JoinModal(props) {
     const {set: setFieldValue, validate, get: getFieldValue} = useValidation('', /^[A-Z0-9]{8}$/)
     const errorMessage = useError()
 
-    const getCancelButtonColors = useButton()
-    const cancelButtonColors = getCancelButtonColors(cancelButton)
-    const getContinueButtonColors = useButton()
-    const continueButtonColors = getContinueButtonColors(continueButton)
+    const getButtonColors = useColors()
+    const buttonColors = getButtonColors(continueButton)
 
     const textFieldStyles = {
         "& label.Mui-focused": {
-            color: `${continueButtonColors.backgroundColor}!important`
+            color: `${buttonColors.backgroundColor}!important`
         },
         "& .MuiInput-underline:before": {
-            borderBottomColor: `${continueButtonColors.backgroundColor}!important`
+            borderBottomColor: `${buttonColors.backgroundColor}!important`
         },
         "& .MuiInput-underline::after": {
-            borderBottomColor: `${continueButtonColors[':hover'].backgroundColor}!important`
+            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
         },
         "& .MuiInput-underline:hover:before": {
-            borderBottomColor: `${continueButtonColors.backgroundColor}!important`
+            borderBottomColor: `${buttonColors.backgroundColor}!important`
         }
     }
 
@@ -47,6 +46,8 @@ export default function JoinModal(props) {
                 }
             })
     }, [getFieldValue()])
+
+    const getButton = useButton(false)
 
     return (
         <Dialog open={props.is_opened} onClose={props.close_callback}>
@@ -73,29 +74,12 @@ export default function JoinModal(props) {
                 }
             </DialogContent>
             <DialogActions>
-                <Button variant="contained"
-                    disableElevation
-                    sx={{
-                        padding: '8px 80px',
-                        transition: '0.3s ease-out',
-                        ...cancelButtonColors
-                    }} onClick={() => props.close_callback()}>
-                    {
-                        cancelButton.label
-                    }
-                </Button>
-                <Button variant="contained"
-                    disabled={!validate()}
-                    disableElevation
-                    sx={{
-                        padding: '8px 80px',
-                        transition: '0.3s ease-out',
-                        ...continueButtonColors
-                    }} onClick={() => continueButtonHandler()}>
-                    {
-                        continueButton.label
-                    }
-                </Button>
+                {
+                    getButton(cancelButton, () => props.close_callback())
+                }
+                {
+                    getButton(continueButton, () => continueButtonHandler(), () => !validate())
+                }
             </DialogActions>
         </Dialog>
     )

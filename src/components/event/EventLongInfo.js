@@ -5,8 +5,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { prepareDatetime } from '../../utils'
 
 export default function EventLongInfo(props) {
-    const { name, place, datetime_start, datetime_end, users,
-        is_complete, description, is_online, event_type, secret_code } = props.data.event_info[0]
+    const { place, datetime_start, datetime_end, users,
+        is_complete, description, is_online, event_type } = props.data.event_info[0]
     const { user } = props.data.user
 
     const isOrganizer = users.filter(eventUser => {
@@ -14,12 +14,12 @@ export default function EventLongInfo(props) {
             && eventUser.is_organizer
     }).length != 0
 
+    const eventOrganizer = users.filter(eventUser => {
+        return eventUser.is_organizer
+    })[0]
+
     return (
         <Stack spacing={1} justifyContent="flex-start" alignItems="center">
-            <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
-                display="block" sx={{ fontWeight: 'bold' }}>
-                {name}
-            </Typography>
             {
                 place !== null ?
                     <Typography variant="subtitle1" marginRight="auto!important"
@@ -80,6 +80,24 @@ export default function EventLongInfo(props) {
                     </>
                 }
             </Typography>
+            <Typography variant="caption" marginRight="auto!important"
+                color="secondary" display="block" fontSize="0.8em">
+                {
+                    isOrganizer ?
+                        'Вы создатель мероприятия'
+                        :
+                        <>
+                            <span style={{ fontWeight: 'bold' }}>Создатель мероприятия</span>
+                            {`: ${eventOrganizer.user.name}`}
+                        </>
+                }
+            </Typography>
+            <Typography variant="subtitle1" marginRight="auto!important"
+                color="secondary" display="block" fontSize="0.8em">
+                {
+                    `Количество участников организационного комитета: ${users.length}`
+                }
+            </Typography>
             <Typography variant="subtitle1" marginRight="auto!important"
                 color="secondary" display="block" fontSize="0.8em">
                 {is_online ? 'Online-мероприятие' : 'Очное мероприятие'}
@@ -93,29 +111,6 @@ export default function EventLongInfo(props) {
                             Мероприятие завершено
                         </Typography>
                     </Stack>
-                    :
-                    null
-            }
-            <Typography variant="caption" marginRight="auto!important"
-                color="secondary" display="block" fontSize="0.8em">
-                {
-                    isOrganizer? 'Вы создали это мероприятие' : 'Вы вступили по коду приглашения'
-                }
-            </Typography>
-            <Typography variant="subtitle1" marginRight="auto!important"
-                color="secondary" display="block" fontSize="0.8em">
-                {
-                    `Количество участников организационного комитета: ${users.length}`
-                }
-            </Typography>
-            {
-                isOrganizer ?
-                    <Typography variant="subtitle1" marginRight="auto!important"
-                        color="secondary" display="block" fontSize="0.8em">
-                        {
-                            `Секретный код приглашения: ${secret_code}`
-                        }
-                    </Typography>
                     :
                     null
             }

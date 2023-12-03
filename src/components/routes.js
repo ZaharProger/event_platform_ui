@@ -1,7 +1,8 @@
 export const routes = {
     home: '/',
-    create_event: '/events/create',
+    create_event: '/create/event',
     auth: '/auth',
+    event_card: '/events/',
 }
 
 export const backendEndpoints = {

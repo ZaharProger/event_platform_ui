@@ -1,12 +1,12 @@
-import { Stack, Icon, Button, TextField, Container, useTheme, Fade, Typography, useMediaQuery } from '@mui/material'
+import { Stack, Icon, TextField, Container, useTheme, Fade, Typography, useMediaQuery } from '@mui/material'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import logo from '../../assets/images/logo-full.svg'
 import useButton from '../../hooks/useButton'
+import useColors from '../../hooks/useColors'
 import { signInButton } from '../buttons'
 import { helpTool, backTool } from '../toolbar/tools'
-import Tool from '../toolbar/Tool'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
@@ -24,33 +24,6 @@ export default function Auth() {
     const callApi = useApi()
     const navigate = useNavigate()
 
-    const preparedBackTool = {
-        ...backTool,
-        callback: () => setIsHelpOpened(false)
-    }
-    const preparedHelpTool = {
-        ...helpTool,
-        callback: () => setIsHelpOpened(true)
-    }
-
-    const getButtonColors = useButton()
-    const buttonColors = getButtonColors(signInButton)
-
-    const textFieldStyles = {
-        "& label.Mui-focused": {
-            color: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline::after": {
-            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
-        },
-        "& .MuiInput-underline:hover:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        }
-    }
-
     const authButtonHandler = useCallback(() => {
         const formData = new FormData()
         document.querySelectorAll('input').forEach(input => {
@@ -67,6 +40,33 @@ export default function Auth() {
             }
         })
     }, [isHelpOpened])
+
+    const getButton = useButton(false)
+    const getTool = useButton(true)
+    const getColors = useColors()
+    const button = getButton(
+        signInButton, 
+        () => authButtonHandler(), 
+        () => !(usernameValidation.validate() && passwordValidation.validate())
+    )
+    const buttonColors = getColors(signInButton)
+    const backToolComponent = getTool(backTool, () => setIsHelpOpened(false))
+    const helpToolComponent = getTool(helpTool, () => setIsHelpOpened(true))
+
+    const textFieldStyles = {
+        "& label.Mui-focused": {
+            color: `${buttonColors.backgroundColor}!important`
+        },
+        "& .MuiInput-underline:before": {
+            borderBottomColor: `${buttonColors.backgroundColor}!important`
+        },
+        "& .MuiInput-underline::after": {
+            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
+        },
+        "& .MuiInput-underline:hover:before": {
+            borderBottomColor: `${buttonColors.backgroundColor}!important`
+        }
+    }
 
     return (
         <Container maxWidth="lg" sx={{
@@ -94,19 +94,9 @@ export default function Auth() {
                                 onInput={(event) => passwordValidation.set(event.target.value)}
                                 variant="standard" color="secondary" sx={{...textFieldStyles}} />
                         </Stack>
-                        <Button variant="contained" 
-                            disabled={!(usernameValidation.validate() && 
-                                passwordValidation.validate())} 
-                            disableElevation 
-                            sx={{
-                                padding: '8px 80px',
-                                transition: '0.3s ease-out',
-                                ...buttonColors
-                            }} onClick={() => authButtonHandler()}>
-                            {
-                                signInButton.label
-                            }
-                        </Button>
+                        {
+                            button
+                        }
                         {
                             errorMessage.get() !== null?
                             <Typography variant="subtitle2" display="block" 
@@ -135,7 +125,9 @@ export default function Auth() {
                         </Typography>
                     </Stack>
                 </Fade>
-                <Tool data={isHelpOpened? preparedBackTool : preparedHelpTool} />
+                {
+                    isHelpOpened? backToolComponent : helpToolComponent
+                }
             </Stack>
         </Container>
     )
