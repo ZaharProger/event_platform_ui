@@ -10,16 +10,16 @@ import Toolbar from '../toolbar/Toolbar'
 import NotFound from '../notFound/NotFound'
 import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
+import DocShortInfo from '../doc/DocShortInfo'
 import ListItemButtons from './ListItemButtons'
 import {
     createTool, joinTool, showCompletedEventsTool, mainTool, docsTool, participantsTool,
     completeTool, publishTool, deleteTool,
-    profileTool, addTool, backTool
+    profileTool, addTool, backTool, downloadTool
 } from '../toolbar/tools'
 import { readMoreButton, editButton, deleteButton } from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
-import EventCard from '../event/EventCard'
 import Profile from '../profile/Profile'
 import {
     changeSelectedCardTab, changeShowCompletedEvents,
@@ -43,20 +43,32 @@ export default function ContentWrap() {
 
     const location = useLocation()
     const navigate = useNavigate()
-    const urlId = useParams().id
+    const eventId = useParams().id
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
     const [openedEvent, setOpenedEvent] = useState(null)
 
-    const initEventCardCallback = () => dispatch(changeSelectedCardTab(mainTool.label))
-    const docsEventCardCallback = () => dispatch(changeSelectedCardTab(docsTool.label))
+    const initEventCardCallback = (item=null, redirect=false) => {
+        dispatch(changeSelectedCardTab(mainTool.label))
+        if (redirect) {
+            const itemId = item === null? eventId : item.id
+            navigate(`${routes.event_card}${itemId}`)
+        }
+    }
+    const docsEventCardCallback = (item=null, redirect=false) => {
+        dispatch(changeSelectedCardTab(docsTool.label))
+        if (redirect) {
+            const itemId = item === null? '' : item.id
+            navigate(`${routes.event_card}${eventId}${routes.event_card_docs}${itemId}`)
+        }
+    }
     const participantsEventCardCallback = () => dispatch(changeSelectedCardTab(participantsTool.label))
 
     const getTool = useButton(true)
     const getButton = useButton(false)
 
-    const foundItem = listData.filter(listItem => listItem.id == urlId)
+    const foundItem = listData.filter(listItem => listItem.id == eventId)
 
     const buildTools = useCallback(() => {
         const tools = [getTool(profileTool, () => setIsProfileOpened(true))]
@@ -79,11 +91,23 @@ export default function ContentWrap() {
         }
         else if (location.pathname.includes(routes.event_card)) {
             if (location.pathname.includes(routes.event_card_docs)) {
-
+                if (userData !== null) {
+                    tools.unshift(
+                        getTool(downloadTool)
+                    )
+                    if (userData.is_staff) {
+                        tools.unshift(
+                            getTool(createTool)
+                        )
+                    }
+                    tools.unshift(
+                        getTool(backTool)
+                    )
+                }
             }
             else {
-                if (userData.is_staff) {
-                    if (foundItem.length != 0) {
+                if (userData !== null && foundItem.length != 0) {
+                    if (userData.is_staff) {
                         const isOrganizer = foundItem[0].users
                             .filter(user => user.is_organizer && user.id == userData.id).length != 0
                         tools.unshift(
@@ -98,12 +122,12 @@ export default function ContentWrap() {
                     }
                 }
                 tools.unshift(
-                    getTool(docsTool, () => console.log(1), {}, {}, selectedTab),
+                    getTool(docsTool, () => docsEventCardCallback(null, true), {}, selectedTab),
                     getTool(participantsTool, () => console.log(1), {}, selectedTab),
                 )
                 if (userData.is_staff) {
                     tools.unshift(
-                        getTool(mainTool, () => initEventCardCallback(), {}, selectedTab),
+                        getTool(mainTool, () => initEventCardCallback(null, true), {}, selectedTab),
                     )
                 }
                 tools.unshift(getTool(backTool))
@@ -114,7 +138,7 @@ export default function ContentWrap() {
         }
 
         return tools
-    }, [userData, location, showCompletedEvents, selectedTab])
+    }, [userData, location, showCompletedEvents, selectedTab, foundItem])
 
     const getContent = useCallback(() => {
         let content = null
@@ -164,15 +188,12 @@ export default function ContentWrap() {
                         }
                         else {
                             buttons.push(getButton(editButton, () => {
-                                let route = `${routes.event_card}${listItem.id}`
                                 if (userData.is_staff) {
-                                    initEventCardCallback()
+                                    initEventCardCallback(listItem, true)
                                 }
                                 else {
-                                    docsEventCardCallback()
-                                    route += `${routes.event_card_docs}`
+                                    docsEventCardCallback(null, true)
                                 }
-                                navigate(route)
                             }))
                         }
 
@@ -199,27 +220,39 @@ export default function ContentWrap() {
             }
         }
         else if (location.pathname.includes(routes.event_card)) {
-            if (userData !== null) {
-                if (!userData.is_superuser) {
+            if (userData !== null && foundItem.length != 0) {
+                if (!userData.is_superuser && !foundItem[0].is_complete) {
                     if (location.pathname.includes(routes.event_card_docs)) {
                         docsEventCardCallback()
+                        content = <ContentList data={foundItem[0].docs.map(doc => {
+                            const buttons = Array()
+
+                            if (userData.is_staff) {
+                                buttons.push(
+                                    getButton(deleteButton)
+                                )
+                            }
+                            buttons.push(
+                                getButton(editButton, () => {
+                                    docsEventCardCallback(doc, true)
+                                })
+                            )
+
+                            const itemData = {
+                                item_info: <DocShortInfo data={{
+                                    doc_info: doc
+                                }} />,
+                                item_buttons: <ListItemButtons buttons={buttons} />
+                            }
+                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                        })} />
                     }
                     else if (location.pathname.includes(routes.event_card_participants)) {
                         participantsEventCardCallback()
                     }
                     else {
-                        if (foundItem.length != 0) {
-                            if (!foundItem[0].is_complete) {
-                                initEventCardCallback()
-                                content = <EventCard data={{
-                                    event_data: foundItem[0],
-                                    user: userData
-                                }} />
-                            }
-                            else {
-                                navigate(routes.home)
-                            }
-                        }
+                        initEventCardCallback()
+                        content = <EventForm event_data={foundItem[0]} is_edit={true} />
                     }
                 }
                 else {
@@ -229,14 +262,14 @@ export default function ContentWrap() {
         }
 
         return content
-    }, [location, listData, userData, showCompletedEvents])
+    }, [location, listData, userData, showCompletedEvents, foundItem])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
             if (responseData.status == 200) {
                 let route = `${host}${backendEndpoints.events}`
-                if (urlId !== undefined) {
-                    route += `?id=${urlId}`
+                if (eventId !== undefined) {
+                    route += `?id=${eventId}`
                 }
 
                 callApi(route, 'GET', null, null).then(resData => {
@@ -262,7 +295,7 @@ export default function ContentWrap() {
                 }
             }
         })
-    }, [location.pathname, urlId])
+    }, [location.pathname, eventId])
 
     const content = getContent()
 

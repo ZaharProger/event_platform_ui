@@ -57,10 +57,10 @@ export default function EventForm(props) {
 
             if (input.id.includes('datetime')) {
                 let timestamp = (new Date(input.value).getTime() / 1000).toString()
-                if (timestamp == 'NaN' || timestamp == '') {
-                    timestamp = null
+                if (timestamp != 'NaN' && timestamp != '') {
+                    formValue = timestamp
                 }
-                formValue = timestamp
+                
             }
             if (props.is_edit) {
                 bodyData[input.id] = formValue
@@ -70,7 +70,7 @@ export default function EventForm(props) {
             }
         })
 
-        const checkboxValue = document.querySelector('#is_online').checked ? '1' : '0'
+        const checkboxValue = document.querySelector('#is_online').checked
         if (props.is_edit) {
             bodyData['id'] = props.event_data.id
             bodyData['is_online'] = checkboxValue
