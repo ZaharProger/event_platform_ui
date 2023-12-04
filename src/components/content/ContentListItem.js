@@ -7,7 +7,7 @@ export default function ContentListItem(props) {
     const isMobile = useMediaQuery('(max-width: 1000px)')
 
     return (
-        <Stack direction={isMobile? 'column' : 'row'} spacing={8} width="100%"
+        <Stack direction={isMobile? 'column' : 'row'} spacing={3} width="100%"
             justifyContent="center" alignItems="center">
                 <Container maxWidth="sm" sx={{
                     display: 'flex',

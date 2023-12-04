@@ -56,6 +56,8 @@ export default function ContentWrap() {
     const getTool = useButton(true)
     const getButton = useButton(false)
 
+    const foundItem = listData.filter(listItem => listItem.id == urlId)
+
     const buildTools = useCallback(() => {
         const tools = [getTool(profileTool, () => setIsProfileOpened(true))]
 
@@ -80,15 +82,31 @@ export default function ContentWrap() {
 
             }
             else {
+                if (userData.is_staff) {
+                    if (foundItem.length != 0) {
+                        const isOrganizer = foundItem[0].users
+                            .filter(user => user.is_organizer && user.id == userData.id).length != 0
+                        tools.unshift(
+                            getTool(completeTool),
+                            getTool(publishTool),
+                            getTool(deleteTool)
+                        )
+                        if (!isOrganizer) {
+                            tools.splice(tools.indexOf(completeTool), 1)
+                            tools.splice(tools.indexOf(deleteTool), 1)
+                        }
+                    }
+                }
                 tools.unshift(
-                    getTool(backTool),
-                    getTool(mainTool, () => initEventCardCallback(), {}, selectedTab),
                     getTool(docsTool, () => console.log(1), {}, {}, selectedTab),
                     getTool(participantsTool, () => console.log(1), {}, selectedTab),
-                    getTool(completeTool),
-                    getTool(publishTool),
-                    getTool(deleteTool)
                 )
+                if (userData.is_staff) {
+                    tools.unshift(
+                        getTool(mainTool, () => initEventCardCallback(), {}, selectedTab),
+                    )
+                }
+                tools.unshift(getTool(backTool))
             }
         }
         else {
@@ -104,18 +122,20 @@ export default function ContentWrap() {
 
         if (location.pathname == routes.home) {
             if (listData.length == 0) {
-                if (showCompletedEvents) {
-                    caption = 'Вы не завершили ни одного мероприятия'
-                }
-                else if (userData !== null) {
-                    if (userData.is_staff) {
-                        caption = 'Создайте новое мероприятие или присоединитесь к существующему'
-                    }
-                    else if (userData.is_superuser) {
+                if (userData !== null) {
+                    if (userData.is_superuser) {
                         caption = 'Добавьте шаблоны документов согласно СТО вашей организации'
                     }
                     else {
-                        caption = 'Присоединитесь к мероприятию по коду приглашения'
+                        if (showCompletedEvents) {
+                            caption = 'Вы не завершили ни одного мероприятия'
+                        }
+                        else if (userData.is_staff) {
+                            caption = 'Создайте новое мероприятие или присоединитесь к существующему'
+                        }
+                        else {
+                            caption = 'Присоединитесь к мероприятию по коду приглашения'
+                        }
                     }
                 }
                 content = <NotFound additional_caption={caption} />
@@ -135,9 +155,8 @@ export default function ContentWrap() {
 
                         buttons.push(getButton(readMoreButton, () => setOpenedEvent(listItem)))
                         if (listItem.is_complete) {
-                            const isOrganizer = listItem.users.filter(eventUser => {
-                                return eventUser.user.id === userData.id
-                                    && eventUser.is_organizer
+                            const isOrganizer = listItem.users.filter(user => {
+                                return user.user.id === userData.user.id && user.is_organizer
                             }).length != 0
                             if (isOrganizer) {
                                 buttons.push(getButton(deleteButton))
@@ -145,8 +164,15 @@ export default function ContentWrap() {
                         }
                         else {
                             buttons.push(getButton(editButton, () => {
-                                initEventCardCallback()
-                                navigate(`${routes.event_card}${listItem.id}`)
+                                let route = `${routes.event_card}${listItem.id}`
+                                if (userData.is_staff) {
+                                    initEventCardCallback()
+                                }
+                                else {
+                                    docsEventCardCallback()
+                                    route += `${routes.event_card_docs}`
+                                }
+                                navigate(route)
                             }))
                         }
 
@@ -174,28 +200,36 @@ export default function ContentWrap() {
         }
         else if (location.pathname.includes(routes.event_card)) {
             if (userData !== null) {
-                const foundItem = listData.filter(listItem => listItem.id == urlId)
-
-                if (location.pathname.includes(routes.event_card_docs)) {
-                    docsEventCardCallback()
-                }
-                else if (location.pathname.includes(routes.event_card_participants)) {
-                    participantsEventCardCallback()
+                if (!userData.is_superuser) {
+                    if (location.pathname.includes(routes.event_card_docs)) {
+                        docsEventCardCallback()
+                    }
+                    else if (location.pathname.includes(routes.event_card_participants)) {
+                        participantsEventCardCallback()
+                    }
+                    else {
+                        if (foundItem.length != 0) {
+                            if (!foundItem[0].is_complete) {
+                                initEventCardCallback()
+                                content = <EventCard data={{
+                                    event_data: foundItem[0],
+                                    user: userData
+                                }} />
+                            }
+                            else {
+                                navigate(routes.home)
+                            }
+                        }
+                    }
                 }
                 else {
-                    if (foundItem.length != 0) {
-                        initEventCardCallback()
-                        content = <EventCard data={{
-                            event_data: foundItem[0],
-                            user: userData
-                        }} />
-                    }
+                    navigate(routes.home)
                 }
             }
         }
 
         return content
-    }, [location, listData, userData, showCompletedEvents, urlId])
+    }, [location, listData, userData, showCompletedEvents])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
@@ -241,7 +275,7 @@ export default function ContentWrap() {
             height: '100vh'
         }}>
             {
-                content !== null? <Toolbar tools={buildTools()} /> : null
+                content !== null ? <Toolbar tools={buildTools()} /> : null
             }
             <Container maxWidth="lg" sx={{
                 display: 'flex',

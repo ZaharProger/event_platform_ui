@@ -104,12 +104,12 @@ export default function EventLongInfo(props) {
             </Typography>
             {
                 is_complete ?
-                    <Stack spacing={2} marginRight="auto!important" alignItems="center">
-                        <CheckCircleIcon color="success" />
+                    <Stack spacing={1} marginRight="auto!important" alignItems="center" direction="row">
                         <Typography variant="subtitle1" marginRight="auto!important"
                             color="secondary" display="block" fontSize="0.8em">
                             Мероприятие завершено
                         </Typography>
+                        <CheckCircleIcon color="success" />
                     </Stack>
                     :
                     null
