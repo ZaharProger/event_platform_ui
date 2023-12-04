@@ -36,14 +36,14 @@ export default function EventForm(props) {
         }
     ]
     const eventType = useValidation(
-        props.event_data !== null ? 
-            eventTypes.filter(type => type.value == props.event_data.event_type)[0].value 
+        props.event_data !== null ?
+            eventTypes.filter(type => type.value == props.event_data.event_type)[0].value
             :
             eventTypes[0].value
     )
 
     const getButton = useButton(false)
-    
+
     const getColors = useColors()
     const saveButtonColors = getColors(saveButton)
 
@@ -80,8 +80,8 @@ export default function EventForm(props) {
 
         const method = props.is_edit ? 'PUT' : 'POST'
         const requestData = props.is_edit ? JSON.stringify(bodyData) : bodyData
-        const headers = props.is_edit? {'Content-Type': 'application/json'} : null
-        
+        const headers = props.is_edit ? { 'Content-Type': 'application/json' } : null
+
         callApi(`${host}${backendEndpoints.events}`, method, requestData, headers)
             .then(responseData => {
                 if (responseData.status == 200) {
@@ -100,8 +100,8 @@ export default function EventForm(props) {
     }, [])
 
     const button = getButton(
-        saveButton, 
-        () => saveButtonHandler(), 
+        saveButton,
+        () => saveButtonHandler(),
         () => !(placeValidation.validate() && nameValidation.validate())
     )
 
@@ -147,7 +147,12 @@ export default function EventForm(props) {
                     <Typography variant="body1" display="flex" color='secondary'
                         gutterBottom marginRight="auto!important"
                         textAlign='start' fontWeight="bold">
-                        Новое мероприятие
+                        {
+                            props.is_edit?
+                            'Информация о мероприятии'
+                            :
+                            'Новое мероприятие'
+                        }
                     </Typography>
                 </Grid>
                 <Grid direction="row" md spacing={3} item container>
@@ -177,7 +182,7 @@ export default function EventForm(props) {
                                     select
                                     label={selectLabel}
                                     sx={{ ...textFieldStyles }}
-                                    onChange={(event) => eventType.set(event.target.value)}                                   
+                                    onChange={(event) => eventType.set(event.target.value)}
                                     defaultValue={eventType.get()}
                                     SelectProps={{
                                         native: true,
@@ -202,14 +207,15 @@ export default function EventForm(props) {
                             </Stack>
                             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
                                 <TextField id="datetime_start" required
-                                    defaultValue={props.event_data !== null ? 
-                                        prepareDatetime(props.event_data.datetime_start, true) : ''} 
+                                    defaultValue={props.event_data !== null ?
+                                        prepareDatetime(props.event_data.datetime_start, true) : ''}
                                     type="datetime-local"
                                     fullWidth helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="datetime_end" fullWidth
-                                    defaultValue={props.event_data !== null ? 
-                                        prepareDatetime(props.event_data.datetime_end, true) : ''} 
+                                    defaultValue={props.event_data !== null ?
+                                        props.event_data.datetime_end !== null ?
+                                            prepareDatetime(props.event_data.datetime_end, true) : '' : ''}
                                     type="datetime-local"
                                     helperText={datetimeEndLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />

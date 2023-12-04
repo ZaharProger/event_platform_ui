@@ -23,6 +23,8 @@ export default function App() {
                 <Route path={routes.auth} element={<Auth />} />
                 <Route path={routes.create_event} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id`} element={<ContentWrap />} />
+                <Route path={`${routes.event_card}:id${routes.event_card_docs}`} element={<ContentWrap />} />
+                <Route path={`${routes.event_card}:id${routes.event_card_participants}`} element={<ContentWrap />} />
                 <Route path='*'
                     element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
             </Routes>

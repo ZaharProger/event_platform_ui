@@ -6,10 +6,10 @@ import Tool from "../components/toolbar/Tool"
 import useColors from './useColors'
 
 export default function useButton(isTool) {
-    const getColors = useColors()
+    const getColors = useColors(isTool)
     const navigate = useNavigate()
 
-    return isTool? function (tool, custom_callback=null, additional_styles={}) {
+    return isTool? function (tool, custom_callback=null, additional_styles={}, compareWith=null) {
         let component = null
         const callback = custom_callback === null ?
             () => {
@@ -19,7 +19,7 @@ export default function useButton(isTool) {
             }
             :
             () => custom_callback()
-        const colors = getColors(tool, isTool)
+        const colors = getColors(tool, isTool, compareWith)
 
         const toolData = {
             ...tool,

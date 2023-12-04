@@ -18,7 +18,7 @@ export default function EventCard(props) {
         }
 
         return component
-    }, [tab])
+    }, [tab, props.data.event_data])
 
     return (
         <Container>

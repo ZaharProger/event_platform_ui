@@ -17,14 +17,19 @@ export default function MoreModal(props) {
             <DialogTitle color="primary" marginBottom="20px"
             sx={{backgroundColor: theme.palette.secondary.main}}>
                 {
-                    props.data.event_info.name
+                    props.data.event_info !== null? props.data.event_info.name : ''
                 }
             </DialogTitle>
             <DialogContent>
-                <EventLongInfo data={{
-                    event_info: props.data.event_info,
-                    user: props.data.user
-                }} />
+                {
+                    props.data.event_info !== null?
+                    <EventLongInfo data={{
+                        event_info: props.data.event_info,
+                        user: props.data.user
+                    }} />
+                    :
+                    null
+                }
             </DialogContent>
             <DialogActions>
                 {

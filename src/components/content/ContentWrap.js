@@ -39,6 +39,7 @@ export default function ContentWrap() {
     const listData = useSelector(state => state.data)
     const userData = useSelector(state => state.user)
     const showCompletedEvents = useSelector(state => state.show_completed_events)
+    const selectedTab = useSelector(state => state.selected_card_tab)
 
     const location = useLocation()
     const navigate = useNavigate()
@@ -49,6 +50,8 @@ export default function ContentWrap() {
     const [openedEvent, setOpenedEvent] = useState(null)
 
     const initEventCardCallback = () => dispatch(changeSelectedCardTab(mainTool.label))
+    const docsEventCardCallback = () => dispatch(changeSelectedCardTab(docsTool.label))
+    const participantsEventCardCallback = () => dispatch(changeSelectedCardTab(participantsTool.label))
 
     const getTool = useButton(true)
     const getButton = useButton(false)
@@ -73,22 +76,27 @@ export default function ContentWrap() {
             }
         }
         else if (location.pathname.includes(routes.event_card)) {
-            tools.unshift(
-                getTool(backTool),
-                getTool(mainTool, () => initEventCardCallback()),
-                getTool(docsTool),
-                getTool(participantsTool),
-                getTool(completeTool),
-                getTool(publishTool),
-                getTool(deleteTool)
-            )
+            if (location.pathname.includes(routes.event_card_docs)) {
+
+            }
+            else {
+                tools.unshift(
+                    getTool(backTool),
+                    getTool(mainTool, () => initEventCardCallback(), {}, selectedTab),
+                    getTool(docsTool, () => console.log(1), {}, {}, selectedTab),
+                    getTool(participantsTool, () => console.log(1), {}, selectedTab),
+                    getTool(completeTool),
+                    getTool(publishTool),
+                    getTool(deleteTool)
+                )
+            }
         }
         else {
             tools.unshift(getTool(backTool))
         }
 
         return tools
-    }, [userData, location, showCompletedEvents])
+    }, [userData, location, showCompletedEvents, selectedTab])
 
     const getContent = useCallback(() => {
         let content = null
@@ -166,20 +174,28 @@ export default function ContentWrap() {
         }
         else if (location.pathname.includes(routes.event_card)) {
             if (userData !== null) {
-                if (listData.length != 0) {
-                    content = <EventCard data={{
-                        event_data: listData[0],
-                        user: userData
-                    }} />
+                const foundItem = listData.filter(listItem => listItem.id == urlId)
+
+                if (location.pathname.includes(routes.event_card_docs)) {
+                    docsEventCardCallback()
+                }
+                else if (location.pathname.includes(routes.event_card_participants)) {
+                    participantsEventCardCallback()
                 }
                 else {
-                    navigate(routes.home)
+                    if (foundItem.length != 0) {
+                        initEventCardCallback()
+                        content = <EventCard data={{
+                            event_data: foundItem[0],
+                            user: userData
+                        }} />
+                    }
                 }
             }
         }
 
         return content
-    }, [location, listData, userData, showCompletedEvents])
+    }, [location, listData, userData, showCompletedEvents, urlId])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
@@ -190,7 +206,13 @@ export default function ContentWrap() {
                 }
 
                 callApi(route, 'GET', null, null).then(resData => {
-                    dispatch(changeData(resData.status == 200 ? resData.data.data : Array()))
+                    if (resData.status == 200) {
+                        dispatch(changeData(resData.data.data))
+                    }
+                    else {
+                        dispatch(changeData(Array()))
+                        navigate('-1')
+                    }
                 })
                 if (responseData.data !== userData) {
                     dispatch(changeUser(responseData.data.data))
@@ -208,6 +230,8 @@ export default function ContentWrap() {
         })
     }, [location.pathname, urlId])
 
+    const content = getContent()
+
     return (
         <Container maxWidth={false} disableGutters sx={{
             backgroundColor: theme.palette.secondary,
@@ -216,7 +240,9 @@ export default function ContentWrap() {
             margin: 'auto',
             height: '100vh'
         }}>
-            <Toolbar tools={buildTools()} />
+            {
+                content !== null? <Toolbar tools={buildTools()} /> : null
+            }
             <Container maxWidth="lg" sx={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -229,22 +255,17 @@ export default function ContentWrap() {
                 margin: 'auto auto 20px auto'
             }}>
                 {
-                    getContent()
+                    content
                 }
             </Container>
             <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>
                 <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
             </Drawer>
             <JoinModal is_opened={isJoinModalOpened} close_callback={() => setIsJoinModalOpened(false)} />
-            {
-                listData.length != 0 ?
-                    <MoreModal is_opened={openedEvent !== null} data={{
-                        event_info: listData,
-                        user: userData
-                    }} close_callback={() => setOpenedEvent(null)} />
-                    :
-                    null
-            }
+            <MoreModal is_opened={openedEvent !== null} data={{
+                event_info: openedEvent,
+                user: userData
+            }} close_callback={() => setOpenedEvent(null)} />
             <Footer />
         </Container>
     )

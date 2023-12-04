@@ -6,7 +6,7 @@ import { prepareDatetime } from '../../utils'
 
 export default function EventLongInfo(props) {
     const { place, datetime_start, datetime_end, users,
-        is_complete, description, is_online, event_type } = props.data.event_info[0]
+        is_complete, description, is_online, event_type } = props.data.event_info
     const { user } = props.data.user
 
     const isOrganizer = users.filter(eventUser => {

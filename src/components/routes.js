@@ -3,6 +3,8 @@ export const routes = {
     create_event: '/create/event',
     auth: '/auth',
     event_card: '/events/',
+    event_card_docs: '/docs/',
+    event_card_participants: '/participants'
 }
 
 export const backendEndpoints = {

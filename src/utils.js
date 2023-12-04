@@ -1,19 +1,25 @@
 export const prepareDatetime = (datetime, isDatePicker = false) => {
     const datetimeObject = new Date(datetime * 1000)
-    const preparedDate = isDatePicker ?
-        [datetimeObject.getFullYear(), datetimeObject.getMonth() + 1, datetimeObject.getDate()].join('-')
-        :
-        datetimeObject.toLocaleDateString('ru-RU', {
+
+    let preparedDate
+    if (isDatePicker) {
+        preparedDate = [datetimeObject.getFullYear(), datetimeObject.getMonth() + 1, datetimeObject.getDate()]
+            .map(date => date < 10? `0${date}` : date)
+            .join('-')
+    }
+    else {
+        preparedDate = datetimeObject.toLocaleDateString('ru-RU', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         })
+    }
 
-    let hours = datetimeObject.getHours()
-    hours = hours < 10 ? `0${hours}` : hours
-    let minutes = datetimeObject.getMinutes()
-    minutes = minutes < 10 ? `0${minutes}` : minutes
-    const preparedTime = `${hours}:${minutes}`
+    const timeParts = [datetimeObject.getHours(), datetimeObject.getMinutes()]
+    if (isDatePicker) {
+        timeParts.push(datetimeObject.getSeconds())
+    }
+    const preparedTime = timeParts.map(time => time < 10 ? `0${time}` : time).join(':')
 
     return `${preparedDate}${isDatePicker ? 'T' : ' '}${preparedTime}`
 }

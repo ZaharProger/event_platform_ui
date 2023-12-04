@@ -4,13 +4,11 @@ import {
     excludeButton, signOutButton
 } from "../components/buttons"
 import { deleteTool } from "../components/toolbar/tools"
-import { useSelector } from "react-redux"
 
 export default function useColors() {
-    const selectedTab = useSelector(state => state.selected_card_tab)
     const theme = useTheme()
 
-    return function (button, isTool = false) {
+    return function (button, isTool=false, compareWith=null) {
         const negativeTools = [deleteTool]
         const negativeButtons = [
             deleteButton, unpinButton, cancelButton,
@@ -23,7 +21,7 @@ export default function useColors() {
             const toolColor = isNegativeTool ?
                 theme.palette.error.main 
                 : 
-                selectedTab === button.label?
+                compareWith === button.label?
                     theme.palette.action.main
                     :
                     theme.palette.secondary.main
