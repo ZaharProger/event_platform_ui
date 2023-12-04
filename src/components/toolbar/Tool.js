@@ -15,7 +15,8 @@ export default function Tool(props) {
 
     return (
         <div className="Tool" onClick={() => callback()} style={{
-            marginLeft: props.data.label === profileTool.label ? 'auto' : 0
+            marginLeft: props.data.label === profileTool.label ? 'auto' : '10px',
+            marginRight: '10px'
         }}>
             {
                 type == toolTypes.checkbox ?

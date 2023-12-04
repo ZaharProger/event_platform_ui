@@ -1,14 +1,18 @@
-import { Stack } from '@mui/material'
+import { AppBar, Slide, Stack, useScrollTrigger } from '@mui/material'
 import React from 'react'
 
 export default function Toolbar(props) {
+    const trigger = useScrollTrigger()
+
     return (
-        <Stack direction="row" spacing={5} sx={{ margin: '30px 50px 10px 30px' }} 
-            useFlexGap
-            alignItems="center">
-            {
-                props.tools
-            }
-        </Stack>
+        <Slide appear={false} direction="down" in={!trigger}>
+            <AppBar position="sticky">
+                <Stack direction="row" alignItems="center" padding="2px 10px" overflow="auto">
+                    {
+                        props.tools
+                    }
+                </Stack>
+            </AppBar>
+        </Slide>
     )
 }
