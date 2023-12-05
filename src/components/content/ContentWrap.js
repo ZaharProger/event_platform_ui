@@ -269,43 +269,54 @@ export default function ContentWrap() {
                 if (!userData.is_superuser && !foundItem[0].is_complete) {
                     if (location.pathname.includes(routes.event_card_docs)) {
                         dispatch(changeSelectedCardTab(docsTool.label))
-                        content = <ContentList data={foundItem[0].docs.map(doc => {
-                            const buttons = Array()
-
-                            if (userData.is_staff) {
-                                buttons.push(
-                                    getButton(deleteButton, () => {
-                                        setIsConfirmModalOpened(true)
-                                        setConfirmCallback(() => {
-                                            return () => {
-                                                const route = `${host}${backendEndpoints.docs}?id=${doc.id}`
-                                                callApi(route, 'DELETE', null, null).then(_ => {
-                                                    setIsConfirmModalOpened(false)
-                                                    window.location.reload()
-                                                })
-                                            }
+                        if (foundItem[0].docs.length != 0) {
+                            content = <ContentList data={foundItem[0].docs.map(doc => {
+                                const buttons = Array()
+    
+                                if (userData.is_staff) {
+                                    buttons.push(
+                                        getButton(deleteButton, () => {
+                                            setIsConfirmModalOpened(true)
+                                            setConfirmCallback(() => {
+                                                return () => {
+                                                    const route = 
+                                                        `${host}${backendEndpoints.docs}?id=${doc.id}`
+                                                    callApi(route, 'DELETE', null, null).then(_ => {
+                                                        setIsConfirmModalOpened(false)
+                                                        window.location.reload()
+                                                    })
+                                                }
+                                            })
+                                            setModalHeader('Удаление документа')
+                                            setModalContent('Вы действительно хотите удалить этот документ?')
                                         })
-                                        setModalHeader('Удаление документа')
-                                        setModalContent('Вы действительно хотите удалить этот документ?')
+                                    )
+                                }
+                                buttons.push(
+                                    getButton(editButton, () => {
+                                        dispatch(changeSelectedCardTab(docsTool.label))
+                                        const route = 
+                                            `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
+                                        navigate(route)
                                     })
                                 )
-                            }
-                            buttons.push(
-                                getButton(editButton, () => {
-                                    dispatch(changeSelectedCardTab(docsTool.label))
-                                    const route = `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
-                                    navigate(route)
-                                })
-                            )
-
-                            const itemData = {
-                                item_info: <DocShortInfo data={{
-                                    doc_info: doc
-                                }} />,
-                                item_buttons: <ListItemButtons buttons={buttons} />
-                            }
-                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
-                        })} />
+    
+                                const itemData = {
+                                    item_info: <DocShortInfo data={{
+                                        doc_info: doc
+                                    }} />,
+                                    item_buttons: <ListItemButtons buttons={buttons} />
+                                }
+                                return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                            })} />
+                        }
+                        else {
+                            const caption = userData.is_staff?
+                                'Создайте новый документ для вашего мероприятия!'
+                                :
+                                'Подождите. Скоро здесь появится что-нибудь интересное!'
+                            content = <NotFound additional_caption={caption} />
+                        }
                     }
                     else if (location.pathname.includes(routes.event_card_participants)) {
                         dispatch(changeSelectedCardTab(participantsTool.label))
