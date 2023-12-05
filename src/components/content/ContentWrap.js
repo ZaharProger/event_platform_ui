@@ -27,6 +27,7 @@ import {
 } from '../../redux/actions'
 import JoinModal from '../joinModal/JoinModal'
 import MoreModal from '../moreModal/MoreModal'
+import ConfirmModal from '../confirmModal/ConfirmModal'
 import useApi from '../../hooks/useApi'
 import useButton from '../../hooks/useButton'
 
@@ -47,23 +48,11 @@ export default function ContentWrap() {
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
+    const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
+    const [confirmCallback, setConfirmCallback] = useState(null)
+    const [modalHeader, setModalHeader] = useState('')
+    const [modalContent, setModalContent] = useState('')
     const [openedEvent, setOpenedEvent] = useState(null)
-
-    const initEventCardCallback = (item=null, redirect=false) => {
-        dispatch(changeSelectedCardTab(mainTool.label))
-        if (redirect) {
-            const itemId = item === null? eventId : item.id
-            navigate(`${routes.event_card}${itemId}`)
-        }
-    }
-    const docsEventCardCallback = (item=null, redirect=false) => {
-        dispatch(changeSelectedCardTab(docsTool.label))
-        if (redirect) {
-            const itemId = item === null? '' : item.id
-            navigate(`${routes.event_card}${eventId}${routes.event_card_docs}${itemId}`)
-        }
-    }
-    const participantsEventCardCallback = () => dispatch(changeSelectedCardTab(participantsTool.label))
 
     const getTool = useButton(true)
     const getButton = useButton(false)
@@ -109,25 +98,62 @@ export default function ContentWrap() {
                 if (userData !== null && foundItem.length != 0) {
                     if (userData.is_staff) {
                         const isOrganizer = foundItem[0].users
-                            .filter(user => user.is_organizer && user.id == userData.id).length != 0
+                            .filter(user => user.is_organizer && user.user.id == userData.user.id).length != 0
+    
+                        const preparedCompleteTool = getTool(completeTool, () => {
+                            setIsConfirmModalOpened(true)
+                            setConfirmCallback(() => {
+                                return () => {
+                                    const route = `${host}${backendEndpoints.complete_event}?id=${eventId}`
+                                    callApi(route, 'GET', null, null).then(_ => {
+                                        setIsConfirmModalOpened(false)
+                                        navigate(routes.home)
+                                    })
+                                }
+                            })
+                            setModalHeader('Завершение мероприятия')
+                            setModalContent('Вы действительно хотите завершить это мероприятие?')
+                        })
+                        const preparedPublishTool = getTool(publishTool)
+                        const preparedDeleteTool = getTool(deleteTool, () => {
+                            setIsConfirmModalOpened(true)
+                            setConfirmCallback(() => {
+                                return () => {
+                                    const route = `${host}${backendEndpoints.events}?id=${eventId}`
+                                    callApi(route, 'DELETE', null, null).then(_ => {
+                                        setIsConfirmModalOpened(false)
+                                        navigate(routes.home)
+                                    })
+                                }
+                            })
+                            setModalHeader('Удаление мероприятия')
+                            setModalContent('Вы действительно хотите удалить это мероприятие?')
+                        })
                         tools.unshift(
-                            getTool(completeTool),
-                            getTool(publishTool),
-                            getTool(deleteTool)
+                            preparedCompleteTool,
+                            preparedPublishTool,
+                            preparedDeleteTool
                         )
+
                         if (!isOrganizer) {
-                            tools.splice(tools.indexOf(completeTool), 1)
-                            tools.splice(tools.indexOf(deleteTool), 1)
+                            tools.splice(tools.indexOf(preparedCompleteTool), 1)
+                            tools.splice(tools.indexOf(preparedDeleteTool), 1)
                         }
                     }
                 }
                 tools.unshift(
-                    getTool(docsTool, () => docsEventCardCallback(null, true), {}, selectedTab),
+                    getTool(docsTool, () => {
+                        dispatch(changeSelectedCardTab(docsTool.label))
+                        navigate(`${routes.event_card}${eventId}${routes.event_card_docs}`)
+                    }, {}, selectedTab),
                     getTool(participantsTool, () => console.log(1), {}, selectedTab),
                 )
                 if (userData.is_staff) {
                     tools.unshift(
-                        getTool(mainTool, () => initEventCardCallback(null, true), {}, selectedTab),
+                        getTool(mainTool, () => {
+                            dispatch(changeSelectedCardTab(mainTool.label))
+                            navigate(`${routes.event_card}${eventId}`)
+                        }, {}, selectedTab),
                     )
                 }
                 tools.unshift(getTool(backTool))
@@ -183,17 +209,36 @@ export default function ContentWrap() {
                                 return user.user.id === userData.user.id && user.is_organizer
                             }).length != 0
                             if (isOrganizer) {
-                                buttons.push(getButton(deleteButton))
+                                buttons.push(getButton(deleteButton, () => {
+                                    setIsConfirmModalOpened(true)
+                                    setConfirmCallback(() => {
+                                        return () => {
+                                            const route = `${host}${backendEndpoints.events}?id=${listItem.id}`
+                                            callApi(route, 'DELETE', null, null).then(_ => {
+                                                setIsConfirmModalOpened(false)
+                                                window.location.reload()
+                                            })
+                                        }
+                                    })
+                                    setModalHeader('Удаление мероприятия')
+                                    setModalContent('Вы действительно хотите удалить это мероприятие?')
+                                }))
                             }
                         }
                         else {
                             buttons.push(getButton(editButton, () => {
+                                let route
                                 if (userData.is_staff) {
-                                    initEventCardCallback(listItem, true)
+                                    dispatch(changeSelectedCardTab(mainTool.label))
+                                    route = `${routes.event_card}${listItem.id}`
                                 }
                                 else {
-                                    docsEventCardCallback(null, true)
+                                    dispatch(changeSelectedCardTab(docsTool.label))
+                                    route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
+                                    
                                 }
+
+                                navigate(route)
                             }))
                         }
 
@@ -223,18 +268,33 @@ export default function ContentWrap() {
             if (userData !== null && foundItem.length != 0) {
                 if (!userData.is_superuser && !foundItem[0].is_complete) {
                     if (location.pathname.includes(routes.event_card_docs)) {
-                        docsEventCardCallback()
+                        dispatch(changeSelectedCardTab(docsTool.label))
                         content = <ContentList data={foundItem[0].docs.map(doc => {
                             const buttons = Array()
 
                             if (userData.is_staff) {
                                 buttons.push(
-                                    getButton(deleteButton)
+                                    getButton(deleteButton, () => {
+                                        setIsConfirmModalOpened(true)
+                                        setConfirmCallback(() => {
+                                            return () => {
+                                                const route = `${host}${backendEndpoints.docs}?id=${doc.id}`
+                                                callApi(route, 'DELETE', null, null).then(_ => {
+                                                    setIsConfirmModalOpened(false)
+                                                    window.location.reload()
+                                                })
+                                            }
+                                        })
+                                        setModalHeader('Удаление документа')
+                                        setModalContent('Вы действительно хотите удалить этот документ?')
+                                    })
                                 )
                             }
                             buttons.push(
                                 getButton(editButton, () => {
-                                    docsEventCardCallback(doc, true)
+                                    dispatch(changeSelectedCardTab(docsTool.label))
+                                    const route = `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
+                                    navigate(route)
                                 })
                             )
 
@@ -248,11 +308,16 @@ export default function ContentWrap() {
                         })} />
                     }
                     else if (location.pathname.includes(routes.event_card_participants)) {
-                        participantsEventCardCallback()
+                        dispatch(changeSelectedCardTab(participantsTool.label))
                     }
                     else {
-                        initEventCardCallback()
-                        content = <EventForm event_data={foundItem[0]} is_edit={true} />
+                        if (userData.is_staff) {
+                            dispatch(changeSelectedCardTab(mainTool.label))
+                            content = <EventForm event_data={foundItem[0]} is_edit={true} />
+                        }
+                        else {
+                            navigate(routes.home)
+                        }
                     }
                 }
                 else {
@@ -333,6 +398,11 @@ export default function ContentWrap() {
                 event_info: openedEvent,
                 user: userData
             }} close_callback={() => setOpenedEvent(null)} />
+            <ConfirmModal is_opened={isConfirmModalOpened}
+                close_callback={() => setIsConfirmModalOpened(false)}
+                confirm_callback={() => confirmCallback()}
+                modal_header={modalHeader}
+                modal_content={modalContent} />
             <Footer />
         </Container>
     )

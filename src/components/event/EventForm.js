@@ -211,9 +211,9 @@ export default function EventForm(props) {
                                     defaultValue={props.event_data !== null ?
                                         prepareDatetime(props.event_data.datetime_start, true) : ''}
                                     type="datetime-local"
-                                    fullWidth helperText={datetimeStartLabel} variant="outlined"
+                                    helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
-                                <TextField id="datetime_end" fullWidth
+                                <TextField id="datetime_end"
                                     defaultValue={props.event_data !== null ?
                                         props.event_data.datetime_end !== null ?
                                             prepareDatetime(props.event_data.datetime_end, true) : '' : ''}

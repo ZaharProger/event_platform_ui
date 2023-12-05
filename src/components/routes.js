@@ -12,7 +12,9 @@ export const backendEndpoints = {
     auth: '/users/auth/',
     logout: '/users/logout/',
     events: '/events/',
-    join_event: `/events/join`,
+    join_event: '/events/join',
+    complete_event: '/events/complete',
+    docs: '/docs/'
 }
 
 export const host = 'http://localhost:8000/api'

@@ -5,7 +5,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { prepareDatetime } from '../../utils'
 
 export default function EventLongInfo(props) {
-    const { place, datetime_start, datetime_end, users,
+    const { place, datetime_start, datetime_end, users, docs,
         is_complete, description, is_online, event_type } = props.data.event_info
     const { user } = props.data.user
 
@@ -96,6 +96,12 @@ export default function EventLongInfo(props) {
                 color="secondary" display="block" fontSize="0.8em">
                 {
                     `Количество участников организационного комитета: ${users.length}`
+                }
+            </Typography>
+            <Typography variant="subtitle1" marginRight="auto!important"
+                color="secondary" display="block" fontSize="0.8em">
+                {
+                    `Количество документов: ${docs.length}`
                 }
             </Typography>
             <Typography variant="subtitle1" marginRight="auto!important"
