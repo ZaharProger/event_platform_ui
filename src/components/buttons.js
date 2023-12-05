@@ -3,10 +3,17 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
-export const readMoreButton = {
+export const aboutEventButton = {
     icon: InfoIcon,
-    label: 'Подробнее'
+    label: 'О мероприятии'
+}
+
+export const viewButton = {
+    icon: VisibilityIcon,
+    label: 'Ознакомиться'
 }
 
 export const editButton = {
@@ -77,4 +84,9 @@ export const signInButton = {
 export const signOutButton = {
     icon: null,
     label: 'Выйти из аккаунта'
+}
+
+export const downloadButton = {
+    icon: DownloadForOfflineIcon,
+    label: 'Выгрузить'
 }

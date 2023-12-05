@@ -17,7 +17,7 @@ import {
     completeTool, publishTool, deleteTool,
     profileTool, addTool, backTool, downloadTool
 } from '../toolbar/tools'
-import { readMoreButton, editButton, deleteButton } from '../buttons'
+import { aboutEventButton, editButton, deleteButton, downloadButton, viewButton } from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
@@ -82,15 +82,8 @@ export default function ContentWrap() {
             if (location.pathname.includes(routes.event_card_docs)) {
                 if (userData !== null) {
                     tools.unshift(
+                        getTool(backTool),
                         getTool(downloadTool)
-                    )
-                    if (userData.is_staff) {
-                        tools.unshift(
-                            getTool(createTool)
-                        )
-                    }
-                    tools.unshift(
-                        getTool(backTool)
                     )
                 }
             }
@@ -203,7 +196,7 @@ export default function ContentWrap() {
                     content = <ContentList data={preparedListData.map(listItem => {
                         const buttons = Array()
 
-                        buttons.push(getButton(readMoreButton, () => setOpenedEvent(listItem)))
+                        buttons.push(getButton(aboutEventButton, () => setOpenedEvent(listItem)))
                         if (listItem.is_complete) {
                             const isOrganizer = listItem.users.filter(user => {
                                 return user.user.id === userData.user.id && user.is_organizer
@@ -226,7 +219,7 @@ export default function ContentWrap() {
                             }
                         }
                         else {
-                            buttons.push(getButton(editButton, () => {
+                            buttons.push(getButton(userData.is_staff? editButton : viewButton, () => {
                                 let route
                                 if (userData.is_staff) {
                                     dispatch(changeSelectedCardTab(mainTool.label))
@@ -271,36 +264,15 @@ export default function ContentWrap() {
                         dispatch(changeSelectedCardTab(docsTool.label))
                         if (foundItem[0].docs.length != 0) {
                             content = <ContentList data={foundItem[0].docs.map(doc => {
-                                const buttons = Array()
-    
-                                if (userData.is_staff) {
-                                    buttons.push(
-                                        getButton(deleteButton, () => {
-                                            setIsConfirmModalOpened(true)
-                                            setConfirmCallback(() => {
-                                                return () => {
-                                                    const route = 
-                                                        `${host}${backendEndpoints.docs}?id=${doc.id}`
-                                                    callApi(route, 'DELETE', null, null).then(_ => {
-                                                        setIsConfirmModalOpened(false)
-                                                        window.location.reload()
-                                                    })
-                                                }
-                                            })
-                                            setModalHeader('Удаление документа')
-                                            setModalContent('Вы действительно хотите удалить этот документ?')
-                                        })
-                                    )
-                                }
-                                buttons.push(
-                                    getButton(editButton, () => {
+                                const buttons = [
+                                    getButton(downloadButton),
+                                    getButton(userData.is_staff? editButton : viewButton, () => {
                                         dispatch(changeSelectedCardTab(docsTool.label))
                                         const route = 
                                             `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
                                         navigate(route)
                                     })
-                                )
-    
+                                ]
                                 const itemData = {
                                     item_info: <DocShortInfo data={{
                                         doc_info: doc

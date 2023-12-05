@@ -97,7 +97,7 @@ export const publishTool = {
 }
 
 export const downloadTool = {
-    label: 'Выгрузить',
+    label: 'Выгрузить архив',
     icon: DownloadForOfflineIcon,
     type: toolTypes.button,
     route: null
