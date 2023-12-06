@@ -11,6 +11,8 @@ import NotFound from '../notFound/NotFound'
 import ContentListItem from './ContentListItem'
 import EventShortInfo from '../event/EventShortInfo'
 import DocShortInfo from '../doc/DocShortInfo'
+import TextDocForm from '../doc/TextDocForm'
+import TableDocForm from '../doc/TableDocForm'
 import ListItemButtons from './ListItemButtons'
 import {
     createTool, joinTool, showCompletedEventsTool, mainTool, docsTool, participantsTool,
@@ -45,6 +47,7 @@ export default function ContentWrap() {
     const location = useLocation()
     const navigate = useNavigate()
     const eventId = useParams().id
+    const docId = useParams().docId
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
@@ -81,9 +84,13 @@ export default function ContentWrap() {
         else if (location.pathname.includes(routes.event_card)) {
             if (location.pathname.includes(routes.event_card_docs)) {
                 if (userData !== null) {
+                    if (docId === undefined) {
+                        tools.unshift(
+                            getTool(downloadTool)
+                        )
+                    }
                     tools.unshift(
-                        getTool(backTool),
-                        getTool(downloadTool)
+                        getTool(backTool)
                     )
                 }
             }
@@ -228,7 +235,6 @@ export default function ContentWrap() {
                                 else {
                                     dispatch(changeSelectedCardTab(docsTool.label))
                                     route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
-                                    
                                 }
 
                                 navigate(route)
@@ -262,7 +268,35 @@ export default function ContentWrap() {
                 if (!userData.is_superuser && !foundItem[0].is_complete) {
                     if (location.pathname.includes(routes.event_card_docs)) {
                         dispatch(changeSelectedCardTab(docsTool.label))
-                        if (foundItem[0].docs.length != 0) {
+                        if (docId !== undefined) {
+                            const foundDoc = foundItem[0].docs.filter(doc => doc.id == docId)[0]
+                            const docData = {
+                                event_data: {
+                                    id: foundItem[0].id
+                                },
+                                doc_data: foundDoc,
+                                user: userData
+                            }
+                            if (foundDoc.is_table) {
+                                const docTypes = localStorage.getItem('doc_types') !== null?
+                                    JSON.parse(localStorage.getItem('doc_types')) : []
+                                let roadMapDocType = ''
+                                if (docTypes.length != 0) {
+                                    roadMapDocType = docTypes.filter(docType => docType.label == 'Roadmap')
+                                    roadMapDocType = roadMapDocType[0].value.toLocaleLowerCase()
+                                }
+
+                                if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
+                                    docData.event_data.users = foundItem[0].users
+                                    docData.event_data.tasks = foundItem[0].tasks
+                                }
+                                content = <TableDocForm data={docData} />
+                            }
+                            else {
+                                content = <TextDocForm data={docData} />
+                            }
+                        }
+                        else if (foundItem[0].docs.length != 0) {
                             content = <ContentList data={foundItem[0].docs.map(doc => {
                                 const buttons = [
                                     getButton(downloadButton),
@@ -343,7 +377,17 @@ export default function ContentWrap() {
                 }
             }
         })
-    }, [location.pathname, eventId])
+    }, [location.pathname, eventId, docId])
+
+    useEffect(() => {
+        callApi(`${host}${backendEndpoints.settings}`, 'GET', null, null).then(responseData => {
+            if (responseData.status == 200) {
+                localStorage.setItem('event_types', JSON.stringify(responseData.data.data.event_types))
+                localStorage.setItem('task_states', JSON.stringify(responseData.data.data.task_states))
+                localStorage.setItem('doc_types', JSON.stringify(responseData.data.data.doc_types))
+            }
+        })
+    }, [])
 
     const content = getContent()
 

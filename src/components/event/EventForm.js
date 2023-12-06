@@ -25,16 +25,9 @@ export default function EventForm(props) {
     )
     const errorMessage = useError()
     const isOnline = useValidation(props.event_data !== null ? props.event_data.is_online : false, null)
-    const eventTypes = [
-        {
-            value: 'С индивидуальным участием',
-            id: 1
-        },
-        {
-            value: 'Командное участие',
-            id: 2
-        }
-    ]
+
+    const eventTypes = localStorage.getItem('event_types') !== null? 
+        JSON.parse(localStorage.getItem('event_types')) : [{label: '', value: ''}]
     const eventType = useValidation(
         props.event_data !== null ?
             eventTypes.filter(type => type.value == props.event_data.event_type)[0].value
@@ -189,7 +182,7 @@ export default function EventForm(props) {
                                         native: true,
                                     }}>
                                     {eventTypes.map((eventType) => (
-                                        <option key={eventType.id} value={eventType.value}>
+                                        <option key={eventType.label} value={eventType.value}>
                                             {eventType.value}
                                         </option>
                                     ))}

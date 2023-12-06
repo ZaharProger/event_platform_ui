@@ -1,10 +1,15 @@
 import InfoIcon from '@mui/icons-material/Info'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
+
+export const addButton = {
+    icon: AddCircleRoundedIcon,
+    label: 'Добавить'
+}
 
 export const aboutEventButton = {
     icon: InfoIcon,
@@ -52,22 +57,22 @@ export const saveButton = {
 }
 
 export const assignButton = {
-    icon: AddCircleOutlineIcon,
+    icon: AddCircleRoundedIcon,
     label: 'Назначить'
 }
 
 export const unpinButton = {
-    icon: RemoveCircleOutlineIcon,
+    icon: RemoveCircleIcon,
     label: 'Открепить'
 }
 
 export const inviteButton = {
-    icon: AddCircleOutlineIcon,
+    icon: AddCircleRoundedIcon,
     label: 'Пригласить'
 }
 
 export const excludeButton = {
-    icon: RemoveCircleOutlineIcon,
+    icon: RemoveCircleIcon,
     label: 'Исключить'
 }
 
