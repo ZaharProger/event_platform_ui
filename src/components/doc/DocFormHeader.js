@@ -63,7 +63,7 @@ export default function DocFormHeader(props) {
     }
 
     return (
-        <AppBar position="sticky" sx={docHeaderStyles}>
+        <AppBar position="sticky" sx={docHeaderStyles} id="Doc-form-header">
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
                 justifyContent="center" alignItems="center">
                 <TextField id="name" required autoFocus fullWidth={!isNearMobile}

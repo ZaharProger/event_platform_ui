@@ -5,9 +5,13 @@ import { Stack } from '@mui/material'
 import { v4 as uuidV4 } from "uuid"
 import Task from '../task/Task'
 import { useSelector } from 'react-redux'
+import useApi from '../../hooks/useApi'
+import { backendEndpoints, host } from '../routes'
 
 export default function TableDocForm(props) {
     const {event_data: {id, users, tasks}, doc_data, user} = props.data
+
+    const callApi = useApi()
 
     const docTypes = localStorage.getItem('doc_types') !== null?
         JSON.parse(localStorage.getItem('doc_types')) : []
@@ -65,6 +69,8 @@ export default function TableDocForm(props) {
                     else {
                         updatedField.users = docFields[i].users
                     }
+                    
+                    updatedField.parent = null
                 }
             })
 
@@ -73,8 +79,22 @@ export default function TableDocForm(props) {
     }, [docFields, assignedUsers, roadMapDocType])
 
     const saveButtonHandler = useCallback(() => {
-        console.log(1)
-    }, [props])
+        const formData = {
+            event_id: id,
+            doc_id: doc_data.id,
+            name: document.querySelector('#Doc-form-header').querySelector('input').value,
+            tasks: getFormData()
+        }
+        
+        callApi(`${host}${backendEndpoints.tasks}`, 'PUT', JSON.stringify(formData), {
+            'Content-Type': 'application/json'
+        }).then(responseData => {
+            if (responseData.status == 200) {
+                window.location.reload()
+            }
+        })
+
+    }, [docFields, id])
     
     const addButtonHandler = useCallback(() => {
         const formData = getFormData()
