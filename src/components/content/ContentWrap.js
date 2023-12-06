@@ -274,8 +274,7 @@ export default function ContentWrap() {
                                 event_data: {
                                     id: foundItem[0].id
                                 },
-                                doc_data: foundDoc,
-                                user: userData
+                                doc_data: foundDoc
                             }
                             if (foundDoc.is_table) {
                                 const docTypes = localStorage.getItem('doc_types') !== null?
