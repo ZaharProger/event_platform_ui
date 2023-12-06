@@ -6,7 +6,7 @@ import { v4 as uuidV4 } from "uuid"
 import Task from '../task/Task'
 
 export default function TableDocForm(props) {
-    const {event_data: {id, users, tasks}, doc_data} = props.data
+    const {event_data: {id, users, tasks}, doc_data, user} = props.data
 
     const docTypes = localStorage.getItem('doc_types') !== null?
         JSON.parse(localStorage.getItem('doc_types')) : []
@@ -32,18 +32,22 @@ export default function TableDocForm(props) {
     }, [props])
     
     const addButtonHandler = useCallback(() => {
-        setDocRecords()
+        setDocRecords([
+            ...docRecords,
+            null
+        ])
     }, [props])
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" width="100%">
             <DocFormHeader doc_data={doc_data} 
+                user={user}
                 save_callback={() => saveButtonHandler()}
                 additional_callback={() => addButtonHandler()} />
             {
                 roadMapDocType.length != 0?
                 docRecords.map(docRecord => {
-                    return <Task key={`task_${uuidV4()}`} task={docRecord} />
+                    return <Task key={`task_${uuidV4()}`} task={docRecord} user={user} />
                 })
                 :
                 null

@@ -18,7 +18,7 @@ export default function useButton(isTool) {
                 }
             }
             :
-            () => custom_callback()
+            (event) => custom_callback(event)
         const colors = getColors(tool, isTool, compareWith)
 
         const toolData = {
@@ -42,14 +42,14 @@ export default function useButton(isTool) {
                 }
             }
             :
-            () => custom_callback()
+            (event) => custom_callback(event)
         const colors = getColors(button, isTool)
 
 
         component = <Button key={`button_${uuidV4()}`}
             disableElevation
             disabled={validation !== null? validation() : false}
-            onClick={() => callback()}
+            onClick={(event) => callback(event)}
             variant="contained" 
             startIcon={button.icon === null? null : <SvgIcon inheritViewBox component={button.icon} />}
             sx={{

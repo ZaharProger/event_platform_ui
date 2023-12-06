@@ -1,14 +1,16 @@
-import { Box, Stack, TextField, Typography } from '@mui/material'
-import React from 'react'
+import { Stack, TextField, Typography, useTheme } from '@mui/material'
+import React, { useState } from 'react'
 
-import { v4 as uuidV4 } from "uuid"
 import useButton from '../../hooks/useButton'
 import useColors from '../../hooks/useColors'
-import { assignButton } from '../buttons'
+import { assignButton, viewButton } from '../buttons'
 import { prepareDatetime } from '../../utils'
+import UserIcon from './UserIcon'
 
 export default function Task(props) {
-    const {task} = props
+    const {task, user} = props
+    
+    const theme = useTheme()
 
     const getButton = useButton(false)
 
@@ -46,10 +48,10 @@ export default function Task(props) {
     </Typography>
 
     const button = getButton(
-        assignButton
+        user.is_staff? assignButton : viewButton
     )
 
-    const taskStates = localStorage.getItem('task_states') !== null? 
+    let taskStates = localStorage.getItem('task_states') !== null? 
         JSON.parse(localStorage.getItem('task_states')) 
         : 
         [{label: '', value: ''}]
@@ -57,13 +59,40 @@ export default function Task(props) {
         taskStates.filter(type => type.value == task.state)[0].value
         :
         taskStates[0].value
+    
+    const colors = [
+        'info',
+        'action',
+        'success',
+        'error'
+    ]
+    taskStates = taskStates.map((item, i) => {
+        return {
+            ...item,
+            color: colors[i]
+        }
+    })
+
+    const [taskColor, setTaskColor] = useState(() => {
+        let initColor
+
+        if (task !== null) {
+            initColor = taskStates.filter(item => task.state == item.value)[0].color
+        }
+        else {
+            initColor = taskStates[0].color
+        }
+
+        return initColor
+    })
 
     return (
         <Stack direction="column" spacing={4} justifyContent="center" alignItems="center"
             marginBottom="30px!important" border="2px solid" borderRadius="10px"
+            bgcolor={`${theme.palette[taskColor].main}50`}
             borderColor={`${buttonColors.backgroundColor}`} padding="20px 30px">
             <Stack direction="column" spacing={2} justifyContent="flex-start" alignItems="center">
-                <TextField id="name" required autoFocus
+                <TextField id="name" required
                     defaultValue={task !== null ? task.name : ''}
                     fullWidth label="Название задачи" variant="outlined"
                     color="secondary" sx={{ ...textFieldStyles }} />
@@ -90,20 +119,7 @@ export default function Task(props) {
                 {
                     task !== null?
                         task.users.map(taskUser => {
-                            const splittedName = taskUser.user.name.split(' ')
-                            return <Box key={`task_user_${uuidV4()}`} borderRadius="100%"
-                                bgcolor={buttonColors.backgroundColor} padding="10px">
-                                <Typography color="primary" fontSize="0.7em" textAlign="center">
-                                {
-                                    splittedName.length == 1?
-                                        splittedName[0].substring(0, 1).toUpperCase()
-                                        :
-                                        [splittedName[0], splittedName[1]]
-                                            .map(namePart => namePart.substring(0, 1).toUpperCase())
-                                            .join('')
-                                }
-                                </Typography>
-                            </Box>
+                            return <UserIcon username={taskUser.user.name} />
                         })
                         :
                         null
@@ -115,6 +131,9 @@ export default function Task(props) {
                 <TextField
                     id="state"
                     select
+                    onChange={(event) => setTaskColor(taskStates.filter(item => {
+                        return item.value == event.target.value
+                    })[0].color)}
                     label={selectLabel}
                     sx={{ ...textFieldStyles }}
                     defaultValue={taskState}

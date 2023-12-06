@@ -5,6 +5,7 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
@@ -94,4 +95,9 @@ export const signOutButton = {
 export const downloadButton = {
     icon: DownloadForOfflineIcon,
     label: 'Выгрузить'
+}
+
+export const filterButton = {
+    icon: FilterAltIcon,
+    label: 'Фильтры'
 }

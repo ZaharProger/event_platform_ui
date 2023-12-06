@@ -1,5 +1,5 @@
 import React from 'react'
-import { Stack, Typography } from '@mui/material'
+import { Stack, Tooltip, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import { prepareDatetime } from '../../utils'
@@ -53,7 +53,9 @@ export default function EventShortInfo(props) {
                         </Stack>
                         {
                             is_complete ?
-                                <CheckCircleIcon color="success" />
+                                <Tooltip title="Мероприятие завершено">
+                                    <CheckCircleIcon color="success" />
+                                </Tooltip>
                                 :
                                 null
                         }

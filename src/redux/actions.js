@@ -1,4 +1,4 @@
-import {DATA, SELECTED_CARD_TAB, SHOW_COMPLETED_EVENTS, USER} from './constants'
+import {DATA, TRIGGER, SELECTED_CARD_TAB, SHOW_COMPLETED_EVENTS, USER} from './constants'
 
 export const changeData = (data) => {
     return {
@@ -25,5 +25,12 @@ export const changeSelectedCardTab = (selectedCardTab) => {
     return {
         type: SELECTED_CARD_TAB,
         selected_card_tab: selectedCardTab
+    }
+}
+
+export const changePrevTrigger = (prevTrigger) => {
+    return {
+        type: TRIGGER,
+        trigger: prevTrigger
     }
 }

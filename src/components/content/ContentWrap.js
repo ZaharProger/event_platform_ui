@@ -272,8 +272,9 @@ export default function ContentWrap() {
                             const foundDoc = foundItem[0].docs.filter(doc => doc.id == docId)[0]
                             const docData = {
                                 event_data: {
-                                    id: foundItem[0].id
+                                    id: foundItem[0].id,
                                 },
+                                user: userData,
                                 doc_data: foundDoc
                             }
                             if (foundDoc.is_table) {

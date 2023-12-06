@@ -14,7 +14,7 @@ export default function Tool(props) {
     </Typography>
 
     return (
-        <div className="Tool" onClick={() => callback()} style={{
+        <div className="Tool" onClick={(event) => callback(event)} style={{
             marginLeft: props.data.label === profileTool.label ? 'auto' : '10px',
             marginRight: '10px'
         }}>
