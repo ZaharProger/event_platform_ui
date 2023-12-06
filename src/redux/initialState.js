@@ -3,5 +3,6 @@ export const defaultState = {
     user: null,
     show_completed_events: false,
     selected_card_tab: null,
-    trigger: false
+    trigger: false,
+    assigned_users: Array()
 }

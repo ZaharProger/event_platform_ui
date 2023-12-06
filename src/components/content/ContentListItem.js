@@ -8,7 +8,7 @@ export default function ContentListItem(props) {
 
     return (
         <Stack direction={isMobile? 'column' : 'row'} spacing={3} width="100%"
-            justifyContent={isMobile? 'center' : 'space-between'} alignItems="center">
+            justifyContent="center" alignItems="center">
                 <Container maxWidth="sm" sx={{
                     display: 'flex',
                     justifyContent: 'flex-start',

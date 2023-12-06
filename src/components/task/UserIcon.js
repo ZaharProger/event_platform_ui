@@ -1,8 +1,6 @@
 import React from 'react'
 import { Box, Tooltip, Typography, useTheme } from '@mui/material'
 
-import { v4 as uuidV4 } from "uuid"
-
 export default function UserIcon(props) {
     const theme = useTheme()
 
@@ -10,7 +8,7 @@ export default function UserIcon(props) {
 
     return (
         <Tooltip title={props.username}>
-            <Box key={`task_user_${uuidV4()}`} borderRadius="100%"
+            <Box borderRadius="100%"
                 bgcolor={theme.palette.secondary.main} padding="10px">
                 <Typography color="primary" fontSize="0.5em" textAlign="center">
                     {

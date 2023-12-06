@@ -6,10 +6,16 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import SearchIcon from '@mui/icons-material/Search'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
     label: 'Добавить'
+}
+
+export const searchButton = {
+    icon: SearchIcon,
+    label: 'Поиск'
 }
 
 export const aboutEventButton = {

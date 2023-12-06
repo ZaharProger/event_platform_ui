@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 
 export default function DocFormHeader(props) {
     const isMobile = useMediaQuery('(max-width: 1000px)')
+    const isNearMobile = useMediaQuery('(max-width: 1300px)')
 
     const nameValidation = useValidation(
         props.doc_data !== null ? props.doc_data.name : '',
@@ -64,11 +65,11 @@ export default function DocFormHeader(props) {
     return (
         <AppBar position="sticky" sx={docHeaderStyles}>
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
-                justifyContent="space-between" alignItems="center">
-                <TextField id="name" required autoFocus
+                justifyContent="center" alignItems="center">
+                <TextField id="name" required autoFocus fullWidth={!isNearMobile}
                     onInput={(event) => nameValidation.set(event.target.value)}
                     defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
-                    fullWidth label="Название" variant="outlined"
+                    label="Название" variant="outlined"
                     color="secondary" sx={{ ...textFieldStyles }} />
                 <Stack spacing={1} direction="row" justifyContent="center" alignItems="center">
                     {
