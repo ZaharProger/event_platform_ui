@@ -49,51 +49,55 @@ export default function Task(props) {
             setTaskAssignedUsers(task === null? [] : task.users.map(taskUser => taskUser.user.id))
             setIsUsersModalOpened(false)
         }),
-        getButton(applyButton, () => {
-            if (task !== null) {
-                let newAssignedUsers = []
-                if (assigned_users.length == 0) {
-                    newAssignedUsers.push({
-                        task: task.id,
-                        users: [...taskAssignedUsers]
-                    })
-                }
-                else {
-                    const isAssignationExists = assigned_users.filter(assignation => {
-                        return assignation.task == task.id
-                    }).length != 0
-                    if (isAssignationExists) {
-                        newAssignedUsers = assigned_users.map(assignation => {
-                            const newAssignation = {
-                                task: assignation.task,
-                                users: assignation.task == task.id? 
-                                    [...taskAssignedUsers]
-                                    :
-                                    [...assignation.users]
-                            }
-
-                            return newAssignation
-                        })
-                    }
-                    else {
-                        newAssignedUsers = assigned_users.map(assignation => {
-                            return {
-                                task: assignation.task,
-                                users: [...assignation.users]
-                            }
-                        })
+    ]
+    if (user.is_staff) {
+        dialogButtons.push(
+            getButton(applyButton, () => {
+                if (task !== null) {
+                    let newAssignedUsers = []
+                    if (assigned_users.length == 0) {
                         newAssignedUsers.push({
                             task: task.id,
                             users: [...taskAssignedUsers]
                         })
                     }
+                    else {
+                        const isAssignationExists = assigned_users.filter(assignation => {
+                            return assignation.task == task.id
+                        }).length != 0
+                        if (isAssignationExists) {
+                            newAssignedUsers = assigned_users.map(assignation => {
+                                const newAssignation = {
+                                    task: assignation.task,
+                                    users: assignation.task == task.id? 
+                                        [...taskAssignedUsers]
+                                        :
+                                        [...assignation.users]
+                                }
+    
+                                return newAssignation
+                            })
+                        }
+                        else {
+                            newAssignedUsers = assigned_users.map(assignation => {
+                                return {
+                                    task: assignation.task,
+                                    users: [...assignation.users]
+                                }
+                            })
+                            newAssignedUsers.push({
+                                task: task.id,
+                                users: [...taskAssignedUsers]
+                            })
+                        }
+                    }
+            
+                    dispatch(changeAssignedUsers(newAssignedUsers))
+                    sync_callback()
                 }
-        
-                dispatch(changeAssignedUsers(newAssignedUsers))
-                sync_callback()
-            }
-        })
-    ]
+            })
+        )
+    }
 
     const getColors = useColors()
     const buttonColors = getColors(assignButton)
@@ -165,24 +169,29 @@ export default function Task(props) {
 
     return (
         <Stack direction="row" spacing={1} className="Task" id={task.id}>
+            {
+                user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
+            }
             <Stack direction="column" spacing={4}
                 justifyContent="center" alignItems="center"
                 marginBottom="30px!important" border="2px solid" borderRadius="10px"
                 bgcolor={`${theme.palette[taskColor].main}50`}
                 borderColor={`${buttonColors.backgroundColor}`} padding="20px 30px">
                 <Stack direction="column" spacing={2} justifyContent="flex-start" alignItems="center">
-                    <TextField id="name" required
-                        defaultValue={task !== null ? task.name : ''}
+                    <TextField id="name" defaultValue={task !== null ? task.name : ''}
+                        disabled={!user.is_staff}
                         fullWidth label="Название задачи" variant="outlined"
                         color="secondary" sx={{ ...textFieldStyles }} />
                     <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-                        <TextField id="datetime_start" required
+                        <TextField id="datetime_start"
+                            disabled={!user.is_staff}
                             defaultValue={task !== null ?
                                 prepareDatetime(task.datetime_start, true) : ''}
                             type="datetime-local"
                             helperText={datetimeStartLabel} variant="outlined"
                             color="secondary" sx={{ ...textFieldStyles }} />
                         <TextField id="datetime_end"
+                            disabled={!user.is_staff}
                             defaultValue={task !== null ?
                                 task.datetime_end !== null ?
                                     prepareDatetime(task.datetime_end, true) : '' : ''}
@@ -220,6 +229,7 @@ export default function Task(props) {
                     <TextField
                         id="state"
                         select
+                        disabled={!user.is_staff}
                         onChange={(event) => setTaskColor(taskStates.filter(item => {
                             return item.value == event.target.value
                         })[0].color)}
@@ -237,16 +247,13 @@ export default function Task(props) {
                     </TextField>
                 </Stack>
             </Stack>
-            {
-                user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
-            }
             <Dialog open={isUsersModalOpened} onClose={() => setIsUsersModalOpened(false)} fullScreen>
                 <DialogTitle color="primary"
                     sx={{ backgroundColor: theme.palette.secondary.main }}>
                     Назначение исполнителей
                 </DialogTitle>
                 <DialogContent sx={{ backgroundColor: theme.palette.info.main }}>
-                    <EventUsersList users={event_users} assigned_users={taskAssignedUsers}
+                    <EventUsersList user={user} users={event_users} assigned_users={taskAssignedUsers}
                         assign_callback={(userId, isAssigned) => 
                             assignButtonHandler(userId, isAssigned)} />
                 </DialogContent>

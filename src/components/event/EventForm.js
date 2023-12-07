@@ -200,7 +200,7 @@ export default function EventForm(props) {
                                     label={checkboxLabel} />
                             </Stack>
                             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-                                <TextField id="datetime_start" required
+                                <TextField id="datetime_start"
                                     defaultValue={props.event_data !== null ?
                                         prepareDatetime(props.event_data.datetime_start, true) : ''}
                                     type="datetime-local"

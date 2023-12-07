@@ -58,12 +58,14 @@ export default function EventUsersList(props) {
 
                         return <ContentListItem key={`event_user_${uuidV4()}`} data={{
                             item_info: <EventUserInfo user={user} />,
-                            item_buttons: [
+                            item_buttons: props.user.is_staff? [
                                 getButton(
                                     isUserAssigned? unpinButton : assignButton,
                                     () => props.assign_callback(user.user.id, isUserAssigned)
                                 )
                             ]
+                            :
+                            []
                         }} />
                     })} />
             }

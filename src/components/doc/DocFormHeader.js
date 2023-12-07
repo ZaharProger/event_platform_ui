@@ -35,12 +35,11 @@ export default function DocFormHeader(props) {
         }
     }
 
-    const buttons = [
-        getButton(saveButton, () => props.save_callback(), () => !nameValidation.validate())
-    ]
+    const buttons = []
     if (props.doc_data.is_table || props.user.is_staff) {
         if (props.user.is_staff) {
             buttons.push(
+                getButton(saveButton, () => props.save_callback(), () => !nameValidation.validate()),
                 getButton(addButton, () => props.additional_callback())
             )
         }
