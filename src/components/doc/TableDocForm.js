@@ -132,28 +132,33 @@ export default function TableDocForm(props) {
                 additional_callback={() => addButtonHandler()} />
             {
                 roadMapDocType.length != 0?
-                    docFields.map(docField => {
-                        const taskId = `task_${uuidV4()}`
-                        const foundAssignation = assignedUsers.filter(assignation => {
-                            return assignation.task == docField.id
-                        })
-
-                        let updatedDocField = {
-                            ...docField
-                        }
-                        if (foundAssignation.length != 0) {
-                            updatedDocField.users = users.filter(eventUser => {
-                                return foundAssignation[0].users.includes(eventUser.user.id)
+                    <Stack direction="row" spacing={8} useFlexGap flexWrap="wrap"
+                        justifyContent="center" alignItems="center">
+                        {
+                            docFields.map(docField => {
+                                const taskId = `task_${uuidV4()}`
+                                const foundAssignation = assignedUsers.filter(assignation => {
+                                    return assignation.task == docField.id
+                                })
+        
+                                let updatedDocField = {
+                                    ...docField
+                                }
+                                if (foundAssignation.length != 0) {
+                                    updatedDocField.users = users.filter(eventUser => {
+                                        return foundAssignation[0].users.includes(eventUser.user.id)
+                                    })
+                                }
+        
+                                return <Task key={taskId} task={updatedDocField} 
+                                    user={user} 
+                                    event_users={users}
+                                    assigned_users={assignedUsers}
+                                    sync_callback={() => syncFields()}
+                                    delete_callback={(itemId) => deleteButtonHandler(itemId)} />
                             })
                         }
-
-                        return <Task key={taskId} task={updatedDocField} 
-                            user={user} 
-                            event_users={users}
-                            assigned_users={assignedUsers}
-                            sync_callback={() => syncFields()}
-                            delete_callback={(itemId) => deleteButtonHandler(itemId)} />
-                    })
+                    </Stack>
                     :
                     null
             }
