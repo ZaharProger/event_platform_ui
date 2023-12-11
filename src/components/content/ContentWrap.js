@@ -96,10 +96,11 @@ export default function ContentWrap() {
             }
             else {
                 if (userData !== null && foundItem.length != 0) {
+                    const isOrganizer = foundItem[0].users
+                        .filter(user => user.is_organizer && user.user.id == userData.user.id)
+                        .length != 0
+
                     if (userData.is_staff) {
-                        const isOrganizer = foundItem[0].users
-                            .filter(user => user.is_organizer && user.user.id == userData.user.id).length != 0
-    
                         const preparedCompleteTool = getTool(completeTool, () => {
                             setIsConfirmModalOpened(true)
                             setConfirmCallback(() => {
@@ -140,23 +141,24 @@ export default function ContentWrap() {
                             tools.splice(tools.indexOf(preparedDeleteTool), 1)
                         }
                     }
-                }
-                tools.unshift(
-                    getTool(docsTool, () => {
-                        dispatch(changeSelectedCardTab(docsTool.label))
-                        navigate(`${routes.event_card}${eventId}${routes.event_card_docs}`)
-                    }, {}, selectedTab),
-                    getTool(participantsTool, () => console.log(1), {}, selectedTab),
-                )
-                if (userData.is_staff) {
+
                     tools.unshift(
-                        getTool(mainTool, () => {
-                            dispatch(changeSelectedCardTab(mainTool.label))
-                            navigate(`${routes.event_card}${eventId}`)
+                        getTool(docsTool, () => {
+                            dispatch(changeSelectedCardTab(docsTool.label))
+                            navigate(`${routes.event_card}${eventId}${routes.event_card_docs}`)
                         }, {}, selectedTab),
+                        getTool(participantsTool, () => console.log(1), {}, selectedTab),
                     )
+                    if (isOrganizer) {
+                        tools.unshift(
+                            getTool(mainTool, () => {
+                                dispatch(changeSelectedCardTab(mainTool.label))
+                                navigate(`${routes.event_card}${eventId}`)
+                            }, {}, selectedTab),
+                        )
+                    }
+                    tools.unshift(getTool(backTool))
                 }
-                tools.unshift(getTool(backTool))
             }
         }
         else {
@@ -203,11 +205,12 @@ export default function ContentWrap() {
                     content = <ContentList data={preparedListData.map(listItem => {
                         const buttons = Array()
 
+                        const isOrganizer = listItem.users.filter(user => {
+                            return user.user.id === userData.user.id && user.is_organizer
+                        }).length != 0
+
                         buttons.push(getButton(aboutEventButton, () => setOpenedEvent(listItem)))
-                        if (listItem.is_complete) {
-                            const isOrganizer = listItem.users.filter(user => {
-                                return user.user.id === userData.user.id && user.is_organizer
-                            }).length != 0
+                        if (listItem.is_complete) {                          
                             if (isOrganizer) {
                                 buttons.push(getButton(deleteButton, () => {
                                     setIsConfirmModalOpened(true)
@@ -226,9 +229,9 @@ export default function ContentWrap() {
                             }
                         }
                         else {
-                            buttons.push(getButton(userData.is_staff? editButton : viewButton, () => {
+                            buttons.push(getButton(userData.is_staff ? editButton : viewButton, () => {
                                 let route
-                                if (userData.is_staff) {
+                                if (isOrganizer) {
                                     dispatch(changeSelectedCardTab(mainTool.label))
                                     route = `${routes.event_card}${listItem.id}`
                                 }
@@ -278,7 +281,7 @@ export default function ContentWrap() {
                                 doc_data: foundDoc
                             }
                             if (foundDoc.is_table) {
-                                const docTypes = localStorage.getItem('doc_types') !== null?
+                                const docTypes = localStorage.getItem('doc_types') !== null ?
                                     JSON.parse(localStorage.getItem('doc_types')) : []
                                 let roadMapDocType = ''
                                 if (docTypes.length != 0) {
@@ -300,9 +303,9 @@ export default function ContentWrap() {
                             content = <ContentList data={foundItem[0].docs.map(doc => {
                                 const buttons = [
                                     getButton(downloadButton),
-                                    getButton(userData.is_staff? editButton : viewButton, () => {
+                                    getButton(userData.is_staff ? editButton : viewButton, () => {
                                         dispatch(changeSelectedCardTab(docsTool.label))
-                                        const route = 
+                                        const route =
                                             `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
                                         navigate(route)
                                     })
@@ -317,7 +320,7 @@ export default function ContentWrap() {
                             })} />
                         }
                         else {
-                            const caption = userData.is_staff?
+                            const caption = userData.is_staff ?
                                 'Создайте новый документ для вашего мероприятия!'
                                 :
                                 'Подождите. Скоро здесь появится что-нибудь интересное!'
@@ -328,7 +331,11 @@ export default function ContentWrap() {
                         dispatch(changeSelectedCardTab(participantsTool.label))
                     }
                     else {
-                        if (userData.is_staff) {
+                        const isOrganizer = foundItem[0].users
+                            .filter(eventUser => eventUser.user.id == userData.user.id
+                                && eventUser.is_organizer)
+                            .length != 0
+                        if (isOrganizer) {
                             dispatch(changeSelectedCardTab(mainTool.label))
                             content = <EventForm event_data={foundItem[0]} is_edit={true} />
                         }

@@ -52,20 +52,30 @@ export default function EventUsersList(props) {
                 <ContentList data={props.users
                     .filter(user => user.user.name.includes(searchData) || searchData == '')
                     .map(user => {
-                        const assignedUser = props.assigned_users
+                        const isUserAssigned = props.assigned_users
                             .filter(assignedUserId => assignedUserId == user.user.id)
-                        const isUserAssigned = assignedUser.length != 0
+                            .length != 0
+                        
+                        const isResponsible = props.task.users
+                            .filter(taskUser => taskUser.user.id == user.user.id && taskUser.is_responsible)
+                            .length != 0
 
-                        return <ContentListItem key={`event_user_${uuidV4()}`} data={{
-                            item_info: <EventUserInfo user={user} />,
-                            item_buttons: props.user.is_staff? [
+                        const buttons = []
+                        if (props.is_organizer) {
+                            buttons.push(
                                 getButton(
                                     isUserAssigned? unpinButton : assignButton,
                                     () => props.assign_callback(user.user.id, isUserAssigned)
                                 )
-                            ]
-                            :
-                            []
+                            )
+                        }
+
+                        return <ContentListItem key={`event_user_${uuidV4()}`} data={{
+                            item_info: <EventUserInfo user={user} 
+                                is_edit={props.is_organizer}
+                                is_responsible={isResponsible}
+                                is_assigned={isUserAssigned} />,
+                            item_buttons: buttons
                         }} />
                     })} />
             }

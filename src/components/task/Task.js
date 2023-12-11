@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { changeAssignedUsers } from '../../redux/actions'
 
 export default function Task(props) {
-    const { task, user, event_users, assigned_users, 
+    const { task, user, event_users, assigned_users,
         delete_callback, sync_callback } = props
 
     const theme = useTheme()
@@ -27,7 +27,7 @@ export default function Task(props) {
     const [taskAssignedUsers, setTaskAssignedUsers] = useState(() => {
         let initValue = []
         if (task !== null) {
-            initValue = task.users === undefined? [] : task.users.map(taskUser => taskUser.user.id)
+            initValue = task.users === undefined ? [] : task.users.map(taskUser => taskUser.user.id)
         }
 
         return initValue
@@ -46,7 +46,7 @@ export default function Task(props) {
     const [isUsersModalOpened, setIsUsersModalOpened] = useState(false)
     const dialogButtons = [
         getButton(closeButton, () => {
-            setTaskAssignedUsers(task === null? [] : task.users.map(taskUser => taskUser.user.id))
+            setTaskAssignedUsers(task === null ? [] : task.users.map(taskUser => taskUser.user.id))
             setIsUsersModalOpened(false)
         }),
     ]
@@ -69,12 +69,12 @@ export default function Task(props) {
                             newAssignedUsers = assigned_users.map(assignation => {
                                 const newAssignation = {
                                     task: assignation.task,
-                                    users: assignation.task == task.id? 
+                                    users: assignation.task == task.id ?
                                         [...taskAssignedUsers]
                                         :
                                         [...assignation.users]
                                 }
-    
+
                                 return newAssignation
                             })
                         }
@@ -91,7 +91,7 @@ export default function Task(props) {
                             })
                         }
                     }
-            
+
                     dispatch(changeAssignedUsers(newAssignedUsers))
                     sync_callback()
                 }
@@ -113,7 +113,7 @@ export default function Task(props) {
             },
             '&.Mui-focused fieldset': {
                 borderColor: buttonColors[':hover'].backgroundColor,
-            },
+            }
         }
     }
 
@@ -167,10 +167,14 @@ export default function Task(props) {
         return initColor
     })
 
+    const isOrganizer = event_users
+        .filter(eventUser => eventUser.is_organizer && eventUser.user.id == user.user.id)
+        .length != 0
+
     return (
         <Stack direction="row" spacing={1} className="Task" id={task.id}>
             {
-                user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
+                isOrganizer ? getTool(deleteTool, () => delete_callback(task.id)) : null
             }
             <Stack direction="column" spacing={4}
                 justifyContent="center" alignItems="center"
@@ -178,26 +182,56 @@ export default function Task(props) {
                 bgcolor={`${theme.palette[taskColor].main}50`}
                 borderColor={`${buttonColors.backgroundColor}`} padding="20px 30px">
                 <Stack direction="column" spacing={2} justifyContent="flex-start" alignItems="center">
-                    <TextField id="name" defaultValue={task !== null ? task.name : ''}
-                        disabled={!user.is_staff}
-                        fullWidth label="Название задачи" variant="outlined"
-                        color="secondary" sx={{ ...textFieldStyles }} />
+                    {
+                        isOrganizer ?
+                            <TextField id="name" defaultValue={task !== null ? task.name : ''}
+                                fullWidth label="Название задачи" variant="outlined"
+                                color="secondary" sx={{ ...textFieldStyles }} />
+                            :
+                            <Typography color="secondary" variant="subtitle1" fontWeight="bold">
+                                {
+                                    task !== null ? task.name : ''
+                                }
+                            </Typography>
+                    }
                     <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-                        <TextField id="datetime_start"
-                            disabled={!user.is_staff}
-                            defaultValue={task !== null ?
-                                prepareDatetime(task.datetime_start, true) : ''}
-                            type="datetime-local"
-                            helperText={datetimeStartLabel} variant="outlined"
-                            color="secondary" sx={{ ...textFieldStyles }} />
-                        <TextField id="datetime_end"
-                            disabled={!user.is_staff}
-                            defaultValue={task !== null ?
-                                task.datetime_end !== null ?
-                                    prepareDatetime(task.datetime_end, true) : '' : ''}
-                            type="datetime-local"
-                            helperText={datetimeEndLabel} variant="outlined"
-                            color="secondary" sx={{ ...textFieldStyles }} />
+                        {
+                            isOrganizer ?
+                                <>
+                                    <TextField id="datetime_start"
+                                        defaultValue={task !== null ?
+                                            prepareDatetime(task.datetime_start, true) : ''}
+                                        type="datetime-local"
+                                        helperText={datetimeStartLabel} variant="outlined"
+                                        color="secondary" sx={{ ...textFieldStyles }} />
+                                    <TextField id="datetime_end"
+                                        defaultValue={task !== null ?
+                                            prepareDatetime(task.datetime_end, true) : ''}
+                                        type="datetime-local"
+                                        helperText={datetimeStartLabel} variant="outlined"
+                                        color="secondary" sx={{ ...textFieldStyles }} />
+                                </>
+                                :
+                                task !== null ?
+                                    task.datetime_end === null?
+                                        <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
+                                            {
+                                                `Начало задачи ${prepareDatetime(task.datetime_start)}`
+                                            }
+                                        </Typography>
+                                        :
+                                        <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
+                                            {
+                                                `Начало задачи ${prepareDatetime(task.datetime_start)}`                                               
+                                            }
+                                            <br />
+                                            {
+                                                `Крайний срок ${prepareDatetime(task.datetime_end)}`
+                                            }
+                                        </Typography>
+                                :
+                                null
+                        }
                     </Stack>
                 </Stack>
                 <Stack spacing={4} direction="row" justifyContent="center"
@@ -206,7 +240,7 @@ export default function Task(props) {
                         useFlexGap flexWrap="wrap">
                         {
                             task !== null ?
-                                task.users !== undefined?
+                                task.users !== undefined ?
                                     task.users.map((taskUser, i) => {
                                         return i < 3 ?
                                             <UserIcon key={`task_user_${uuidV4()}`}
@@ -221,30 +255,38 @@ export default function Task(props) {
                         }
                         {
                             getButton(
-                                user.is_staff ? assignButton : viewButton,
+                                isOrganizer ? assignButton : viewButton,
                                 () => setIsUsersModalOpened(true)
                             )
                         }
                     </Stack>
-                    <TextField
-                        id="state"
-                        select
-                        disabled={!user.is_staff}
-                        onChange={(event) => setTaskColor(taskStates.filter(item => {
-                            return item.value == event.target.value
-                        })[0].color)}
-                        label={selectLabel}
-                        sx={{ ...textFieldStyles }}
-                        defaultValue={taskState}
-                        SelectProps={{
-                            native: true,
-                        }}>
-                        {taskStates.map((stateFromSelect) => (
-                            <option key={stateFromSelect.label} value={stateFromSelect.value}>
-                                {stateFromSelect.value}
-                            </option>
-                        ))}
-                    </TextField>
+                    {
+                        isOrganizer ?
+                            <TextField
+                                id="state"
+                                select
+                                onChange={(event) => setTaskColor(taskStates.filter(item => {
+                                    return item.value == event.target.value
+                                })[0].color)}
+                                label={selectLabel}
+                                sx={{ ...textFieldStyles }}
+                                defaultValue={taskState}
+                                SelectProps={{
+                                    native: true,
+                                }}>
+                                {taskStates.map((stateFromSelect) => (
+                                    <option key={stateFromSelect.label} value={stateFromSelect.value}>
+                                        {stateFromSelect.value}
+                                    </option>
+                                ))}
+                            </TextField>
+                            :
+                            <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
+                                {
+                                    taskState
+                                }
+                            </Typography>
+                    }
                 </Stack>
             </Stack>
             <Dialog open={isUsersModalOpened} onClose={() => setIsUsersModalOpened(false)} fullScreen>
@@ -253,8 +295,11 @@ export default function Task(props) {
                     Назначение исполнителей
                 </DialogTitle>
                 <DialogContent sx={{ backgroundColor: theme.palette.info.main }}>
-                    <EventUsersList user={user} users={event_users} assigned_users={taskAssignedUsers}
-                        assign_callback={(userId, isAssigned) => 
+                    <EventUsersList user={user} users={event_users}
+                        task={task}
+                        is_organizer={isOrganizer}
+                        assigned_users={taskAssignedUsers}
+                        assign_callback={(userId, isAssigned) =>
                             assignButtonHandler(userId, isAssigned)} />
                 </DialogContent>
                 <DialogActions sx={{ backgroundColor: theme.palette.info.main }}>
