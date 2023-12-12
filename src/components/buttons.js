@@ -7,10 +7,16 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import SearchIcon from '@mui/icons-material/Search'
+import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
     label: 'Добавить'
+}
+
+export const addNestedButton = {
+    icon: SubdirectoryArrowRightIcon,
+    label: 'Добавить подзадачу'
 }
 
 export const searchButton = {

@@ -5,17 +5,21 @@ import { saveButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
 
 export default function EventUserInfo(props) {
-    const { is_organizer, user: { name, email } } = props.user
+    const { is_organizer, user: { id, name, email } } = props.user
 
     const getColors = useColors()
     const buttonColors = getColors(saveButton)
 
     const checkboxLabel = <Typography variant="subtitle2"
         fontSize="0.8em" color="secondary">
-        Назначен ответственным
+        Назначить ответственным
     </Typography>
 
-    const isResponsible = useValidation(props.is_responsible, null)
+    const isResponsible = useValidation(props.assigned_user !== null ?
+        props.assigned_user.is_responsible : false, null)
+    
+    const responsibleIdsEquals = props.current_responsible.get() != null?
+        props.current_responsible.get().user.id == id : true
 
     return (
         <Stack spacing={1} justifyContent="flex-start" alignItems="center" width="100%">
@@ -28,20 +32,25 @@ export default function EventUserInfo(props) {
                 {email}
             </Typography>
             {
-                props.is_assigned && props.is_edit?
-                    <FormControlLabel sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        marginRight: 'auto!important' 
-                    }}  control={<Checkbox id="is_responsible"
-                            onChange={() => isResponsible.set(!isResponsible.get())}
-                            checked={isResponsible.get()}
-                            sx={{
-                                color: buttonColors.backgroundColor,
-                                "&.Mui-checked": {
-                                    color: buttonColors[':hover'].backgroundColor,
-                                }
-                            }} />}
+                props.assigned_user !== null && props.can_set_responsible && responsibleIdsEquals ?
+                    <FormControlLabel sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginRight: 'auto!important'
+                    }} control={<Checkbox id={`is_responsible_${id}`}
+                        onChange={() => {
+                            const newValue = !isResponsible.get()
+                            isResponsible.set(newValue)
+                            props.assign_callback(id, newValue)
+                            props.current_responsible.set(newValue? props.user : null)
+                        }}
+                        checked={isResponsible.get()}
+                        sx={{
+                            color: buttonColors.backgroundColor,
+                            "&.Mui-checked": {
+                                color: buttonColors[':hover'].backgroundColor,
+                            }
+                        }} />}
                         label={checkboxLabel} />
                     :
                     null
@@ -52,6 +61,18 @@ export default function EventUserInfo(props) {
                         color="secondary" display="block" fontSize="0.8em">
                         Создатель мероприятия
                     </Typography>
+                    :
+                    null
+            }
+            {
+                props.assigned_user !== null ?
+                    props.assigned_user.is_responsible ?
+                        <Typography variant="subtitle1" marginLeft="auto!important"
+                            color="secondary" display="block" fontSize="0.8em">
+                            Ответственное лицо
+                        </Typography>
+                        :
+                        null
                     :
                     null
             }

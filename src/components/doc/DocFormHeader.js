@@ -1,5 +1,5 @@
 import { AppBar, Stack, TextField, useMediaQuery } from '@mui/material'
-import React, { useState } from 'react'
+import React from 'react'
 
 import useButton from '../../hooks/useButton'
 import useColors from '../../hooks/useColors'
@@ -39,12 +39,12 @@ export default function DocFormHeader(props) {
     if (props.doc_data.is_table || props.user.is_staff) {
         if (props.user.is_staff) {
             buttons.push(
-                getButton(saveButton, () => props.save_callback(), () => !nameValidation.validate()),
-                getButton(addButton, () => props.additional_callback())
+                getButton(saveButton, () => props.save_callback(), () => !nameValidation.validate())
             )
         }
         if (props.doc_data.is_table) {
             buttons.push(
+                getButton(addButton, () => props.additional_callback()),
                 getButton(filterButton, (event) => console.log(1))
             )
         }

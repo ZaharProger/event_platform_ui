@@ -17,7 +17,8 @@ const defaultTheme = createTheme({
         main: green[500],
     },
     text: {
-        main: '#000000'
+        main: '#000000',
+        disabled: '#000000'
     },
     action: {
         main: orange[400]

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Stack, TextField, useMediaQuery } from '@mui/material'
 import useButton from '../../hooks/useButton'
 import { assignButton, searchButton, unpinButton } from '../buttons'
@@ -8,6 +8,7 @@ import { v4 as uuidV4 } from "uuid"
 import ContentList from '../content/ContentList'
 import ContentListItem from '../content/ContentListItem'
 import useColors from '../../hooks/useColors'
+import useValidation from '../../hooks/useValidation'
 
 export default function EventUsersList(props) {
     const isMobile = useMediaQuery('(max-width: 1000px)')
@@ -36,8 +37,15 @@ export default function EventUsersList(props) {
         }
     }
 
+    const assignCallback = useCallback((userId, isResponsible, unpin=false) => {
+        props.assign_callback(userId, isResponsible, unpin)
+    }, [props])
+
+    const currentResponsible = useValidation(props.task.users
+        .filter(taskUser => taskUser.is_responsible)[0], null)
+
     return (
-        <Stack direction="column" spacing={4} paddingTop="20px"
+        <Stack direction="column" spacing={4} paddingTop="20px" id="Event-users-list"
             justifyContent="center" alignItems="center" width="100%">
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
                 justifyContent="space-between" alignItems="center">
@@ -50,31 +58,32 @@ export default function EventUsersList(props) {
             </Stack>
             {
                 <ContentList data={props.users
-                    .filter(user => user.user.name.includes(searchData) || searchData == '')
-                    .map(user => {
-                        const isUserAssigned = props.assigned_users
-                            .filter(assignedUserId => assignedUserId == user.user.id)
-                            .length != 0
-                        
-                        const isResponsible = props.task.users
-                            .filter(taskUser => taskUser.user.id == user.user.id && taskUser.is_responsible)
-                            .length != 0
+                    .filter(eventUser => eventUser.user.name.includes(searchData) || searchData == '')
+                    .map(eventUser => {
+                        const foundAssignation = props.assigned_users
+                            .filter(assignedUser => assignedUser.user_id == eventUser.user.id)                  
 
                         const buttons = []
-                        if (props.is_organizer) {
+                        if (props.user.is_staff) {
                             buttons.push(
                                 getButton(
-                                    isUserAssigned? unpinButton : assignButton,
-                                    () => props.assign_callback(user.user.id, isUserAssigned)
+                                    foundAssignation.length != 0 ? unpinButton : assignButton,
+                                    () => assignCallback(
+                                        eventUser.user.id, 
+                                        false, 
+                                        foundAssignation.length != 0
+                                    )
                                 )
                             )
                         }
-
+  
                         return <ContentListItem key={`event_user_${uuidV4()}`} data={{
-                            item_info: <EventUserInfo user={user} 
-                                is_edit={props.is_organizer}
-                                is_responsible={isResponsible}
-                                is_assigned={isUserAssigned} />,
+                            item_info: <EventUserInfo user={eventUser}
+                                assigned_user={foundAssignation.length != 0? foundAssignation[0] : null}
+                                current_responsible={currentResponsible}
+                                can_set_responsible={props.user.is_staff}
+                                assign_callback={(userId, responsibleState) => 
+                                    assignCallback(userId, responsibleState)} />,
                             item_buttons: buttons
                         }} />
                     })} />

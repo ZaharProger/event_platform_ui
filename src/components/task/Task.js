@@ -1,13 +1,13 @@
 import {
     Stack, TextField, Typography, useTheme,
-    Dialog, DialogActions, DialogContent, DialogTitle
+    Dialog, DialogActions, DialogContent, DialogTitle, Container
 } from '@mui/material'
 import React, { useCallback, useState } from 'react'
 
 import { v4 as uuidV4 } from "uuid"
 import useButton from '../../hooks/useButton'
 import useColors from '../../hooks/useColors'
-import { applyButton, assignButton, closeButton, viewButton } from '../buttons'
+import { addNestedButton, applyButton, assignButton, closeButton, viewButton } from '../buttons'
 import { prepareDatetime } from '../../utils'
 import UserIcon from './UserIcon'
 import { deleteTool } from '../toolbar/tools'
@@ -27,17 +27,47 @@ export default function Task(props) {
     const [taskAssignedUsers, setTaskAssignedUsers] = useState(() => {
         let initValue = []
         if (task !== null) {
-            initValue = task.users === undefined ? [] : task.users.map(taskUser => taskUser.user.id)
+            initValue = task.users === undefined ? [] : task.users.map(taskUser => {
+                return {
+                    user_id: taskUser.user.id,
+                    is_responsible: taskUser.is_responsible
+                }
+            })
         }
 
         return initValue
     })
-    const assignButtonHandler = useCallback((userId, isAssigned) => {
-        if (isAssigned) {
-            setTaskAssignedUsers([...taskAssignedUsers].filter(assignedUser => assignedUser != userId))
+    const assignButtonHandler = useCallback((userId, isResponsible, unpin) => {
+        const newAssignation = taskAssignedUsers.map(user => {
+            return {
+                ...user
+            }
+        })
+
+        if (unpin) {
+            setTaskAssignedUsers(newAssignation.filter(assignedUser => assignedUser.user_id != userId))
         }
         else {
-            setTaskAssignedUsers([...taskAssignedUsers, userId])
+            let existingUserIndex = 0
+            const existingUser = newAssignation.filter((user, i) => {
+                const isEqualIds = user.user_id == userId
+                if (isEqualIds) {
+                    existingUserIndex = i
+                }
+
+                return isEqualIds
+            })
+            if (existingUser.length != 0) {
+                newAssignation[existingUserIndex].is_responsible = isResponsible
+            }
+            else {
+                newAssignation.push({
+                    user_id: userId,
+                    is_responsible: isResponsible
+                })
+            }
+
+            setTaskAssignedUsers(newAssignation)
         }
     }, [taskAssignedUsers])
 
@@ -46,19 +76,31 @@ export default function Task(props) {
     const [isUsersModalOpened, setIsUsersModalOpened] = useState(false)
     const dialogButtons = [
         getButton(closeButton, () => {
-            setTaskAssignedUsers(task === null ? [] : task.users.map(taskUser => taskUser.user.id))
+            setTaskAssignedUsers(task === null ? [] : task.users.map(taskUser => {
+                return {
+                    user_id: taskUser.user.id,
+                    is_responsible: taskUser.is_responsible
+                }
+            }))
             setIsUsersModalOpened(false)
         }),
     ]
     if (user.is_staff) {
         dialogButtons.push(
             getButton(applyButton, () => {
+                const savedAssignedUsers = taskAssignedUsers.map(user => {
+                    return {
+                        user_id: user.user_id,
+                        is_responsible: user.is_responsible
+                    }
+                })
+
                 if (task !== null) {
                     let newAssignedUsers = []
                     if (assigned_users.length == 0) {
                         newAssignedUsers.push({
                             task: task.id,
-                            users: [...taskAssignedUsers]
+                            users: savedAssignedUsers
                         })
                     }
                     else {
@@ -70,9 +112,14 @@ export default function Task(props) {
                                 const newAssignation = {
                                     task: assignation.task,
                                     users: assignation.task == task.id ?
-                                        [...taskAssignedUsers]
+                                        savedAssignedUsers
                                         :
-                                        [...assignation.users]
+                                        assignation.users.map(user => {
+                                            return {
+                                                user_id: user.user_id,
+                                                is_responsible: user.is_responsible
+                                            }
+                                        })
                                 }
 
                                 return newAssignation
@@ -82,39 +129,26 @@ export default function Task(props) {
                             newAssignedUsers = assigned_users.map(assignation => {
                                 return {
                                     task: assignation.task,
-                                    users: [...assignation.users]
+                                    users: assignation.users.map(user => {
+                                        return {
+                                            user_id: user.user_id,
+                                            is_responsible: user.is_responsible
+                                        }
+                                    })
                                 }
                             })
                             newAssignedUsers.push({
                                 task: task.id,
-                                users: [...taskAssignedUsers]
+                                users: savedAssignedUsers
                             })
                         }
                     }
-
+                    
                     dispatch(changeAssignedUsers(newAssignedUsers))
-                    sync_callback()
+                    sync_callback(newAssignedUsers)
                 }
             })
         )
-    }
-
-    const getColors = useColors()
-    const buttonColors = getColors(assignButton)
-
-    const textFieldStyles = {
-        '& .MuiOutlinedInput-root': {
-            backgroundColor: buttonColors.color,
-            '& fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&:hover fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: buttonColors[':hover'].backgroundColor,
-            }
-        }
     }
 
     const selectLabel = <Typography variant="subtitle2"
@@ -136,6 +170,7 @@ export default function Task(props) {
         JSON.parse(localStorage.getItem('task_states'))
         :
         [{ label: '', value: '' }]
+
     const taskState = task !== null ?
         taskStates.filter(type => type.value == task.state)[0].value
         :
@@ -167,14 +202,28 @@ export default function Task(props) {
         return initColor
     })
 
-    const isOrganizer = event_users
-        .filter(eventUser => eventUser.is_organizer && eventUser.user.id == user.user.id)
-        .length != 0
+    const getColors = useColors()
+    const buttonColors = getColors(assignButton)
+
+    const textFieldStyles = {
+        '& .MuiOutlinedInput-root': {
+            backgroundColor: user.is_staff ? buttonColors.color : 'transparent',
+            '& fieldset': {
+                borderColor: buttonColors.backgroundColor,
+            },
+            '&:hover fieldset': {
+                borderColor: buttonColors.backgroundColor,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: buttonColors[':hover'].backgroundColor,
+            }
+        }
+    }
 
     return (
         <Stack direction="row" spacing={1} className="Task" id={task.id}>
             {
-                isOrganizer ? getTool(deleteTool, () => delete_callback(task.id)) : null
+                user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
             }
             <Stack direction="column" spacing={4}
                 justifyContent="center" alignItems="center"
@@ -182,125 +231,113 @@ export default function Task(props) {
                 bgcolor={`${theme.palette[taskColor].main}50`}
                 borderColor={`${buttonColors.backgroundColor}`} padding="20px 30px">
                 <Stack direction="column" spacing={2} justifyContent="flex-start" alignItems="center">
-                    {
-                        isOrganizer ?
-                            <TextField id="name" defaultValue={task !== null ? task.name : ''}
-                                fullWidth label="Название задачи" variant="outlined"
-                                color="secondary" sx={{ ...textFieldStyles }} />
-                            :
-                            <Typography color="secondary" variant="subtitle1" fontWeight="bold">
-                                {
-                                    task !== null ? task.name : ''
-                                }
-                            </Typography>
-                    }
+                    <TextField id="name" defaultValue={task !== null ? task.name : ''}
+                        disabled={!user.is_staff}
+                        fullWidth label="Название задачи" variant="outlined"
+                        color="secondary" sx={{ ...textFieldStyles }} />
                     <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
-                        {
-                            isOrganizer ?
-                                <>
-                                    <TextField id="datetime_start"
-                                        defaultValue={task !== null ?
-                                            prepareDatetime(task.datetime_start, true) : ''}
-                                        type="datetime-local"
-                                        helperText={datetimeStartLabel} variant="outlined"
-                                        color="secondary" sx={{ ...textFieldStyles }} />
-                                    <TextField id="datetime_end"
-                                        defaultValue={task !== null ?
-                                            prepareDatetime(task.datetime_end, true) : ''}
-                                        type="datetime-local"
-                                        helperText={datetimeStartLabel} variant="outlined"
-                                        color="secondary" sx={{ ...textFieldStyles }} />
-                                </>
-                                :
-                                task !== null ?
-                                    task.datetime_end === null?
-                                        <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
-                                            {
-                                                `Начало задачи ${prepareDatetime(task.datetime_start)}`
-                                            }
-                                        </Typography>
-                                        :
-                                        <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
-                                            {
-                                                `Начало задачи ${prepareDatetime(task.datetime_start)}`                                               
-                                            }
-                                            <br />
-                                            {
-                                                `Крайний срок ${prepareDatetime(task.datetime_end)}`
-                                            }
-                                        </Typography>
-                                :
-                                null
-                        }
+                        <TextField id="datetime_start"
+                            defaultValue={task !== null ?
+                                prepareDatetime(task.datetime_start, true) : ''}
+                            disabled={!user.is_staff}
+                            type="datetime-local"
+                            helperText={datetimeStartLabel} variant="outlined"
+                            color="secondary" sx={{ ...textFieldStyles }} />
+                        <TextField id="datetime_end"
+                            defaultValue={task !== null ?
+                                prepareDatetime(task.datetime_end, true) : ''}
+                            disabled={!user.is_staff}
+                            type="datetime-local"
+                            helperText={datetimeEndLabel} variant="outlined"
+                            color="secondary" sx={{ ...textFieldStyles }} />
                     </Stack>
                 </Stack>
                 <Stack spacing={4} direction="row" justifyContent="center"
                     alignItems="center" useFlexGap flexWrap="wrap">
-                    <Stack spacing={1} direction="row" justifyContent="center" alignItems="center"
+                    <Stack spacing={3} direction="row" justifyContent="center" alignItems="center"
                         useFlexGap flexWrap="wrap">
-                        {
-                            task !== null ?
-                                task.users !== undefined ?
-                                    task.users.map((taskUser, i) => {
-                                        return i < 3 ?
-                                            <UserIcon key={`task_user_${uuidV4()}`}
-                                                username={taskUser.user.name} />
-                                            :
-                                            null
-                                    })
+                        <Stack direction="column" spacing={1} justifyContent="center" alignItems="center">
+                            {
+                                task !== null ?
+                                    task.users !== undefined ?
+                                        <Stack direction="row" spacing={1} justifyContent="center"
+                                            alignItems="center">
+                                            {
+                                                task.users.map((taskUser, i) => {
+                                                    return i < 3 ?
+                                                        <UserIcon key={`task_user_${uuidV4()}`}
+                                                            is_responsible={taskUser.is_responsible}
+                                                            username={taskUser.user.name} />
+                                                        :
+                                                        null
+                                                })
+                                            }
+                                        </Stack>    
+                                        :
+                                        null
                                     :
                                     null
-                                :
-                                null
-                        }
+                            }
+                            {
+                                task !== null ?
+                                    <Typography color="secondary" variant="caption">
+                                        {
+                                            `Всего исполнителей: ${task.users.length}`
+                                        }
+                                    </Typography>
+                                    :
+                                    null
+                            }
+                        </Stack>
                         {
                             getButton(
-                                isOrganizer ? assignButton : viewButton,
+                                user.is_staff ? assignButton : viewButton,
                                 () => setIsUsersModalOpened(true)
                             )
                         }
                     </Stack>
-                    {
-                        isOrganizer ?
-                            <TextField
-                                id="state"
-                                select
-                                onChange={(event) => setTaskColor(taskStates.filter(item => {
-                                    return item.value == event.target.value
-                                })[0].color)}
-                                label={selectLabel}
-                                sx={{ ...textFieldStyles }}
-                                defaultValue={taskState}
-                                SelectProps={{
-                                    native: true,
-                                }}>
-                                {taskStates.map((stateFromSelect) => (
-                                    <option key={stateFromSelect.label} value={stateFromSelect.value}>
-                                        {stateFromSelect.value}
-                                    </option>
-                                ))}
-                            </TextField>
-                            :
-                            <Typography color="secondary" variant="subtitle1" fontSize="0.9em">
-                                {
-                                    taskState
-                                }
-                            </Typography>
-                    }
+                    <TextField
+                        id="state"
+                        select
+                        onChange={(event) => setTaskColor(taskStates.filter(item => {
+                            return item.value == event.target.value
+                        })[0].color)}
+                        disabled={!user.is_staff}
+                        label={selectLabel}
+                        sx={{ ...textFieldStyles }}
+                        defaultValue={taskState}
+                        SelectProps={{
+                            native: true,
+                        }}>
+                        {taskStates.map((stateFromSelect) => (
+                            <option key={stateFromSelect.label} value={stateFromSelect.value}>
+                                {stateFromSelect.value}
+                            </option>
+                        ))}
+                    </TextField>
                 </Stack>
+                <Container sx={{ justifyContent: 'flex-end', display: 'flex' }}>
+                    {
+                        user.is_staff ?
+                            getButton(addNestedButton, () => console.log(1))
+                            :
+                            null
+                    }
+                </Container>
             </Stack>
             <Dialog open={isUsersModalOpened} onClose={() => setIsUsersModalOpened(false)} fullScreen>
                 <DialogTitle color="primary"
                     sx={{ backgroundColor: theme.palette.secondary.main }}>
-                    Назначение исполнителей
+                    {
+                        task !== null ? task.name : ''
+                    }
                 </DialogTitle>
                 <DialogContent sx={{ backgroundColor: theme.palette.info.main }}>
                     <EventUsersList user={user} users={event_users}
                         task={task}
-                        is_organizer={isOrganizer}
                         assigned_users={taskAssignedUsers}
-                        assign_callback={(userId, isAssigned) =>
-                            assignButtonHandler(userId, isAssigned)} />
+                        assign_callback={(userId, isAssigned, isResponsible) =>
+                            assignButtonHandler(userId, isAssigned, isResponsible)} />
                 </DialogContent>
                 <DialogActions sx={{ backgroundColor: theme.palette.info.main }}>
                     {

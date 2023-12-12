@@ -235,6 +235,10 @@ export default function ContentWrap() {
                                     dispatch(changeSelectedCardTab(mainTool.label))
                                     route = `${routes.event_card}${listItem.id}`
                                 }
+                                else if (userData.is_staff) {
+                                    dispatch(changeSelectedCardTab(participantsTool.label))
+                                    route = `${routes.event_card}${listItem.id}${routes.event_card_participants}`
+                                }
                                 else {
                                     dispatch(changeSelectedCardTab(docsTool.label))
                                     route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
@@ -269,6 +273,10 @@ export default function ContentWrap() {
         else if (location.pathname.includes(routes.event_card)) {
             if (userData !== null && foundItem.length != 0) {
                 if (!userData.is_superuser && !foundItem[0].is_complete) {
+                    const isOrganizer = foundItem[0].users
+                        .filter(user => user.is_organizer && user.user.id == userData.user.id)
+                        .length != 0
+
                     if (location.pathname.includes(routes.event_card_docs)) {
                         dispatch(changeSelectedCardTab(docsTool.label))
                         if (docId !== undefined) {
@@ -329,12 +337,10 @@ export default function ContentWrap() {
                     }
                     else if (location.pathname.includes(routes.event_card_participants)) {
                         dispatch(changeSelectedCardTab(participantsTool.label))
+                        caption = 'Скоро здесь появится что-нибудь интересное'
+                        content = <NotFound additional_caption={caption} />
                     }
                     else {
-                        const isOrganizer = foundItem[0].users
-                            .filter(eventUser => eventUser.user.id == userData.user.id
-                                && eventUser.is_organizer)
-                            .length != 0
                         if (isOrganizer) {
                             dispatch(changeSelectedCardTab(mainTool.label))
                             content = <EventForm event_data={foundItem[0]} is_edit={true} />

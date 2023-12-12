@@ -5,12 +5,18 @@ export default function UserIcon(props) {
     const theme = useTheme()
 
     const splittedName = props.username.split(' ')
+    const iconColor = props.is_responsible? theme.palette.secondary.main : theme.palette.primary.main
+    const textColor = props.is_responsible? theme.palette.primary.main : theme.palette.secondary.main
+
+    const tooltipTitle = `${props.username}${props.is_responsible? ' (Ответственное лицо)' : ''}`
 
     return (
-        <Tooltip title={props.username}>
+        <Tooltip title={tooltipTitle}>
             <Box borderRadius="100%"
-                bgcolor={theme.palette.secondary.main} padding="10px">
-                <Typography color="primary" fontSize="0.5em" textAlign="center">
+                border="2px solid"
+                borderColor={theme.palette.secondary.main}
+                bgcolor={iconColor} padding="10px">
+                <Typography color={textColor} fontSize="0.5em" textAlign="center">
                     {
                         splittedName.length == 1 ?
                             splittedName[0].substring(0, 1).toUpperCase()

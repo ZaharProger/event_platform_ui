@@ -7,6 +7,7 @@ import Task from '../task/Task'
 import { useSelector } from 'react-redux'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host } from '../routes'
+import { logPlugin } from '@babel/preset-env/lib/debug'
 
 export default function TableDocForm(props) {
     const {event_data: {id, users, tasks}, doc_data, user} = props.data
@@ -34,7 +35,7 @@ export default function TableDocForm(props) {
 
     const assignedUsers = useSelector(state => state.assigned_users)
 
-    const getFormData = useCallback((itemToExclude=null) => {
+    const getFormData = useCallback((dataToSync=null, itemToExclude=null) => {
         const className = roadMapDocType.length != 0? 'Task' : ''
         let fieldForms = Array.from(document.getElementsByClassName(className))
         if (itemToExclude !== null) {
@@ -58,12 +59,18 @@ export default function TableDocForm(props) {
                 updatedField[input.id] = formValue
                 
                 if (roadMapDocType.length != 0) {
-                    const assignation = assignedUsers.filter(assignation => {
+                    const usersCollection = dataToSync !== null? dataToSync : assignedUsers
+                    const assignation = usersCollection.filter(assignation => {
                         return assignation.task == updatedField.id
                     })
                     if (assignation.length != 0) {
-                        updatedField.users = users.filter(eventUser => {
-                            return assignation[0].users.includes(eventUser.user.id)
+                        updatedField.users = assignation[0].users.map(assignedUser => {
+                            const foundUser = users
+                                .filter(eventUser => eventUser.user.id == assignedUser.user_id)[0]
+                            return {
+                                ...foundUser,
+                                is_responsible: assignedUser.is_responsible
+                            }
                         })
                     }
                     else {
@@ -107,7 +114,6 @@ export default function TableDocForm(props) {
                 parent: null,
                 name: '',
                 users: [],
-                is_created: true
             })
         }
 
@@ -115,12 +121,12 @@ export default function TableDocForm(props) {
     }, [docFields, roadMapDocType])
 
     const deleteButtonHandler = useCallback((itemId) => {
-        const formData = getFormData(itemId)
+        const formData = getFormData(null, itemId)
         setDocFields(formData)
     }, [docFields])
 
-    const syncFields = useCallback(() => {
-        const formData = getFormData()
+    const syncFields = useCallback((dataToSync) => {
+        const formData = getFormData(dataToSync)
         setDocFields(formData)
     }, [docFields])
 
@@ -132,29 +138,20 @@ export default function TableDocForm(props) {
                 additional_callback={() => addButtonHandler()} />
             {
                 roadMapDocType.length != 0?
-                    <Stack direction="row" spacing={8} useFlexGap flexWrap="wrap"
+                    <Stack direction="row" spacing={3} useFlexGap flexWrap="wrap"
                         justifyContent="center" alignItems="center">
                         {
                             docFields.map(docField => {
                                 const taskId = `task_${uuidV4()}`
-                                const foundAssignation = assignedUsers.filter(assignation => {
-                                    return assignation.task == docField.id
-                                })
-        
                                 let updatedDocField = {
                                     ...docField
                                 }
-                                if (foundAssignation.length != 0) {
-                                    updatedDocField.users = users.filter(eventUser => {
-                                        return foundAssignation[0].users.includes(eventUser.user.id)
-                                    })
-                                }
-        
+
                                 return <Task key={taskId} task={updatedDocField} 
                                     user={user} 
                                     event_users={users}
                                     assigned_users={assignedUsers}
-                                    sync_callback={() => syncFields()}
+                                    sync_callback={(dataToSync) => syncFields(dataToSync)}
                                     delete_callback={(itemId) => deleteButtonHandler(itemId)} />
                             })
                         }
