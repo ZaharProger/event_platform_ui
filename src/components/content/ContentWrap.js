@@ -210,7 +210,7 @@ export default function ContentWrap() {
                         }).length != 0
 
                         buttons.push(getButton(aboutEventButton, () => setOpenedEvent(listItem)))
-                        if (listItem.is_complete) {                          
+                        if (listItem.is_complete) {
                             if (isOrganizer) {
                                 buttons.push(getButton(deleteButton, () => {
                                     setIsConfirmModalOpened(true)
@@ -310,7 +310,24 @@ export default function ContentWrap() {
                         else if (foundItem[0].docs.length != 0) {
                             content = <ContentList data={foundItem[0].docs.map(doc => {
                                 const buttons = [
-                                    getButton(downloadButton),
+                                    getButton(downloadButton, () => {
+                                        const route = `${host}${backendEndpoints.docs}?id=${doc.id}`
+                                        callApi(route, 'GET', null, null, true).then(responseData => {
+                                            if (responseData.status == 200) {
+                                                const contentWrap = document.querySelector('#Content-wrap')
+
+                                                const downloadRef = document.createElement('a')
+                                                downloadRef.href = URL.createObjectURL(responseData.data)
+                                                downloadRef.download = 'doc.xlsx'
+                                                downloadRef.style.display = 'none'
+                                                contentWrap.appendChild(downloadRef)
+
+                                                downloadRef.click()
+                                                URL.revokeObjectURL(downloadRef.href);
+                                                contentWrap.removeChild(downloadRef)
+                                            }
+                                        })
+                                    }),
                                     getButton(userData.is_staff ? editButton : viewButton, () => {
                                         dispatch(changeSelectedCardTab(docsTool.label))
                                         const route =
@@ -405,7 +422,7 @@ export default function ContentWrap() {
     const content = getContent()
 
     return (
-        <Container maxWidth={false} disableGutters sx={{
+        <Container id="Content-wrap" maxWidth={false} disableGutters sx={{
             backgroundColor: theme.palette.secondary,
             display: 'flex',
             flexDirection: 'column',
