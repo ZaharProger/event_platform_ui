@@ -1,11 +1,13 @@
-import React from 'react'
-import { Stack, Typography, FormControlLabel, Checkbox } from '@mui/material'
+import React, { useCallback } from 'react'
+import { Stack, Typography, FormControlLabel, Checkbox, useTheme } from '@mui/material'
 import useColors from '../../hooks/useColors'
 import { saveButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
 
 export default function EventUserInfo(props) {
     const { is_organizer, user: { id, name, email } } = props.user
+
+    const theme = useTheme()
 
     const getColors = useColors()
     const buttonColors = getColors(saveButton)
@@ -20,9 +22,35 @@ export default function EventUserInfo(props) {
     
     const responsibleIdsEquals = props.current_responsible.get() != null?
         props.current_responsible.get().user.id == id : true
+    
+    const getTaskStat = useCallback((as_str=false) => {
+        const relatedTasksAmount = props.event_tasks
+            .filter(eventTask => {
+                return eventTask.users.filter(taskUser => taskUser.user.id == id).length != 0
+            })
+            .length
+
+        return as_str? 
+            `Задействован в ${relatedTasksAmount} из ${props.event_tasks.length} задач`
+            :
+            [relatedTasksAmount, props.event_tasks.length]
+    }, [props])
+
+    const getBusyColor = useCallback(() => {
+        const [relatedTasksAmount, allTasksAmount] = getTaskStat()
+        const taskStat = relatedTasksAmount / allTasksAmount
+        
+        return taskStat < 0.5 ?
+            theme.palette.success.main
+            :
+            taskStat < 0.7 ?
+                theme.palette.action.main
+                :
+                theme.palette.error.main
+    }, [props])
 
     return (
-        <Stack spacing={1} justifyContent="flex-start" alignItems="center" width="100%">
+        <Stack spacing={0} justifyContent="flex-start" alignItems="center" width="100%">
             <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
                 display="block" fontWeight="bold">
                 {name}
@@ -55,6 +83,13 @@ export default function EventUserInfo(props) {
                     :
                     null
             }
+            <Typography variant="caption" marginLeft="auto!important" fontWeight="bold"
+                color="primary" padding="5px 10px" bgcolor={getBusyColor()} 
+                borderRadius="20px 10px 10px 20px">
+                {
+                    getTaskStat(true)
+                }
+            </Typography>
             {
                 is_organizer ?
                     <Typography variant="subtitle1" marginLeft="auto!important"

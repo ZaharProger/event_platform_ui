@@ -149,7 +149,8 @@ export default function TableDocForm(props) {
 
                                 return <Task key={taskId} task={updatedDocField} 
                                     user={user} 
-                                    event_users={users}
+                                    fields={docFields}
+                                    users={users}
                                     assigned_users={assignedUsers}
                                     sync_callback={(dataToSync) => syncFields(dataToSync)}
                                     delete_callback={(itemId) => deleteButtonHandler(itemId)} />

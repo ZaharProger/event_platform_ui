@@ -79,6 +79,8 @@ export default function EventUsersList(props) {
   
                         return <ContentListItem key={`event_user_${uuidV4()}`} data={{
                             item_info: <EventUserInfo user={eventUser}
+                                task={props.task}
+                                event_tasks={props.event_tasks}
                                 assigned_user={foundAssignation.length != 0? foundAssignation[0] : null}
                                 current_responsible={currentResponsible}
                                 can_set_responsible={props.user.is_staff}

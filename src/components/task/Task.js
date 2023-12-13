@@ -14,10 +14,11 @@ import { deleteTool } from '../toolbar/tools'
 import EventUsersList from '../event/EventUsersList'
 import { useDispatch } from 'react-redux'
 import { changeAssignedUsers } from '../../redux/actions'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
 
 export default function Task(props) {
-    const { task, user, event_users, assigned_users,
-        delete_callback, sync_callback } = props
+    const { task, user, assigned_users,
+        delete_callback, sync_callback, users, fields } = props
 
     const theme = useTheme()
 
@@ -269,7 +270,10 @@ export default function Task(props) {
                                                             is_responsible={taskUser.is_responsible}
                                                             username={taskUser.user.name} />
                                                         :
-                                                        null
+                                                        i == 3 ?
+                                                            <AddCircleIcon color="secondary" />
+                                                            :
+                                                            null
                                                 })
                                             }
                                         </Stack>    
@@ -333,8 +337,9 @@ export default function Task(props) {
                     }
                 </DialogTitle>
                 <DialogContent sx={{ backgroundColor: theme.palette.info.main }}>
-                    <EventUsersList user={user} users={event_users}
+                    <EventUsersList user={user} users={users}
                         task={task}
+                        event_tasks={fields}
                         assigned_users={taskAssignedUsers}
                         assign_callback={(userId, isAssigned, isResponsible) =>
                             assignButtonHandler(userId, isAssigned, isResponsible)} />
