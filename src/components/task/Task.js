@@ -225,7 +225,7 @@ export default function Task(props) {
 
     return (
         <Stack direction="row" spacing={0} className="Task" id={task.id}>
-            <Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
+            <Stack direction="column" spacing={2} justifyContent="start" alignItems="center">
                 {
                     getTool(
                         isWrapped ? unwrapTool : wrapTool,
