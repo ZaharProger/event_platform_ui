@@ -7,7 +7,6 @@ import Task from '../task/Task'
 import { useSelector } from 'react-redux'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host } from '../routes'
-import { logPlugin } from '@babel/preset-env/lib/debug'
 
 export default function TableDocForm(props) {
     const {event_data: {id, users, tasks}, doc_data, user} = props.data
