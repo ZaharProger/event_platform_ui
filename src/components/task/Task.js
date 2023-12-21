@@ -1,6 +1,6 @@
 import {
     Stack, TextField, Typography, useTheme,
-    Dialog, DialogActions, DialogContent, DialogTitle, Container
+    Dialog, DialogActions, DialogContent, DialogTitle, Container, Fade, Zoom
 } from '@mui/material'
 import React, { useCallback, useState } from 'react'
 
@@ -10,7 +10,7 @@ import useColors from '../../hooks/useColors'
 import { addNestedButton, applyButton, assignButton, closeButton, viewButton } from '../buttons'
 import { prepareDatetime } from '../../utils'
 import UserIcon from './UserIcon'
-import { deleteTool } from '../toolbar/tools'
+import { deleteTool, unwrapTool, wrapTool } from '../toolbar/tools'
 import EventUsersList from '../event/EventUsersList'
 import { useDispatch } from 'react-redux'
 import { changeAssignedUsers } from '../../redux/actions'
@@ -144,7 +144,7 @@ export default function Task(props) {
                             })
                         }
                     }
-                    
+
                     dispatch(changeAssignedUsers(newAssignedUsers))
                     sync_callback(newAssignedUsers)
                 }
@@ -221,11 +221,21 @@ export default function Task(props) {
         }
     }
 
+    const [isWrapped, setIsWrapped] = useState(true)
+
     return (
-        <Stack direction="row" spacing={1} className="Task" id={task.id}>
-            {
-                user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
-            }
+        <Stack direction="row" spacing={0} className="Task" id={task.id}>
+            <Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
+                {
+                    getTool(
+                        isWrapped ? unwrapTool : wrapTool,
+                        () => setIsWrapped(!isWrapped)
+                    )
+                }
+                {
+                    user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
+                }
+            </Stack>
             <Stack direction="column" spacing={4}
                 justifyContent="center" alignItems="center"
                 marginBottom="30px!important" border="2px solid" borderRadius="10px"
@@ -264,19 +274,23 @@ export default function Task(props) {
                                         <Stack direction="row" spacing={1} justifyContent="center"
                                             alignItems="center">
                                             {
-                                                task.users.map((taskUser, i) => {
-                                                    return i < 3 ?
-                                                        <UserIcon key={`task_user_${uuidV4()}`}
-                                                            is_responsible={taskUser.is_responsible}
-                                                            username={taskUser.user.name} />
-                                                        :
-                                                        i == 3 ?
-                                                            <AddCircleIcon color="secondary" />
+                                                [...task.users]
+                                                    .sort((first, second) => {
+                                                        return second.is_responsible - first.is_responsible
+                                                    })
+                                                    .map((taskUser, i) => {
+                                                        return i < 3 ?
+                                                            <UserIcon key={`task_user_${uuidV4()}`}
+                                                                is_responsible={taskUser.is_responsible}
+                                                                username={taskUser.user.name} />
                                                             :
-                                                            null
-                                                })
+                                                            i == 3 ?
+                                                                <AddCircleIcon color="secondary" />
+                                                                :
+                                                                null
+                                                    })
                                             }
-                                        </Stack>    
+                                        </Stack>
                                         :
                                         null
                                     :
@@ -293,41 +307,54 @@ export default function Task(props) {
                                     null
                             }
                         </Stack>
-                        {
-                            getButton(
-                                user.is_staff ? assignButton : viewButton,
-                                () => setIsUsersModalOpened(true)
-                            )
-                        }
+                        <Zoom in={!isWrapped}>
+                            {
+                                getButton(
+                                    user.is_staff ? assignButton : viewButton,
+                                    () => setIsUsersModalOpened(true),
+                                    null,
+                                    {
+                                        display: isWrapped ? 'none' : 'flex'
+                                    }
+                                )
+                            }
+                        </Zoom>
                     </Stack>
-                    <TextField
-                        id="state"
-                        select
-                        onChange={(event) => setTaskColor(taskStates.filter(item => {
-                            return item.value == event.target.value
-                        })[0].color)}
-                        disabled={!user.is_staff}
-                        label={selectLabel}
-                        sx={{ ...textFieldStyles }}
-                        defaultValue={taskState}
-                        SelectProps={{
-                            native: true,
-                        }}>
-                        {taskStates.map((stateFromSelect) => (
-                            <option key={stateFromSelect.label} value={stateFromSelect.value}>
-                                {stateFromSelect.value}
-                            </option>
-                        ))}
-                    </TextField>
+                    <Zoom in={!isWrapped}>
+                        <TextField
+                            id="state"
+                            select
+                            onChange={(event) => setTaskColor(taskStates.filter(item => {
+                                return item.value == event.target.value
+                            })[0].color)}
+                            disabled={!user.is_staff}
+                            label={selectLabel}
+                            sx={{ ...textFieldStyles, display: isWrapped ? 'none' : 'flex' }}
+                            defaultValue={taskState}
+                            SelectProps={{
+                                native: true,
+                            }}>
+                            {taskStates.map((stateFromSelect) => (
+                                <option key={stateFromSelect.label} value={stateFromSelect.value}>
+                                    {stateFromSelect.value}
+                                </option>
+                            ))}
+                        </TextField>
+                    </Zoom>
                 </Stack>
-                <Container sx={{ justifyContent: 'flex-end', display: 'flex' }}>
-                    {
-                        user.is_staff ?
-                            getButton(addNestedButton, () => console.log(1))
-                            :
-                            null
-                    }
-                </Container>
+                <Zoom in={!isWrapped}>
+                    <Container sx={{
+                        justifyContent: 'flex-end',
+                        display: isWrapped ? 'none' : 'flex'
+                    }}>
+                        {
+                            user.is_staff ?
+                                getButton(addNestedButton, () => console.log(1))
+                                :
+                                null
+                        }
+                    </Container>
+                </Zoom>
             </Stack>
             <Dialog open={isUsersModalOpened} onClose={() => setIsUsersModalOpened(false)} fullScreen>
                 <DialogTitle color="primary"

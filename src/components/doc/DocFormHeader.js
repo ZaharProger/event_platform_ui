@@ -65,7 +65,7 @@ export default function DocFormHeader(props) {
         <AppBar position="sticky" sx={docHeaderStyles} id="Doc-form-header">
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
                 justifyContent="center" alignItems="center">
-                <TextField id="name" required autoFocus fullWidth={!isNearMobile}
+                <TextField id="name" required fullWidth={!isNearMobile}
                     onInput={(event) => nameValidation.set(event.target.value)}
                     defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
                     label="Название" variant="outlined"

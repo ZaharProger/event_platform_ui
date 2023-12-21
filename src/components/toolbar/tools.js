@@ -9,8 +9,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import ShareRoundedIcon from '@mui/icons-material/ShareRounded'
 import HelpIcon from '@mui/icons-material/Help'
-
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import DeleteIcon from '@mui/icons-material/Delete'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+
 import { routes } from '../routes'
 
 
@@ -113,6 +115,20 @@ export const deleteTool = {
 export const helpTool = {
     label: 'Проблемы с входом?',
     icon: HelpIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const unwrapTool = {
+    label: 'Развернуть',
+    icon: UnfoldMoreIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const wrapTool = {
+    label: 'Свернуть',
+    icon: UnfoldLessIcon,
     type: toolTypes.button,
     route: null
 }

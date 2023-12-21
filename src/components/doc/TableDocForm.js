@@ -7,6 +7,7 @@ import Task from '../task/Task'
 import { useSelector } from 'react-redux'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host } from '../routes'
+import ConfirmModal from '../confirmModal/ConfirmModal'
 
 export default function TableDocForm(props) {
     const {event_data: {id, users, tasks}, doc_data, user} = props.data
@@ -119,26 +120,32 @@ export default function TableDocForm(props) {
         setDocFields(formData)
     }, [docFields, roadMapDocType])
 
-    const deleteButtonHandler = useCallback((itemId) => {
-        const formData = getFormData(null, itemId)
+    const [deleteItemId, setDeleteItemId] = useState(-1)
+
+    const confirmButtonHandler = useCallback(() => {
+        const formData = getFormData(null, deleteItemId)
         setDocFields(formData)
-    }, [docFields])
+        setIsConfirmModalOpened(false)
+    }, [docFields, deleteItemId])
 
     const syncFields = useCallback((dataToSync) => {
         const formData = getFormData(dataToSync)
         setDocFields(formData)
     }, [docFields])
 
+    const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
+
     return (
-        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" width="100%">
+        <Stack direction="column" spacing={2} justifyContent="center" 
+            alignItems="center" width="100%">
             <DocFormHeader doc_data={doc_data} 
                 user={user}
                 save_callback={() => saveButtonHandler()}
                 additional_callback={() => addButtonHandler()} />
             {
                 roadMapDocType.length != 0?
-                    <Stack direction="row" spacing={3} useFlexGap flexWrap="wrap"
-                        justifyContent="center" alignItems="center">
+                    <Stack direction="row" spacing={3} justifyContent="center"
+                        alignItems="center" useFlexGap flexWrap="wrap">
                         {
                             docFields.map(docField => {
                                 const taskId = `task_${uuidV4()}`
@@ -152,13 +159,21 @@ export default function TableDocForm(props) {
                                     users={users}
                                     assigned_users={assignedUsers}
                                     sync_callback={(dataToSync) => syncFields(dataToSync)}
-                                    delete_callback={(itemId) => deleteButtonHandler(itemId)} />
+                                    delete_callback={(itemId) => {
+                                        setDeleteItemId(itemId)
+                                        setIsConfirmModalOpened(true)
+                                    }} />
                             })
                         }
                     </Stack>
                     :
                     null
             }
+            <ConfirmModal is_opened={isConfirmModalOpened}
+                close_callback={() => setIsConfirmModalOpened(false)}
+                confirm_callback={() => confirmButtonHandler()}
+                modal_header={'Удаление записи'}
+                modal_content={'Вы действительно хотите удалить эту запись?'} />
         </Stack>
     )
 }
