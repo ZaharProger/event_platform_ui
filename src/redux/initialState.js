@@ -4,5 +4,6 @@ export const defaultState = {
     show_completed_events: false,
     selected_card_tab: null,
     trigger: false,
-    assigned_users: Array()
+    assigned_users: Array(),
+    wrapped_task_id: null
 }

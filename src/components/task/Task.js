@@ -1,6 +1,6 @@
 import {
     Stack, TextField, Typography, useTheme,
-    Dialog, DialogActions, DialogContent, DialogTitle, Container, Fade, Zoom
+    Dialog, DialogActions, DialogContent, DialogTitle, Container, Zoom
 } from '@mui/material'
 import React, { useCallback, useState } from 'react'
 
@@ -13,13 +13,15 @@ import UserIcon from './UserIcon'
 import { deleteTool, unwrapTool, wrapTool } from '../toolbar/tools'
 import EventUsersList from '../event/EventUsersList'
 import { useDispatch } from 'react-redux'
-import { changeAssignedUsers } from '../../redux/actions'
+import { changeAssignedUsers, changeWrappedTaskId } from '../../redux/actions'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 
 export default function Task(props) {
-    const { task, user, assigned_users,
-        delete_callback, sync_callback, users, fields } = props
+    const { task, user, assigned_users, wrap_callback,
+        delete_callback, sync_callback, users, fields, is_wrapped } = props
 
+    const dispatch = useDispatch()
+    
     const theme = useTheme()
 
     const getButton = useButton(false)
@@ -71,8 +73,6 @@ export default function Task(props) {
             setTaskAssignedUsers(newAssignation)
         }
     }, [taskAssignedUsers])
-
-    const dispatch = useDispatch()
 
     const [isUsersModalOpened, setIsUsersModalOpened] = useState(false)
     const dialogButtons = [
@@ -221,19 +221,30 @@ export default function Task(props) {
         }
     }
 
-    const [isWrapped, setIsWrapped] = useState(true)
-
     return (
         <Stack direction="row" spacing={0} className="Task" id={task.id}>
-            <Stack direction="column" spacing={2} justifyContent="start" alignItems="center">
+            <Stack direction="column" spacing={2} 
+                justifyContent="start" alignItems={is_wrapped ? 'center' : 'start'}>
                 {
                     getTool(
-                        isWrapped ? unwrapTool : wrapTool,
-                        () => setIsWrapped(!isWrapped)
+                        is_wrapped? unwrapTool : wrapTool,
+                        () => {
+                            if (is_wrapped) {
+                                wrap_callback(false)
+                                dispatch(changeWrappedTaskId(task.id))
+                            }
+                            else {
+                                wrap_callback(true)
+                                dispatch(changeWrappedTaskId(null))
+                            }
+                        }
                     )
                 }
                 {
-                    user.is_staff ? getTool(deleteTool, () => delete_callback(task.id)) : null
+                    user.is_staff && is_wrapped ? 
+                        getTool(deleteTool, () => delete_callback(task.id)) 
+                        : 
+                        null
                 }
             </Stack>
             <Stack direction="column" spacing={4}
@@ -307,20 +318,20 @@ export default function Task(props) {
                                     null
                             }
                         </Stack>
-                        <Zoom in={!isWrapped}>
+                        <Zoom in={!is_wrapped}>
                             {
                                 getButton(
                                     user.is_staff ? assignButton : viewButton,
                                     () => setIsUsersModalOpened(true),
                                     null,
                                     {
-                                        display: isWrapped ? 'none' : 'flex'
+                                        display: is_wrapped ? 'none' : 'flex'
                                     }
                                 )
                             }
                         </Zoom>
                     </Stack>
-                    <Zoom in={!isWrapped}>
+                    <Zoom in={!is_wrapped}>
                         <TextField
                             id="state"
                             select
@@ -329,7 +340,10 @@ export default function Task(props) {
                             })[0].color)}
                             disabled={!user.is_staff}
                             label={selectLabel}
-                            sx={{ ...textFieldStyles, display: isWrapped ? 'none' : 'flex' }}
+                            sx={{ 
+                                ...textFieldStyles, 
+                                display: is_wrapped ? 'none' : 'flex' 
+                            }}
                             defaultValue={taskState}
                             SelectProps={{
                                 native: true,
@@ -342,10 +356,10 @@ export default function Task(props) {
                         </TextField>
                     </Zoom>
                 </Stack>
-                <Zoom in={!isWrapped}>
+                <Zoom in={!is_wrapped}>
                     <Container sx={{
                         justifyContent: 'flex-end',
-                        display: isWrapped ? 'none' : 'flex'
+                        display: is_wrapped ? 'none' : 'flex'
                     }}>
                         {
                             user.is_staff ?

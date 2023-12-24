@@ -34,6 +34,7 @@ export default function TableDocForm(props) {
     })
 
     const assignedUsers = useSelector(state => state.assigned_users)
+    const wrappedTaskId = useSelector(state => state.wrapped_task_id)
 
     const getFormData = useCallback((dataToSync=null, itemToExclude=null) => {
         const className = roadMapDocType.length != 0? 'Task' : ''
@@ -42,9 +43,10 @@ export default function TableDocForm(props) {
             fieldForms = fieldForms.filter(fieldForm => fieldForm.id != itemToExclude)
         }
    
-        return fieldForms.map((fieldForm, i) => {
+        return fieldForms.map(fieldForm => {
             const updatedField = {}
-            updatedField.id = docFields[i].id
+            const foundField = docFields.filter(docField => docField.id == fieldForm.id)
+            updatedField.id = foundField[0].id
             
             fieldForm.querySelectorAll('input, textarea, select').forEach(input => {
                 let formValue = input.value
@@ -74,7 +76,7 @@ export default function TableDocForm(props) {
                         })
                     }
                     else {
-                        updatedField.users = docFields[i].users
+                        updatedField.users = foundField[0].users
                     }
                     
                     updatedField.parent = null
@@ -128,42 +130,75 @@ export default function TableDocForm(props) {
         setIsConfirmModalOpened(false)
     }, [docFields, deleteItemId])
 
-    const syncFields = useCallback((dataToSync) => {
+    const syncFields = useCallback((dataToSync, append=false) => {
         const formData = getFormData(dataToSync)
-        setDocFields(formData)
+        if (append) {
+            setDocFields(docFields.map(docField => {
+                return docField.id !== formData[0].id ?
+                    {...docField}
+                    :
+                    formData[0]
+            }))
+        }
+        else {
+            setDocFields(formData)
+        }
     }, [docFields])
+
+    const getTasks = useCallback(() => {
+        let tasks = []
+
+        if (wrappedTaskId !== null) {
+            tasks = docFields.filter(docField => docField.id === wrappedTaskId)
+        }
+        else {
+            tasks = docFields.map(docField => {
+                return {
+                    ...docField
+                }
+            })
+        }
+
+        return tasks.map(docField => {
+            const taskId = `task_${uuidV4()}`
+            let updatedDocField = {
+                ...docField
+            }
+
+            return <Task key={taskId} task={updatedDocField} 
+                user={user} 
+                fields={docFields}
+                users={users}
+                assigned_users={assignedUsers}
+                is_wrapped={wrappedTaskId !== updatedDocField.id}
+                wrap_callback={(is_unwrapped) => syncFields(null, is_unwrapped)}
+                sync_callback={(dataToSync) => syncFields(dataToSync, true)}
+                delete_callback={(itemId) => {
+                    setDeleteItemId(itemId)
+                    setIsConfirmModalOpened(true)
+                }} />
+        })
+    }, [docFields, wrappedTaskId, user, users, assignedUsers])
 
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center" 
             alignItems="center" width="100%">
-            <DocFormHeader doc_data={doc_data} 
-                user={user}
-                save_callback={() => saveButtonHandler()}
-                additional_callback={() => addButtonHandler()} />
+            {
+                wrappedTaskId !== null ?
+                    null
+                    :
+                    <DocFormHeader doc_data={doc_data} user={user}
+                        save_callback={() => saveButtonHandler()}
+                        additional_callback={() => addButtonHandler()} />
+            }
             {
                 roadMapDocType.length != 0?
                     <Stack direction="row" spacing={3} justifyContent="center"
                         alignItems="center" useFlexGap flexWrap="wrap">
                         {
-                            docFields.map(docField => {
-                                const taskId = `task_${uuidV4()}`
-                                let updatedDocField = {
-                                    ...docField
-                                }
-
-                                return <Task key={taskId} task={updatedDocField} 
-                                    user={user} 
-                                    fields={docFields}
-                                    users={users}
-                                    assigned_users={assignedUsers}
-                                    sync_callback={(dataToSync) => syncFields(dataToSync)}
-                                    delete_callback={(itemId) => {
-                                        setDeleteItemId(itemId)
-                                        setIsConfirmModalOpened(true)
-                                    }} />
-                            })
+                            getTasks()
                         }
                     </Stack>
                     :
