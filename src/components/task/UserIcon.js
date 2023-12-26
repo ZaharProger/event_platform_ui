@@ -16,7 +16,7 @@ export default function UserIcon(props) {
                 border="2px solid"
                 borderColor={theme.palette.secondary.main}
                 bgcolor={iconColor} padding="10px">
-                <Typography color={textColor} fontSize="0.5em" textAlign="center">
+                <Typography color={textColor} fontSize={`${props.font_size}`} textAlign="center">
                     {
                         splittedName.length == 1 ?
                             splittedName[0].substring(0, 1).toUpperCase()

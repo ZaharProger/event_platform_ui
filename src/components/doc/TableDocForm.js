@@ -113,7 +113,7 @@ export default function TableDocForm(props) {
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
-            alignItems="center" width="100%">
+            alignItems="center">
             <DocFormHeader doc_data={doc_data} user={user}
                 save_callback={() => saveButtonHandler()}
                 additional_callback={() => addButtonHandler()} />
