@@ -20,8 +20,8 @@ export default function EventUserInfo(props) {
     const isResponsible = useValidation(props.assigned_user !== null ?
         props.assigned_user.is_responsible : false, null)
     
-    const responsibleIdsEquals = props.current_responsible.get() != null?
-        props.current_responsible.get().user.id == id : true
+    const responsibleIdsEquals = props.current_responsible.get() !== undefined?
+        props.current_responsible.get().user_id == id : true
     
     const getTaskStat = useCallback((as_str=false) => {
         const relatedTasksAmount = props.event_tasks
@@ -69,7 +69,7 @@ export default function EventUserInfo(props) {
                         onChange={() => {
                             const newValue = !isResponsible.get()
                             isResponsible.set(newValue)
-                            props.assign_callback(id, newValue)
+                            props.set_responsible_callback(id, newValue)
                             props.current_responsible.set(newValue? props.user : null)
                         }}
                         checked={isResponsible.get()}

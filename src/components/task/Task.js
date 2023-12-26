@@ -40,7 +40,8 @@ export default function Task(props) {
 
         return initValue
     })
-    const assignButtonHandler = useCallback((userId, isResponsible, unpin) => {
+
+    const assignButtonHandler = useCallback((userId, unpin) => {
         const newAssignation = taskAssignedUsers.map(user => {
             return {
                 ...user
@@ -48,27 +49,17 @@ export default function Task(props) {
         })
 
         if (unpin) {
-            setTaskAssignedUsers(newAssignation.filter(assignedUser => assignedUser.user_id != userId))
+            setTaskAssignedUsers(newAssignation
+                .filter(assignedUser => assignedUser.user_id != userId))
         }
         else {
-            let existingUserIndex = 0
-            const existingUser = newAssignation.filter((user, i) => {
-                const isEqualIds = user.user_id == userId
-                if (isEqualIds) {
-                    existingUserIndex = i
-                }
-
-                return isEqualIds
+            const hasResponsible = newAssignation
+                .filter(assignedUser => assignedUser.is_responsible)
+                .length != 0
+            newAssignation.push({
+                user_id: userId,
+                is_responsible: !hasResponsible
             })
-            if (existingUser.length != 0) {
-                newAssignation[existingUserIndex].is_responsible = isResponsible
-            }
-            else {
-                newAssignation.push({
-                    user_id: userId,
-                    is_responsible: isResponsible
-                })
-            }
 
             setTaskAssignedUsers(newAssignation)
         }
@@ -379,11 +370,11 @@ export default function Task(props) {
                 </DialogTitle>
                 <DialogContent sx={{ backgroundColor: theme.palette.info.main }}>
                     <EventUsersList user={user} users={users}
-                        task={task}
                         event_tasks={fields}
                         assigned_users={taskAssignedUsers}
-                        assign_callback={(userId, isAssigned, isResponsible) =>
-                            assignButtonHandler(userId, isAssigned, isResponsible)} />
+                        assigned_users_callback={(newUsers) => setTaskAssignedUsers(newUsers)}
+                        assign_callback={(userId, unpin) =>
+                            assignButtonHandler(userId, unpin)} />
                 </DialogContent>
                 <DialogActions sx={{ backgroundColor: theme.palette.info.main }}>
                     {

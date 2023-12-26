@@ -37,12 +37,35 @@ export default function EventUsersList(props) {
         }
     }
 
-    const assignCallback = useCallback((userId, isResponsible, unpin=false) => {
-        props.assign_callback(userId, isResponsible, unpin)
-    }, [props])
+    const setResponsibleHandler = useCallback((userId, isResponsible) => {
+        const newAssignation = props.assigned_users.map(user => {
+            return {
+                ...user
+            }
+        })
 
-    const currentResponsible = useValidation(props.task.users
-        .filter(taskUser => taskUser.is_responsible)[0], null)
+        let existingUserIndex = 0
+        const existingUser = newAssignation.filter((user, i) => {
+            const isEqualIds = user.user_id == userId
+            if (isEqualIds) {
+                existingUserIndex = i
+            }
+
+            return isEqualIds
+        })
+
+        if (existingUser.length != 0) {
+            newAssignation[existingUserIndex].is_responsible = isResponsible
+            props.assigned_users_callback(newAssignation)
+        }
+    }, [props.assigned_users])
+
+    const responsibleUser = props.assigned_users
+        .filter(assignedUser => assignedUser.is_responsible)[0]
+    const currentResponsible = useValidation(responsibleUser, null)
+    if (currentResponsible.get() !== responsibleUser) {
+        currentResponsible.set(responsibleUser)
+    }
 
     return (
         <Stack direction="column" spacing={4} paddingTop="20px" id="Event-users-list"
@@ -68,9 +91,8 @@ export default function EventUsersList(props) {
                             buttons.push(
                                 getButton(
                                     foundAssignation.length != 0 ? unpinButton : assignButton,
-                                    () => assignCallback(
+                                    () => props.assign_callback(
                                         eventUser.user.id, 
-                                        false, 
                                         foundAssignation.length != 0
                                     )
                                 )
@@ -79,13 +101,12 @@ export default function EventUsersList(props) {
   
                         return <ContentListItem key={`event_user_${uuidV4()}`} data={{
                             item_info: <EventUserInfo user={eventUser}
-                                task={props.task}
                                 event_tasks={props.event_tasks}
                                 assigned_user={foundAssignation.length != 0? foundAssignation[0] : null}
                                 current_responsible={currentResponsible}
                                 can_set_responsible={props.user.is_staff}
-                                assign_callback={(userId, responsibleState) => 
-                                    assignCallback(userId, responsibleState)} />,
+                                set_responsible_callback={(userId, responsibleState) => 
+                                    setResponsibleHandler(userId, responsibleState)} />,
                             item_buttons: buttons
                         }} />
                     })} />
