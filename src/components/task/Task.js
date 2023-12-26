@@ -179,7 +179,7 @@ export default function Task(props) {
             </Stack>
             <Stack direction="column" spacing={1} width="100%"
                 justifyContent="center" alignItems="center">
-                <Stack spacing={0} direction="row" 
+                <Stack spacing={2} direction="row" 
                     justifyContent="center" marginRight="auto!important"
                     alignItems="center" useFlexGap flexWrap="wrap">
                     <Stack direction="column" spacing={1}
@@ -206,7 +206,7 @@ export default function Task(props) {
                         )
                     }
                 </Stack>
-                <Stack direction="row" spacing={0} marginRight="auto!important"
+                <Stack direction="row" spacing={2} marginRight="auto!important"
                     justifyContent="center" alignItems="center" 
                     useFlexGap flexWrap="wrap">
                     {
