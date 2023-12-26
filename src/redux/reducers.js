@@ -1,5 +1,6 @@
 import { defaultState } from "./initialState"
-import {DATA, TRIGGER, SELECTED_CARD_TAB, SHOW_COMPLETED_EVENTS, USER, ASSIGNED_USERS, WRAPPED_TASK_ID} from './constants'
+import {DATA, TRIGGER, SELECTED_CARD_TAB, 
+    SHOW_COMPLETED_EVENTS, USER, ASSIGNED_USERS} from './constants'
 
 export function defaultReducer(state=defaultState, action) {
     switch(action.type) {
@@ -32,11 +33,6 @@ export function defaultReducer(state=defaultState, action) {
             return {
                 ...state,
                 assigned_users: action.assigned_users
-            }
-        case WRAPPED_TASK_ID:
-            return {
-                ...state,
-                wrapped_task_id: action.wrapped_task_id
             }
         default:
             return state

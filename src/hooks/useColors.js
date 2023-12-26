@@ -1,17 +1,17 @@
 import { useTheme } from "@mui/material"
 import {
-    unpinButton, deleteButton, cancelButton,
+    deleteButton, cancelButton,
     excludeButton, signOutButton
 } from "../components/buttons"
-import { deleteTool } from "../components/toolbar/tools"
+import { deleteTool, unpinTool } from "../components/toolbar/tools"
 
 export default function useColors() {
     const theme = useTheme()
 
     return function (button, isTool=false, compareWith=null) {
-        const negativeTools = [deleteTool]
+        const negativeTools = [deleteTool, unpinTool]
         const negativeButtons = [
-            deleteButton, unpinButton, cancelButton,
+            deleteButton, cancelButton,
             excludeButton, signOutButton
         ]
 

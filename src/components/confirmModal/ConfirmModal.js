@@ -4,7 +4,7 @@ import useButton from '../../hooks/useButton'
 import { cancelButton, continueButton } from '../buttons'
 
 export default function ConfirmModal(props) {
-    const getButton = useButton()
+    const getButton = useButton(false)
     const buttons = [
         getButton(cancelButton, () => props.close_callback()),
         getButton(continueButton, () => {

@@ -297,11 +297,13 @@ export default function ContentWrap() {
                                     roadMapDocType = roadMapDocType[0].value.toLocaleLowerCase()
                                 }
 
+                                let isRoadmap = false
                                 if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
+                                    isRoadmap = true
                                     docData.event_data.users = foundItem[0].users
                                     docData.event_data.tasks = foundItem[0].tasks
                                 }
-                                content = <TableDocForm data={docData} />
+                                content = <TableDocForm data={docData} is_roadmap={isRoadmap} />
                             }
                             else {
                                 content = <TextDocForm data={docData} />

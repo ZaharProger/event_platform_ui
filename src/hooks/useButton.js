@@ -6,7 +6,7 @@ import Tool from "../components/toolbar/Tool"
 import useColors from './useColors'
 
 export default function useButton(isTool) {
-    const getColors = useColors(isTool)
+    const getColors = useColors()
     const navigate = useNavigate()
 
     return isTool? function (tool, custom_callback=null, additional_styles={}, compareWith=null) {

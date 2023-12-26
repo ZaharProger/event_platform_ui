@@ -1,22 +1,16 @@
 import InfoIcon from '@mui/icons-material/Info'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import SearchIcon from '@mui/icons-material/Search'
-import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
     label: 'Добавить'
-}
-
-export const addNestedButton = {
-    icon: SubdirectoryArrowRightIcon,
-    label: 'Добавить подзадачу'
 }
 
 export const searchButton = {
@@ -67,16 +61,6 @@ export const applyButton = {
 export const saveButton = {
     icon: null,
     label: 'Сохранить'
-}
-
-export const assignButton = {
-    icon: AddCircleRoundedIcon,
-    label: 'Назначить'
-}
-
-export const unpinButton = {
-    icon: RemoveCircleIcon,
-    label: 'Открепить'
 }
 
 export const inviteButton = {

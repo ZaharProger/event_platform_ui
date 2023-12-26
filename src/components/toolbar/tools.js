@@ -9,9 +9,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import ShareRoundedIcon from '@mui/icons-material/ShareRounded'
 import HelpIcon from '@mui/icons-material/Help'
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import DeleteIcon from '@mui/icons-material/Delete'
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight'
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { routes } from '../routes'
 
@@ -31,6 +32,13 @@ export const createTool = {
 export const addTool = {
     label: 'Добавить',
     icon: AddCircleRoundedIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const viewTool = {
+    label: 'Ознакомиться',
+    icon: VisibilityIcon,
     type: toolTypes.button,
     route: null
 }
@@ -119,16 +127,23 @@ export const helpTool = {
     route: null
 }
 
-export const unwrapTool = {
-    label: 'Развернуть',
-    icon: UnfoldMoreIcon,
+export const addNestedTool = {
+    label: 'Подзадачи',
+    icon: SubdirectoryArrowRightIcon,
     type: toolTypes.button,
     route: null
 }
 
-export const wrapTool = {
-    label: 'Свернуть',
-    icon: UnfoldLessIcon,
+export const assignTool = {
+    label: 'Назначить',
+    icon: AddCircleRoundedIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const unpinTool = {
+    label: 'Открепить',
+    icon: RemoveCircleIcon,
     type: toolTypes.button,
     route: null
 }
