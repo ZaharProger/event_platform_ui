@@ -1,4 +1,4 @@
-import { Container, Drawer, useTheme } from '@mui/material'
+import { Container, Drawer, Zoom, useTheme } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -434,25 +434,29 @@ export default function ContentWrap() {
             {
                 content !== null ? <Toolbar tools={buildTools()} /> : null
             }
-            <Container maxWidth="lg" sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: listData.length != 0 || location.pathname === routes.create_event ?
-                    theme.palette.info.main : theme.palette.primary.main,
-                borderRadius: 10,
-                width: '100%',
-                padding: '20px',
-                margin: '20px auto 20px auto'
-            }}>
-                {
-                    content
-                }
-            </Container>
-            <Drawer anchor="top" open={isProfileOpened} onClose={() => setIsProfileOpened(false)}>
+            <Zoom in={true} timeout={600}>
+                <Container maxWidth="lg" sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: listData.length != 0 || location.pathname === routes.create_event ?
+                        theme.palette.info.main : theme.palette.primary.main,
+                    borderRadius: 10,
+                    width: '100%',
+                    padding: '20px',
+                    margin: '20px auto 20px auto'
+                }}>
+                    {
+                        content
+                    }
+                </Container>
+            </Zoom>
+            <Drawer anchor="top" open={isProfileOpened}
+                onClose={() => setIsProfileOpened(false)}>
                 <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
             </Drawer>
-            <JoinModal is_opened={isJoinModalOpened} close_callback={() => setIsJoinModalOpened(false)} />
+            <JoinModal is_opened={isJoinModalOpened}
+                close_callback={() => setIsJoinModalOpened(false)} />
             <MoreModal is_opened={openedEvent !== null} data={{
                 event_info: openedEvent,
                 user: userData

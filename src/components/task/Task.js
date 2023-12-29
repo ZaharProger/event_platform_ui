@@ -9,7 +9,7 @@ import TaskInfo from "./TaskInfo"
 import { changeUsersSideTasksIds } from '../../redux/actions'
 
 export default function Task(props) {
-    const { task, user, event_tasks, event_users, 
+    const { task, user, event_tasks, event_users,
         sync_callback, delete_callback, update_callback } = props
 
     const dispatch = useDispatch()
@@ -84,13 +84,16 @@ export default function Task(props) {
                 borderRadius: '10px',
                 padding: '20px 30px',
                 width: 'auto!important',
-                margin: '0'
+                margin: '0',
             }}>
             <TaskUsersSide is_visible={isTaskUsersSide} task={task}
                 users={event_users} tasks={event_tasks}
                 text_field_styles={textFieldStyles}
                 task_tool_styles={taskToolStyles}
-                update_callback={(newData) => update_callback(newData)}
+                update_callback={(newData) => {
+                    sync_callback()
+                    update_callback(newData)
+                }}
                 close_callback={() => dispatch(
                     changeUsersSideTasksIds(usersSideTasksIds.filter(taskId => {
                         return taskId != task.id

@@ -45,8 +45,8 @@ export default function Auth() {
     const getTool = useButton(true)
     const getColors = useColors()
     const button = getButton(
-        signInButton, 
-        () => authButtonHandler(), 
+        signInButton,
+        () => authButtonHandler(),
         () => !(usernameValidation.validate() && passwordValidation.validate())
     )
     const buttonColors = getColors(signInButton)
@@ -74,51 +74,58 @@ export default function Auth() {
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme.palette.info.main,
-            borderRadius: isMobile? '0' : '100%',
+            borderRadius: isMobile ? '0' : '100%',
             padding: '50px 100px',
-            margin: 'auto'
+            margin: 'auto',
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'visible',
+            transition: '0.8s ease-out',
+            transform: isHelpOpened ? 'rotateY(360deg)' : 'none'
         }}>
-            <Stack direction="column" spacing={0} display="flex" margin="50px auto auto auto"
+            <Stack direction="column" spacing={3} display="flex"
+                margin="50px auto auto auto"
                 justifyContent="center" alignItems="center">
-                <Fade in={!isHelpOpened}>
-                    <Stack direction="column" spacing={5} justifyContent="center" alignItems="center">
-                        <Icon sx={{transform: 'scale(2.5)', width: 100}}>
+                <Fade in={!isHelpOpened} timeout={2500}>
+                    <Stack direction="column" spacing={5} justifyContent="center"
+                        alignItems="center" display={isHelpOpened ? 'none' : 'flex'}>
+                        <Icon sx={{ transform: 'scale(2.5)', width: 100 }}>
                             <img src={logo} />
                         </Icon>
-                        <Stack direction="column" spacing={1} 
+                        <Stack direction="column" spacing={1}
                             justifyContent="center" alignItems="center">
                             <TextField id="username" label="Ваш логин"
                                 onInput={(event) => usernameValidation.set(event.target.value)}
-                                variant="standard" color="secondary" sx={{...textFieldStyles}} />
+                                variant="standard" color="secondary" sx={{ ...textFieldStyles }} />
                             <TextField id="password" label="Ваш пароль" type="password"
                                 onInput={(event) => passwordValidation.set(event.target.value)}
-                                variant="standard" color="secondary" sx={{...textFieldStyles}} />
+                                variant="standard" color="secondary" sx={{ ...textFieldStyles }} />
                         </Stack>
                         {
                             button
                         }
                         {
-                            errorMessage.get() !== null?
-                            <Typography variant="subtitle2" display="block" 
-                                color="error" textAlign="center">
-                                {
-                                    errorMessage.get()
-                                }
-                            </Typography>
-                            :
-                            null
+                            errorMessage.get() !== null ?
+                                <Typography variant="subtitle2" display="block"
+                                    color="error" textAlign="center">
+                                    {
+                                        errorMessage.get()
+                                    }
+                                </Typography>
+                                :
+                                null
                         }
                     </Stack>
                 </Fade>
-                <Fade in={isHelpOpened}>
-                    <Stack direction="column" spacing={2} sx={{transform: 'translateY(-200px)'}}
+                <Fade in={isHelpOpened} timeout={2500}>
+                    <Stack direction="column" spacing={2} display={isHelpOpened ? 'flex' : 'none'}
+                        sx={{ transform: 'translateY(-50px)' }}
                         justifyContent="center" alignItems="center">
-                        <Typography variant="subtitle2" display="block" 
+                        <Typography variant="subtitle2" display="block"
                             color="secondary" textAlign="center"
                             fontSize="1.2em" fontWeight="bold">
                             Как войти в систему?
                         </Typography>
-                        <Typography variant="subtitle2" display="block" 
+                        <Typography variant="subtitle2" display="block"
                             textAlign="center" color="secondary">
                             Для входа в систему необходимо ввести логин и пароль, полученные
                             от вашего администратора
@@ -126,7 +133,7 @@ export default function Auth() {
                     </Stack>
                 </Fade>
                 {
-                    isHelpOpened? backToolComponent : helpToolComponent
+                    isHelpOpened ? backToolComponent : helpToolComponent
                 }
             </Stack>
         </Container>
