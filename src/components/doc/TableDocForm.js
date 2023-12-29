@@ -121,7 +121,7 @@ export default function TableDocForm(props) {
 
         let overworkComponent = null
         if (overworkData.length != 0) {
-            const notificationHeader = 'Устраните переработку среди участников организационного комитета:'
+            const notificationHeader = 'Переработка среди участников организационного комитета:'
             overworkComponent = <Notification header={notificationHeader} color={'error'} data={
                 overworkData
                     .map(([username, tasksAmount]) => {
