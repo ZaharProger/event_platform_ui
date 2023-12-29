@@ -9,7 +9,8 @@ import TaskInfo from "./TaskInfo"
 import { changeUsersSideTasksIds } from '../../redux/actions'
 
 export default function Task(props) {
-    const { task, user, event_tasks, event_users, delete_callback, update_callback } = props
+    const { task, user, event_tasks, event_users, 
+        sync_callback, delete_callback, update_callback } = props
 
     const dispatch = useDispatch()
     const usersSideTasksIds = useSelector(state => state.users_side_tasks_ids)
@@ -101,10 +102,10 @@ export default function Task(props) {
                 task_states={taskStates}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
-                users_side_callback={() => dispatch(
-                    changeUsersSideTasksIds(
-                        [...usersSideTasksIds, task.id]
-                    ))}
+                users_side_callback={() => {
+                    sync_callback()
+                    dispatch(changeUsersSideTasksIds([...usersSideTasksIds, task.id]))
+                }}
                 delete_callback={() => delete_callback()} />
         </Container>
     )

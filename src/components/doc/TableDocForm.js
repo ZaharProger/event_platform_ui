@@ -111,6 +111,7 @@ export default function TableDocForm(props) {
                                 user={user}
                                 event_tasks={docFields}
                                 event_users={event_data.users}
+                                sync_callback={() => setDocFields(getActualDocData())}
                                 update_callback={(newData) => setDocFields(newData)}
                                 delete_callback={() => {
                                     setDeleteItemId(docField.id)
