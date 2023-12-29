@@ -1,4 +1,4 @@
-import { useTheme, Stack, TextField, Typography } from '@mui/material'
+import { useTheme, Stack, TextField, Typography, Zoom } from '@mui/material'
 import React, { useCallback } from 'react'
 
 import { v4 as uuidV4 } from "uuid"
@@ -9,7 +9,7 @@ import { addNestedTool, assignTool, deleteTool, viewTool } from '../toolbar/tool
 import useButton from '../../hooks/useButton'
 
 export default function TaskInfo(props) {
-    const { is_visible, task, user, delete_callback, 
+    const { is_visible, task, user, delete_callback,
         task_state, task_states, task_tool_styles,
         text_field_styles, task_color_callback, users_side_callback } = props
 
@@ -65,7 +65,7 @@ export default function TaskInfo(props) {
     }, [task])
 
     return (
-        <Stack direction="column" spacing={3} display={is_visible? 'flex' : 'none'}
+        <Stack direction="column" spacing={3} display={is_visible ? 'flex' : 'none'}
             justifyContent="center" alignItems="center">
             {
                 user.is_staff ?

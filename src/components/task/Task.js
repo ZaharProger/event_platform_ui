@@ -1,18 +1,21 @@
 import React, { useState } from "react"
 import { useTheme, Container } from "@mui/material"
+import { useDispatch, useSelector } from "react-redux"
 
 import useColors from "../../hooks/useColors"
 import { assignTool } from "../toolbar/tools"
 import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
+import { changeUsersSideTasksIds } from '../../redux/actions'
 
 export default function Task(props) {
-    const { task, user, event_tasks, event_users, delete_callback } = props
+    const { task, user, event_tasks, event_users, delete_callback, update_callback } = props
+
+    const dispatch = useDispatch()
+    const usersSideTasksIds = useSelector(state => state.users_side_tasks_ids)
+    const isTaskUsersSide = usersSideTasksIds.includes(task.id)
 
     const theme = useTheme()
-
-    const [isTaskUsersSide, setIsTaskUsersSide] = useState(false)
-
     const getColors = useColors()
 
     const buttonColors = getColors(assignTool, false)
@@ -86,7 +89,11 @@ export default function Task(props) {
                 users={event_users} tasks={event_tasks}
                 text_field_styles={textFieldStyles}
                 task_tool_styles={taskToolStyles}
-                close_callback={() => setIsTaskUsersSide(false)} />
+                update_callback={(newData) => update_callback(newData)}
+                close_callback={() => dispatch(
+                    changeUsersSideTasksIds(usersSideTasksIds.filter(taskId => {
+                        return taskId != task.id
+                    })))} />
             <TaskInfo is_visible={!isTaskUsersSide}
                 task={task} user={user}
                 task_tool_styles={taskToolStyles}
@@ -94,7 +101,10 @@ export default function Task(props) {
                 task_states={taskStates}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
-                users_side_callback={() => setIsTaskUsersSide(true)}
+                users_side_callback={() => dispatch(
+                    changeUsersSideTasksIds(
+                        [...usersSideTasksIds, task.id]
+                    ))}
                 delete_callback={() => delete_callback()} />
         </Container>
     )

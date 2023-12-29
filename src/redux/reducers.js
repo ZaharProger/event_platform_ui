@@ -1,6 +1,6 @@
 import { defaultState } from "./initialState"
 import {DATA, TRIGGER, SELECTED_CARD_TAB, 
-    SHOW_COMPLETED_EVENTS, USER, ASSIGNED_USERS} from './constants'
+    SHOW_COMPLETED_EVENTS, USER, USERS_SIDE_TASKS_IDS} from './constants'
 
 export function defaultReducer(state=defaultState, action) {
     switch(action.type) {
@@ -29,10 +29,10 @@ export function defaultReducer(state=defaultState, action) {
                 ...state,
                 trigger: action.trigger
             }
-        case ASSIGNED_USERS:
+        case USERS_SIDE_TASKS_IDS:
             return {
                 ...state,
-                assigned_users: action.assigned_users
+                users_side_tasks_ids: action.users_side_tasks_ids
             }
         default:
             return state

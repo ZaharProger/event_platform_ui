@@ -44,23 +44,6 @@ export default function TableDocForm(props) {
                 updatedField[input.id] = formValue
 
                 if (is_roadmap) {
-                    // const usersCollection = dataToSync !== null? dataToSync : assignedUsers
-                    // const assignation = usersCollection.filter(assignation => {
-                    //     return assignation.task == updatedField.id
-                    // })
-                    // if (assignation.length != 0) {
-                    //     updatedField.users = assignation[0].users.map(assignedUser => {
-                    //         const foundUser = users
-                    //             .filter(eventUser => eventUser.user.id == assignedUser.user_id)[0]
-                    //         return {
-                    //             ...foundUser,
-                    //             is_responsible: assignedUser.is_responsible
-                    //         }
-                    //     })
-                    // }
-                    // else {
-                    //     updatedField.users = foundField[0].users
-                    // }
                     updatedField.users = foundField[0].users
                     updatedField.nested_tasks = []
                 }
@@ -109,7 +92,7 @@ export default function TableDocForm(props) {
         }
 
         setDocFields(actualDocData)
-    }, [])
+    }, [is_roadmap])
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
@@ -128,6 +111,7 @@ export default function TableDocForm(props) {
                                 user={user}
                                 event_tasks={docFields}
                                 event_users={event_data.users}
+                                update_callback={(newData) => setDocFields(newData)}
                                 delete_callback={() => {
                                     setDeleteItemId(docField.id)
                                     setIsConfirmModalOpened(true)
