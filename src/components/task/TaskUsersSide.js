@@ -68,16 +68,13 @@ export default function TaskUsersSide(props) {
     return (
         <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
             justifyContent="center" alignItems="center">
-            <Stack direction="row" spacing={0} marginRight="auto!important"
-                justifyContent="flex-start" alignItems="center">
-                {
-                    getTool(backTool, () => close_callback(), task_tool_styles)
-                }
-            </Stack>
             <Stack direction="column" spacing={1}
                 justifyContent="center" alignItems="center">
                 <Stack spacing={2} direction={isMobile ? 'column' : 'row'}
                     width="100%" justifyContent="space-between" alignItems="center">
+                    {
+                        getTool(backTool, () => close_callback(), task_tool_styles)
+                    }
                     <TextField id={`search_${task.id}`} fullWidth
                         label="ФИО исполнителя" variant="outlined"
                         color="secondary" sx={{ ...text_field_styles }} />
