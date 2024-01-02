@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from "react"
-import { Stack, Typography } from "@mui/material"
+import { Stack } from "@mui/material"
 
 import { v4 as uuidV4 } from "uuid"
 import DocFormHeader from './DocFormHeader'
-import ConfirmModal from '../confirmModal/ConfirmModal'
+import ConfirmModal from "../modal/confirmModal/ConfirmModal"
 import Task from '../task/Task'
 import { backendEndpoints, host } from "../routes"
 import useApi from '../../hooks/useApi'
-import Notification from "../notification/Notification"
+import FilterModal from "../modal/filterModal/FilterModal"
 
 export default function TableDocForm(props) {
     const { data: { event_data, user, doc_data }, is_roadmap } = props
@@ -19,6 +19,8 @@ export default function TableDocForm(props) {
     )
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
     const [deleteItemId, setDeleteItemId] = useState(-1)
+    const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
+    const [filterList, setFilterList] = useState(Array())
 
     const getActualDocData = useCallback((itemToExclude = null) => {
         const className = is_roadmap ? 'Task' : ''
@@ -95,83 +97,37 @@ export default function TableDocForm(props) {
         setDocFields(actualDocData)
     }, [is_roadmap])
 
-    const getOverwork = useCallback(() => {
-        let overworkData = {}
-
-        docFields.forEach(docField => {
-            docField.users.forEach(taskUser => {
-                const dictKey = `${taskUser.user.name}`
-                const hasKey = overworkData[dictKey] !== undefined
-
-                const relatedTasksAmount = docFields.reduce((prevTasksAmount, docItem) => {
-                    return prevTasksAmount + docItem.users
-                        .filter(itemUser => itemUser.user.id == taskUser.user.id)
-                        .length
-                }, 0)
-
-                if (overworkData[dictKey] < relatedTasksAmount || !hasKey) {
-                    overworkData[dictKey] = relatedTasksAmount
-                }
-            })
-        })
-
-        overworkData = Object.entries(overworkData).filter(([_, tasksAmount]) => {
-            return tasksAmount / docFields.length >= 0.7
-        })
-
-        let overworkComponent = null
-        if (overworkData.length != 0) {
-            const notificationHeader = 'Переработка среди участников организационного комитета:'
-            overworkComponent = <Notification header={notificationHeader} color={'error'} data={
-                overworkData
-                    .map(([username, tasksAmount]) => {
-                        const overworkStat = `${tasksAmount} из ${docFields.length}`
-                        return <Typography key={`overwork_user_${uuidV4()}`} variant="subtitle1"
-                            color="error" marginRight="auto!important" fontSize="0.9em">
-                            {
-                                `${username} задействован в ${overworkStat} задач`
-                            }
-                        </Typography>
-                    })
-            } />
-        }
-
-        return overworkComponent
-    }, [docFields])
-
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
             alignItems="center">
             <DocFormHeader doc_data={doc_data} user={user}
                 save_callback={() => saveButtonHandler()}
+                filter_callback={() => setIsFilterModalOpened(true)}
                 additional_callback={() => addButtonHandler()} />
-            {
-                is_roadmap ?
-                    getOverwork()
-                    :
-                    null
-            }
             <Stack direction="row" spacing={4}
                 justifyContent="center" alignItems="center"
                 useFlexGap flexWrap="wrap">
                 {
-                    docFields.map(docField => {
-                        const fieldId = `${is_roadmap ? 'task' : 'field'}_${uuidV4()}`
-                        return is_roadmap ?
-                            <Task key={fieldId} task={{ ...docField }}
-                                user={user}
-                                event_tasks={docFields}
-                                event_users={event_data.users}
-                                sync_callback={() => setDocFields(getActualDocData())}
-                                update_callback={(newData) => setDocFields(newData)}
-                                delete_callback={() => {
-                                    setDeleteItemId(docField.id)
-                                    setIsConfirmModalOpened(true)
-                                }} />
-                            :
-                            null
-                    }
-                    )
+                    docFields
+                        .sort((first, second) => {
+                            return first.datetime_start - second.datetime_start
+                        })
+                        .map(docField => {
+                            const fieldId = `${is_roadmap ? 'task' : 'field'}_${uuidV4()}`
+                            return is_roadmap ?
+                                <Task key={fieldId} task={{ ...docField }}
+                                    user={user}
+                                    event_tasks={docFields}
+                                    event_users={event_data.users}
+                                    sync_callback={() => setDocFields(getActualDocData())}
+                                    update_callback={(newData) => setDocFields(newData)}
+                                    delete_callback={() => {
+                                        setDeleteItemId(docField.id)
+                                        setIsConfirmModalOpened(true)
+                                    }} />
+                                :
+                                null
+                        })
                 }
             </Stack>
             <ConfirmModal is_opened={isConfirmModalOpened}
@@ -181,6 +137,16 @@ export default function TableDocForm(props) {
                 modal_content={
                     `Вы действительно хотите удалить эту ${is_roadmap ? 'задачу' : 'запись'}?`
                 } />
+            {
+                is_roadmap ?
+                    <FilterModal is_opened={isFilterModalOpened}
+                        data={docFields}
+                        event_users={event_data.users}
+                        close_callback={() => setIsFilterModalOpened(false)}
+                        confirm_callback={(newFilterList) => setFilterList(newFilterList)} />
+                    :
+                    null
+            }
         </Stack>
     )
 }

@@ -1,22 +1,15 @@
-import React, { useState, useCallback } from 'react'
-import { useMediaQuery, Stack, TextField } from '@mui/material'
+import React, { useCallback, useState } from 'react'
+import { Stack } from '@mui/material'
 
 import { v4 as uuidV4 } from "uuid"
-import useButton from '../../hooks/useButton'
-import { backTool } from '../toolbar/tools'
-import { searchButton } from '../buttons'
 import TaskUser from './TaskUser'
+import useUsersList from '../../hooks/useUsersList'
 
 export default function TaskUsersSide(props) {
     const { is_visible, users, tasks, task, close_callback,
         text_field_styles, task_tool_styles, update_callback } = props
 
-    const isMobile = useMediaQuery('(max-width: 1000px)')
-
-    const getTool = useButton(true)
-    const getButton = useButton(false)
-
-    const [searchData, setSearchData] = useState('')
+    const getUsersList = useUsersList(true)
 
     const getUserAssignation = useCallback((user) => {
         let isAssigned = false
@@ -32,7 +25,7 @@ export default function TaskUsersSide(props) {
         return isAssigned
     }, [task])
 
-    const getSearchResults = useCallback(() => {
+    const getSearchResults = useCallback((searchData) => {
         let foundData = []
 
         if (task !== null) {
@@ -63,44 +56,19 @@ export default function TaskUsersSide(props) {
         }
 
         return foundData
-    }, [searchData, users, task, tasks, update_callback])
+    }, [users, task, tasks])
 
     return (
         <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
             justifyContent="center" alignItems="center">
-            <Stack direction="column" spacing={1}
-                justifyContent="center" alignItems="center">
-                <Stack spacing={2} direction={isMobile ? 'column' : 'row'}
-                    width="100%" justifyContent="space-between" alignItems="center">
-                    {
-                        getTool(backTool, () => close_callback(), task_tool_styles)
-                    }
-                    <TextField id={`search_${task.id}`} fullWidth
-                        label="ФИО исполнителя" variant="outlined"
-                        color="secondary" sx={{ ...text_field_styles }} />
-                    {
-                        getButton(
-                            searchButton,
-                            () => setSearchData(
-                                document.querySelector(`#search_${task.id}`).value
-                            )
-                        )
-                    }
-                </Stack>
-                <Stack direction="column" spacing={4}
-                    sx={{
-                        ...task_tool_styles,
-                        padding: '10px'
-                    }}
-                    width="100%"
-                    height="300px"
-                    overflow="auto"
-                    alignItems="center">
-                    {
-                        getSearchResults()
-                    }
-                </Stack>
-            </Stack>
+            {
+                getUsersList(
+                    {text_field_styles, task_tool_styles},
+                    `search_${task.id}`, 
+                    (searchData) => getSearchResults(searchData),
+                    () => close_callback()
+                )
+            }
         </Stack>
     )
 }

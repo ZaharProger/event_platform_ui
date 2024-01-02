@@ -1,6 +1,6 @@
 import {
     Stack, Typography, TextField,
-    Grid, FormControlLabel, Checkbox
+    Grid, FormControlLabel, Checkbox, useTheme
 } from '@mui/material'
 import React, { useCallback } from 'react'
 
@@ -12,9 +12,11 @@ import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 import { prepareDatetime } from '../../utils'
-import useColors from '../../hooks/useColors'
+import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 
 export default function EventForm(props) {
+    const theme = useTheme()
+
     const nameValidation = useValidation(
         props.event_data !== null ? props.event_data.name : '',
         /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
@@ -24,10 +26,11 @@ export default function EventForm(props) {
         /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
     )
     const errorMessage = useError()
-    const isOnline = useValidation(props.event_data !== null ? props.event_data.is_online : false, null)
+    const isOnline = useValidation(props.event_data !== null ?
+        props.event_data.is_online : false, null)
 
-    const eventTypes = localStorage.getItem('event_types') !== null? 
-        JSON.parse(localStorage.getItem('event_types')) : [{label: '', value: ''}]
+    const eventTypes = localStorage.getItem('event_types') !== null ?
+        JSON.parse(localStorage.getItem('event_types')) : [{ label: '', value: '' }]
     const eventType = useValidation(
         props.event_data !== null ?
             eventTypes.filter(type => type.value == props.event_data.event_type)[0].value
@@ -37,31 +40,30 @@ export default function EventForm(props) {
 
     const getButton = useButton(false)
 
-    const getColors = useColors()
-    const saveButtonColors = getColors(saveButton)
-
     const callApi = useApi()
     const navigate = useNavigate()
 
     const saveButtonHandler = useCallback(() => {
         const bodyData = props.is_edit ? {} : new FormData()
-        document.querySelector('.Event-form').querySelectorAll('input, select, textarea').forEach(input => {
-            let formValue = input.value
+        document.querySelector('.Event-form')
+            .querySelectorAll('input, select, textarea')
+            .forEach(input => {
+                let formValue = input.value
 
-            if (input.id.includes('datetime')) {
-                let timestamp = (new Date(input.value).getTime() / 1000).toString()
-                if (timestamp != 'NaN' && timestamp != '') {
-                    formValue = timestamp
+                if (input.id.includes('datetime')) {
+                    let timestamp = (new Date(input.value).getTime() / 1000).toString()
+                    if (timestamp != 'NaN' && timestamp != '') {
+                        formValue = timestamp
+                    }
+
                 }
-                
-            }
-            if (props.is_edit) {
-                bodyData[input.id] = formValue
-            }
-            else {
-                bodyData.set(input.id, formValue)
-            }
-        })
+                if (props.is_edit) {
+                    bodyData[input.id] = formValue
+                }
+                else {
+                    bodyData.set(input.id, formValue)
+                }
+            })
 
         const checkboxValue = document.querySelector('#is_online').checked
         if (props.is_edit) {
@@ -119,20 +121,7 @@ export default function EventForm(props) {
         Дата окончания
     </Typography>
 
-    const textFieldStyles = {
-        '& .MuiOutlinedInput-root': {
-            backgroundColor: saveButtonColors.color,
-            '& fieldset': {
-                borderColor: saveButtonColors.backgroundColor,
-            },
-            '&:hover fieldset': {
-                borderColor: saveButtonColors.backgroundColor,
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: saveButtonColors[':hover'].backgroundColor,
-            },
-        }
-    }
+    const textFieldStyles = useTextFieldStyles('outlined')
 
     return (
         <Grid className="Event-form" direction="column" container>
@@ -142,10 +131,10 @@ export default function EventForm(props) {
                         gutterBottom marginRight="auto!important"
                         textAlign='start' fontWeight="bold">
                         {
-                            props.is_edit?
-                            'Информация о мероприятии'
-                            :
-                            'Новое мероприятие'
+                            props.is_edit ?
+                                'Информация о мероприятии'
+                                :
+                                'Новое мероприятие'
                         }
                     </Typography>
                 </Grid>
@@ -192,9 +181,9 @@ export default function EventForm(props) {
                                         onChange={() => isOnline.set(!isOnline.get())}
                                         checked={isOnline.get()}
                                         sx={{
-                                            color: saveButtonColors.backgroundColor,
+                                            color: theme.palette.secondary.main,
                                             "&.Mui-checked": {
-                                                color: saveButtonColors[':hover'].backgroundColor,
+                                                color: theme.palette.action.main,
                                             }
                                         }} />}
                                     label={checkboxLabel} />

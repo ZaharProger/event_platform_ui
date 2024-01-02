@@ -2,8 +2,7 @@ import React, { useState } from "react"
 import { useTheme, Container } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux"
 
-import useColors from "../../hooks/useColors"
-import { assignTool } from "../toolbar/tools"
+import useTextFieldStyles from "../../hooks/useTextFieldStyles"
 import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
 import { changeUsersSideTasksIds } from '../../redux/actions'
@@ -17,23 +16,7 @@ export default function Task(props) {
     const isTaskUsersSide = usersSideTasksIds.includes(task.id)
 
     const theme = useTheme()
-    const getColors = useColors()
-
-    const buttonColors = getColors(assignTool, false)
-    const textFieldStyles = {
-        '& .MuiOutlinedInput-root': {
-            backgroundColor: user.is_staff ? buttonColors.color : 'transparent',
-            '& fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&:hover fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: buttonColors[':hover'].backgroundColor,
-            }
-        }
-    }
+    const textFieldStyles = useTextFieldStyles('outlined')
 
     let taskStates = localStorage.getItem('task_states') !== null ?
         JSON.parse(localStorage.getItem('task_states'))
@@ -79,7 +62,7 @@ export default function Task(props) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: `${theme.palette[taskColor].main}50`,
-                borderColor: `${buttonColors.backgroundColor}`,
+                borderColor: `${theme.palette.secondary.main}`,
                 border: '2px solid',
                 borderRadius: '10px',
                 padding: '20px 30px',

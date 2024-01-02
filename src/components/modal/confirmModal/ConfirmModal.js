@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText } from '@mui/material'
-import useButton from '../../hooks/useButton'
-import { cancelButton, continueButton } from '../buttons'
+import useButton from '../../../hooks/useButton'
+import { cancelButton, continueButton } from '../../buttons'
 
 export default function ConfirmModal(props) {
     const getButton = useButton(false)

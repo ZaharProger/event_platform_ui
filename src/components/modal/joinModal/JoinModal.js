@@ -3,13 +3,13 @@ import {
     Dialog, DialogTitle, DialogContentText, TextField,
     DialogContent, DialogActions, Typography
 } from '@mui/material'
-import useButton from '../../hooks/useButton'
-import { cancelButton, continueButton } from '../buttons'
-import useValidation from '../../hooks/useValidation'
-import useApi from '../../hooks/useApi'
-import { backendEndpoints, host } from '../routes'
-import useError from '../../hooks/useError'
-import useColors from '../../hooks/useColors'
+import useButton from '../../../hooks/useButton'
+import { cancelButton, continueButton } from '../../buttons'
+import useValidation from '../../../hooks/useValidation'
+import useApi from '../../../hooks/useApi'
+import { backendEndpoints, host } from '../../routes'
+import useError from '../../../hooks/useError'
+import useTextFieldStyles from '../../../hooks/useTextFieldStyles'
 
 export default function JoinModal(props) {
     const callApi = useApi()
@@ -17,23 +17,7 @@ export default function JoinModal(props) {
     const {set: setFieldValue, validate, get: getFieldValue} = useValidation('', /^[A-Z0-9]{8}$/)
     const errorMessage = useError()
 
-    const getButtonColors = useColors()
-    const buttonColors = getButtonColors(continueButton)
-
-    const textFieldStyles = {
-        "& label.Mui-focused": {
-            color: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline::after": {
-            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
-        },
-        "& .MuiInput-underline:hover:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        }
-    }
+    const textFieldStyles = useTextFieldStyles('underline')
 
     const continueButtonHandler = useCallback(() => {
         callApi(`${host}${backendEndpoints.join_event}?secret_code=${getFieldValue()}`, 'GET', null, null)

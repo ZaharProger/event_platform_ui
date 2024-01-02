@@ -4,8 +4,6 @@ import {
     Checkbox, useTheme, useMediaQuery, Tooltip
 } from '@mui/material'
 
-import useColors from '../../hooks/useColors'
-import { saveButton } from '../buttons'
 import useButton from '../../hooks/useButton'
 import { assignTool, unpinTool } from '../toolbar/tools'
 
@@ -16,9 +14,6 @@ export default function TaskUser(props) {
     const theme = useTheme()
 
     const getTool = useButton(true)
-
-    const getColors = useColors()
-    const buttonColors = getColors(saveButton)
 
     const checkboxLabel = <Typography variant="subtitle2"
         fontSize="0.8em" color="secondary">
@@ -102,9 +97,9 @@ export default function TaskUser(props) {
                             }}
                             checked={props.is_responsible}
                             sx={{
-                                color: buttonColors.backgroundColor,
+                                color: theme.palette.secondary.main,
                                 "&.Mui-checked": {
-                                    color: buttonColors[':hover'].backgroundColor,
+                                    color: theme.palette.action.main,
                                 }
                             }} />}
                             label={checkboxLabel} />

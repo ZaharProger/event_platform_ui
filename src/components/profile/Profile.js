@@ -9,7 +9,7 @@ import { host, backendEndpoints, routes } from '../routes'
 import { useNavigate } from 'react-router-dom'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
-import useColors from '../../hooks/useColors'
+import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 
 export default function Profile(props) {
     const nameValidation = useValidation(
@@ -27,23 +27,8 @@ export default function Profile(props) {
     const navigate = useNavigate()
 
     const isMobile = useMediaQuery('(max-width: 1000px)')
-    
-    const getColors = useColors()
-    const buttonColors = getColors(saveButton)
 
-    const textFieldStyles = {
-        '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&:hover fieldset': {
-                borderColor: buttonColors.backgroundColor,
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: buttonColors[':hover'].backgroundColor,
-            },
-        }
-    }
+    const textFieldStyles = useTextFieldStyles('outlined')
 
     const saveButtonHandler = useCallback(() => {
         const jsonData = {}

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { Stack } from '@mui/material'
 
 import { prepareDatetime } from '../../utils'
-import EventInfoItem from './EventInfoItem'
+import ModalBlockItem from '../modal/ModalBlockItem'
 
 export default function EventLongInfo(props) {
     const { place, datetime_start, datetime_end, users, docs,
@@ -36,28 +36,28 @@ export default function EventLongInfo(props) {
             justifyContent="flex-start" alignItems="center">
             {
                 place !== null ?
-                    <EventInfoItem item_name={'Место проведения'} item_values={[place]} />
+                    <ModalBlockItem item_name={'Место проведения'} item_values={[place]} />
                     :
                     null
             }
-            <EventInfoItem item_name={'Дата и время начала'}
+            <ModalBlockItem item_name={'Дата и время начала'}
                 item_values={[prepareDatetime(datetime_start)]} />
             {
                 datetime_end !== null ?
-                    <EventInfoItem item_name={'Дата и время окончания'}
+                    <ModalBlockItem item_name={'Дата и время окончания'}
                         item_values={[prepareDatetime(datetime_end)]} />
                     :
                     null
             }
             {
                 description !== null ?
-                    <EventInfoItem item_name={'Описание'}
+                    <ModalBlockItem item_name={'Описание'}
                         item_values={[description]} />
                     :
                     null
             }
-            <EventInfoItem item_name={'Тип мероприятия'} item_values={[event_type]} />
-            <EventInfoItem item_name={'Дополнительно'} item_values={getAdditionalData()} />
+            <ModalBlockItem item_name={'Тип мероприятия'} item_values={[event_type]} />
+            <ModalBlockItem item_name={'Дополнительно'} item_values={getAdditionalData()} />
         </Stack>
     )
 }

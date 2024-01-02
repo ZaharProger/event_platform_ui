@@ -27,9 +27,9 @@ import {
     changeSelectedCardTab, changeShowCompletedEvents,
     changeData, changeUser
 } from '../../redux/actions'
-import JoinModal from '../joinModal/JoinModal'
-import MoreModal from '../moreModal/MoreModal'
-import ConfirmModal from '../confirmModal/ConfirmModal'
+import JoinModal from '../modal/joinModal/JoinModal'
+import ConfirmModal from '../modal/confirmModal/ConfirmModal'
+import MoreModal from '../modal/moreModal/MoreModal'
 import useApi from '../../hooks/useApi'
 import useButton from '../../hooks/useButton'
 

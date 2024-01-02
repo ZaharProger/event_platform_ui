@@ -4,9 +4,9 @@ import {
     DialogActions, useTheme
 } from '@mui/material'
 
-import { closeButton } from '../buttons'
-import useButton from '../../hooks/useButton'
-import EventLongInfo from '../event/EventLongInfo'
+import { closeButton } from '../../buttons'
+import useButton from '../../../hooks/useButton'
+import EventLongInfo from '../../event/EventLongInfo'
 
 export default function MoreModal(props) {
     const theme = useTheme()

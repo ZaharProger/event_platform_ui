@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import logo from '../../assets/images/logo-full.svg'
 import useButton from '../../hooks/useButton'
-import useColors from '../../hooks/useColors'
+import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 import { signInButton } from '../buttons'
 import { helpTool, backTool } from '../toolbar/tools'
 import useValidation from '../../hooks/useValidation'
@@ -43,30 +43,16 @@ export default function Auth() {
 
     const getButton = useButton(false)
     const getTool = useButton(true)
-    const getColors = useColors()
     const button = getButton(
         signInButton,
         () => authButtonHandler(),
         () => !(usernameValidation.validate() && passwordValidation.validate())
     )
-    const buttonColors = getColors(signInButton)
+
     const backToolComponent = getTool(backTool, () => setIsHelpOpened(false))
     const helpToolComponent = getTool(helpTool, () => setIsHelpOpened(true))
 
-    const textFieldStyles = {
-        "& label.Mui-focused": {
-            color: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        },
-        "& .MuiInput-underline::after": {
-            borderBottomColor: `${buttonColors[':hover'].backgroundColor}!important`
-        },
-        "& .MuiInput-underline:hover:before": {
-            borderBottomColor: `${buttonColors.backgroundColor}!important`
-        }
-    }
+    const textFieldStyles = useTextFieldStyles('underline')
 
     return (
         <Container maxWidth="lg" sx={{
