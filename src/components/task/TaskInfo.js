@@ -91,7 +91,7 @@ export default function TaskInfo(props) {
     }, [assignation, task])
 
     return (
-        <Fade in={is_visible} timeout={2000}>
+        <Fade in={is_visible} timeout={1500}>
             <Stack direction="column" spacing={3} display={is_visible ? 'flex' : 'none'}
                 justifyContent="center" alignItems="center">
                 {

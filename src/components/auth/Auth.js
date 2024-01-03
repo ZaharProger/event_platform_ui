@@ -71,7 +71,7 @@ export default function Auth() {
             <Stack direction="column" spacing={3} display="flex"
                 margin="50px auto auto auto"
                 justifyContent="center" alignItems="center">
-                <Fade in={!isHelpOpened} timeout={2000}>
+                <Fade in={!isHelpOpened} timeout={1500}>
                     <Stack direction="column" spacing={5} justifyContent="center"
                         alignItems="center" display={isHelpOpened ? 'none' : 'flex'}>
                         <Icon sx={{ transform: 'scale(2.5)', width: 100 }}>

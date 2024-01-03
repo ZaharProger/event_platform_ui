@@ -2,8 +2,8 @@ import React, { useCallback } from 'react'
 import { Fade, Stack } from '@mui/material'
 
 import { v4 as uuidV4 } from "uuid"
-import TaskUser from './TaskUser'
 import useUsersList from '../../hooks/useUsersList'
+import UsersListItem from '../usersList/UsersListItem'
 
 export default function TaskUsersSide(props) {
     const { is_visible, users, tasks, task, close_callback,
@@ -56,10 +56,11 @@ export default function TaskUsersSide(props) {
                             })
                             .length != 0
 
-                        return <TaskUser key={`task_user_${uuidV4()}`} user={foundUser}
+                        return <UsersListItem key={`task_user_${uuidV4()}`} user={foundUser}
                             related_task_id={task.id}
                             assignation={assignation}
                             is_responsible={isResponsible}
+                            for_task={true}
                             event_tasks={tasks} has_responsible={hasResponsible}
                             is_assigned={getUserAssignation(foundUser)} />
                     })
@@ -70,7 +71,7 @@ export default function TaskUsersSide(props) {
     }, [users, task, tasks, assignation])
 
     return (
-        <Fade in={is_visible} timeout={2000}>
+        <Fade in={is_visible} timeout={1500}>
             <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
                 justifyContent="center" alignItems="center">
                 {
