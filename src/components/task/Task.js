@@ -5,8 +5,10 @@ import { useDispatch, useSelector } from "react-redux"
 import useTextFieldStyles from "../../hooks/useTextFieldStyles"
 import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
-import { changeAssignationFlag, changeAssignationList, 
-    changeUsersSideTasksIds } from '../../redux/actions'
+import {
+    changeAssignationFlag, changeAssignationList,
+    changeUsersSideTasksIds
+} from '../../redux/actions'
 
 export default function Task(props) {
     const { task, user, event_tasks,
@@ -73,6 +75,10 @@ export default function Task(props) {
                 padding: '20px 30px',
                 width: 'auto!important',
                 margin: '0',
+                transformStyle: 'preserve-3d',
+                backfaceVisibility: 'visible',
+                transition: '0.8s ease-out',
+                transform: isTaskUsersSide ? 'rotateY(360deg)' : 'none'
             }}>
             <TaskUsersSide is_visible={isTaskUsersSide} task={task}
                 users={event_users} tasks={event_tasks}

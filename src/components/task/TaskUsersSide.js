@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Stack } from '@mui/material'
+import { Fade, Stack } from '@mui/material'
 
 import { v4 as uuidV4 } from "uuid"
 import TaskUser from './TaskUser'
@@ -70,16 +70,18 @@ export default function TaskUsersSide(props) {
     }, [users, task, tasks, assignation])
 
     return (
-        <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
-            justifyContent="center" alignItems="center">
-            {
-                getUsersList(
-                    { text_field_styles, task_tool_styles },
-                    `search_${task.id}`,
-                    (searchData) => getSearchResults(searchData),
-                    () => close_callback()
-                )
-            }
-        </Stack>
+        <Fade in={is_visible} timeout={2000}>
+            <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
+                justifyContent="center" alignItems="center">
+                {
+                    getUsersList(
+                        { text_field_styles, task_tool_styles },
+                        `search_${task.id}`,
+                        (searchData) => getSearchResults(searchData),
+                        () => close_callback()
+                    )
+                }
+            </Stack>
+        </Fade>
     )
 }
