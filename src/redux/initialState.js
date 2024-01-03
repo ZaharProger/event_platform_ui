@@ -6,5 +6,7 @@ export const defaultState = {
     trigger: false,
     users_side_tasks_ids: Array(),
     assignation_list: Array(),
-    assignation_flag: false
+    assignation_flag: false,
+    filter_users: Array(),
+    filter_states: Array()
 }

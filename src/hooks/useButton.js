@@ -3,20 +3,14 @@ import { v4 as uuidV4 } from "uuid"
 import { useNavigate } from "react-router-dom"
 
 import Tool from "../components/toolbar/Tool"
-import { deleteTool, unpinTool } from "../components/toolbar/tools"
-import {
-    cancelButton, deleteButton,
-    excludeButton, signOutButton
-} from "../components/buttons"
+import { deleteTool, excludeTool, unpinTool } from "../components/toolbar/tools"
+import { cancelButton, deleteButton, signOutButton } from "../components/buttons"
 
 export default function useButton(isTool) {
     const theme = useTheme()
 
-    const negativeTools = [deleteTool, unpinTool]
-    const negativeButtons = [
-        deleteButton, cancelButton,
-        excludeButton, signOutButton
-    ]
+    const negativeTools = [deleteTool, unpinTool, excludeTool]
+    const negativeButtons = [deleteButton, cancelButton, signOutButton]
 
     const navigate = useNavigate()
 

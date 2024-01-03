@@ -8,7 +8,8 @@ import { v4 as uuidV4 } from "uuid"
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 import { prepareDatetime } from '../../utils'
 import useUsersList from '../../hooks/useUsersList'
-import TaskUser from '../task/TaskUser'
+import UsersListItem from '../usersList/UsersListItem'
+import TaskStateFilter from '../task/TaskStateFilter'
 
 export default function ModalBlockItem(props) {
     const blockContentType = props.type === undefined ? 'text' : props.type
@@ -17,19 +18,22 @@ export default function ModalBlockItem(props) {
     const textFieldStyles = useTextFieldStyles('outlined')
 
     const [checkedItems, setCheckedItems] = useState(Array())
-
     const getUsersList = useUsersList(false)
 
     const getSearchResults = useCallback((searchData) => {
-        return props.item_values
-            .filter(itemValue => itemValue.user.name.toLowerCase()
-                .includes(searchData.toLowerCase())
-            )
-            .sort((first, second) => first.user.name.localeCompare(second.user.name))
-            .map(foundItem => {
-                return <TaskUser key={`event_user_${uuidV4()}`} user={foundItem}
-                    update_callback={(newData) => console.log(1)} />
-            })
+        return props.item_values.length != 0 ?
+            props.item_values[0]
+                .filter(itemValue => itemValue.user.name.toLowerCase()
+                    .includes(searchData.toLowerCase())
+                )
+                .sort((first, second) => first.user.name.localeCompare(second.user.name))
+                .map(foundItem => {
+                    return <UsersListItem key={`event_user_${uuidV4()}`}
+                        for_task={false}
+                        user={foundItem} />
+                })
+            :
+            []
     }, [props.item_values])
 
     return (
@@ -41,7 +45,7 @@ export default function ModalBlockItem(props) {
                     props.item_name
                 }
             </Typography>
-            <Stack direction="column" spacing={2}
+            <Stack direction={blockContentType == 'date' ? 'row' : 'column'} spacing={2}
                 marginRight="auto!important" justifyContent="center" alignItems="center"
                 useFlexGap flexWrap="wrap">
                 {
@@ -53,44 +57,13 @@ export default function ModalBlockItem(props) {
                             case 'checkbox':
                                 const checkboxColor = theme.palette[itemValue.color].main
 
-                                blockContent = <FormControlLabel key={blockContentKey}
-                                    sx={{ marginRight: 'auto!important' }}
-                                    control={
-                                        <Checkbox checked={checkedItems.includes(checkboxColor)}
-                                            onChange={(_, checked) => {
-                                                setCheckedItems(
-                                                    !checked ?
-                                                        checkedItems.filter(checkedItem => {
-                                                            return checkedItem != checkboxColor
-                                                        })
-                                                        :
-                                                        [...checkedItems, checkboxColor]
-                                                )
-                                            }}
-                                            sx={{
-                                                color: theme.palette.primary.main,
-                                                "&.Mui-checked": {
-                                                    color: theme.palette.action.main,
-                                                }
-                                            }} />
-                                    } label={
-                                        <Typography variant="subtitle2"
-                                            sx={{
-                                                padding: '2px 10px',
-                                                backgroundColor: `${checkboxColor}AA`,
-                                                borderRadius: '10px'
-                                            }}
-                                            fontSize="0.8em" color="secondary">
-                                            {
-                                                itemValue.value
-                                            }
-                                        </Typography>
-                                    } />
+                                blockContent = <TaskStateFilter key={blockContentKey}
+                                    color={checkboxColor} value={itemValue} />
                                 break
                             case 'date':
                                 blockContent = <TextField type="datetime-local"
                                     key={blockContentKey}
-                                    defaultValue={prepareDatetime('0', true)}
+                                    defaultValue={prepareDatetime('', true)}
                                     helperText={<Typography variant="subtitle2"
                                         fontSize="0.8em" color="secondary">
                                         {

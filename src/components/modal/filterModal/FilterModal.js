@@ -5,21 +5,12 @@ import {
     DialogContent, DialogActions, useTheme
 } from '@mui/material'
 import useButton from '../../../hooks/useButton'
-import { cancelButton, continueButton } from '../../buttons'
+import { applyButton, cancelButton } from '../../buttons'
 import ModalBlockItem from '../ModalBlockItem'
+import { useSelector } from 'react-redux'
 
 export default function FilterModal(props) {
     const theme = useTheme()
-
-    const getButton = useButton(false)
-    const buttons = [
-        getButton(cancelButton, () => props.close_callback()),
-        getButton(continueButton, () => {
-            if (props.confirm_callback !== null) {
-                props.confirm_callback(Array())
-            }
-        })
-    ]
 
     const colors = [
         'info',
@@ -41,17 +32,37 @@ export default function FilterModal(props) {
         color: 'error'
     })
 
-    // Tasks period
-    // User tasks
-    // Other users tasks
+    const filterUsers = useSelector(state => state.filter_users)
+    const filterStates = useSelector(state => state.filter_states)
+
+    const getButton = useButton(false)
+    const buttons = [
+        getButton(cancelButton, () => props.close_callback()),
+        getButton(applyButton, () => {
+            if (props.confirm_callback !== null) {
+                const filterList = {}
+
+                if (filterUsers.length != 0) {
+                    filterList.users = [...filterUsers]
+                }
+                if (filterStates.length != 0) {
+                    filterList.task_states = [...filterStates]
+                }
+
+                props.confirm_callback(filterList)
+            }
+        })
+    ]
+
     return (
-        <Dialog open={props.is_opened} onClose={props.close_callback}>
-            <DialogTitle color="primary" marginBottom="20px"
-                sx={{backgroundColor: theme.palette.secondary.main}}>
+        <Dialog id="Filter-modal" open={props.is_opened}
+            onClose={props.close_callback}>
+            <DialogTitle color="primary"
+                sx={{ backgroundColor: theme.palette.secondary.main }}>
                 Фильтры
             </DialogTitle>
             <DialogContent>
-                <Stack spacing={2} overflow="auto" maxHeight="600px"
+                <Stack spacing={4} overflow="auto" maxHeight="1000px"
                     justifyContent="flex-start" alignItems="center">
                     <ModalBlockItem
                         type={'checkbox'}
@@ -61,13 +72,13 @@ export default function FilterModal(props) {
                         type={'date'}
                         item_name={'Сроки задач'}
                         item_values={[
-                            'Дата начала',
-                            'Дата окончания'
+                            'Начало периода',
+                            'Конец периода'
                         ]} />
                     <ModalBlockItem
                         type={'list'}
                         item_name={'Исполнители'}
-                        item_values={props.event_users} />
+                        item_values={[props.event_users]} />
                 </Stack>
             </DialogContent>
             <DialogActions>

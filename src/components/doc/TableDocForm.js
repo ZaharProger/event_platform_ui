@@ -23,7 +23,7 @@ export default function TableDocForm(props) {
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
     const [deleteItemId, setDeleteItemId] = useState(-1)
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
-    const [filterList, setFilterList] = useState(Array())
+    const [filterList, setFilterList] = useState({})
 
     const getActualDocData = useCallback((itemToExclude = null) => {
         const className = is_roadmap ? 'Task' : ''
@@ -67,6 +67,8 @@ export default function TableDocForm(props) {
     }, [docFields, deleteItemId])
 
     const saveButtonHandler = useCallback((syncFunction) => {
+        setFilterList({})
+
         const formData = {
             event_id: event_data.id,
             doc_id: doc_data.id,
@@ -100,6 +102,7 @@ export default function TableDocForm(props) {
         }
 
         dispatch(changeAssignationFlag(false))
+        setFilterList({})
         setDocFields(actualDocData)
     }, [is_roadmap])
 
@@ -109,20 +112,46 @@ export default function TableDocForm(props) {
             <DocFormHeader doc_data={doc_data} user={user}
                 is_roadmap={is_roadmap}
                 save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
-                filter_callback={() => setIsFilterModalOpened(true)}
+                filter_callback={() => {
+                    setIsFilterModalOpened(true)
+                }}
                 additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
             <Stack direction="row" spacing={4}
                 justifyContent="center" alignItems="center"
                 useFlexGap flexWrap="wrap">
                 {
-                    docFields
-                        .sort((first, second) => {
-                            return first.datetime_start - second.datetime_start
-                        })
-                        .map(docField => {
-                            const fieldId = `${is_roadmap ? 'task' : 'field'}_${uuidV4()}`
-                            return is_roadmap ?
-                                <Task key={fieldId} task={{ ...docField }}
+                    is_roadmap ?
+                        docFields
+                            .filter(docField => {
+                                let taskStates = true
+                                let periods = true
+                                let users = true
+
+                                if (filterList.task_states !== undefined) {
+                                    taskStates = filterList.task_states
+                                        .includes(docField.state)
+                                }
+                                if (filterList.periods !== undefined) {
+                                    periods = filterList.periods[0] >= docField.datetime_start &&
+                                        docField.datetime_end <= filterList.periods[1]
+                                }
+                                if (filterList.users !== undefined) {
+                                    users = docField.users
+                                        .map(fieldUser => fieldUser.user.id)
+                                        .filter(fieldUserId => {
+                                            return filterList.users.includes(fieldUserId)
+                                        })
+                                        .length != 0
+                                }
+
+                                return taskStates && periods && users
+                            })
+                            .sort((first, second) => {
+                                return first.datetime_start - second.datetime_start
+                            })
+                            .map(docField => {
+                                const fieldId = `task_${uuidV4()}`
+                                return <Task key={fieldId} task={{ ...docField }}
                                     user={user}
                                     event_tasks={docFields}
                                     event_users={event_data.users}
@@ -130,9 +159,9 @@ export default function TableDocForm(props) {
                                         setDeleteItemId(docField.id)
                                         setIsConfirmModalOpened(true)
                                     }} />
-                                :
-                                null
-                        })
+                            })
+                        :
+                        null
                 }
             </Stack>
             <ConfirmModal is_opened={isConfirmModalOpened}
@@ -148,7 +177,10 @@ export default function TableDocForm(props) {
                         data={docFields}
                         event_users={event_data.users}
                         close_callback={() => setIsFilterModalOpened(false)}
-                        confirm_callback={(newFilterList) => setFilterList(newFilterList)} />
+                        confirm_callback={(newFilterList) => {
+                            setFilterList(newFilterList)
+                            setIsFilterModalOpened(false)
+                        }} />
                     :
                     null
             }

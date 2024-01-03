@@ -1,7 +1,6 @@
 import InfoIcon from '@mui/icons-material/Info'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
@@ -61,16 +60,6 @@ export const applyButton = {
 export const saveButton = {
     icon: null,
     label: 'Сохранить'
-}
-
-export const inviteButton = {
-    icon: AddCircleRoundedIcon,
-    label: 'Пригласить'
-}
-
-export const excludeButton = {
-    icon: RemoveCircleIcon,
-    label: 'Исключить'
 }
 
 export const resetButton = {

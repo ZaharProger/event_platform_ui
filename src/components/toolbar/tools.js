@@ -147,3 +147,17 @@ export const unpinTool = {
     type: toolTypes.button,
     route: null
 }
+
+export const includeTool = {
+    label: 'Включить',
+    icon: AddCircleRoundedIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const excludeTool = {
+    label: 'Исключить',
+    icon: RemoveCircleIcon,
+    type: toolTypes.button,
+    route: null
+}
