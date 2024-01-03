@@ -1,5 +1,5 @@
 import {DATA, TRIGGER, SELECTED_CARD_TAB, 
-    SHOW_COMPLETED_EVENTS, USER, USERS_SIDE_TASKS_IDS} from './constants'
+    SHOW_COMPLETED_EVENTS, USER, USERS_SIDE_TASKS_IDS, ASSIGNATION_LIST, ASSIGNATION_FLAG} from './constants'
 
 export const changeData = (data) => {
     return {
@@ -40,5 +40,19 @@ export const changeUsersSideTasksIds = (usersSideTasksIds) => {
     return {
         type: USERS_SIDE_TASKS_IDS,
         users_side_tasks_ids: usersSideTasksIds
+    }
+}
+
+export const changeAssignationList = (assignationList) => {
+    return {
+        type: ASSIGNATION_LIST,
+        assignation_list: assignationList
+    }
+}
+
+export const changeAssignationFlag = (assignationFlag) => {
+    return {
+        type: ASSIGNATION_FLAG,
+        assignation_flag: assignationFlag
     }
 }

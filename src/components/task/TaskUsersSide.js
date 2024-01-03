@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import { Stack } from '@mui/material'
 
 import { v4 as uuidV4 } from "uuid"
@@ -7,7 +7,7 @@ import useUsersList from '../../hooks/useUsersList'
 
 export default function TaskUsersSide(props) {
     const { is_visible, users, tasks, task, close_callback,
-        text_field_styles, task_tool_styles, update_callback } = props
+        text_field_styles, task_tool_styles, assignation } = props
 
     const getUsersList = useUsersList(true)
 
@@ -16,39 +16,50 @@ export default function TaskUsersSide(props) {
 
         if (task !== null) {
             if (task.users !== undefined) {
-                isAssigned = task.users
-                    .filter(taskUser => taskUser.user.id == user.user.id)
-                    .length != 0
+                const foundAssignation = assignation.filter(item => item.id == task.id)
+                if (foundAssignation.length != 0) {
+                    isAssigned = foundAssignation[0].users
+                        .filter(itemUser => itemUser.user.id == user.user.id)
+                        .length != 0
+                }
             }
         }
 
         return isAssigned
-    }, [task])
+    }, [task, assignation])
 
     const getSearchResults = useCallback((searchData) => {
         let foundData = []
 
         if (task !== null) {
             if (task.users !== undefined) {
+                const hasResponsible = assignation
+                    .filter(item => {
+                        return item.id == task.id && item.users
+                            .filter(taskUser => taskUser.is_responsible)
+                            .length != 0
+                    })
+                    .length != 0
+
                 foundData = searchData == '' ? [...users] : users.filter(eventUser => {
                     return eventUser.user.name.toLowerCase().includes(searchData.toLowerCase())
                 })
                 foundData = foundData
                     .sort((first, second) => first.user.name.localeCompare(second.user.name))
                     .map(foundUser => {
-                        const hasResponsible = task.users
-                            .filter(taskUser => taskUser.is_responsible)
-                            .length != 0
-                        const isResponsible = task.users
-                            .filter(taskUser => {
-                                return taskUser.is_responsible &&
-                                    taskUser.user.id == foundUser.user.id
+                        const isResponsible = assignation
+                            .filter(item => {
+                                return item.id == task.id && item.users
+                                    .filter(taskUser => taskUser.is_responsible &&
+                                        taskUser.user.id == foundUser.user.id)
+                                    .length != 0
                             })
                             .length != 0
 
                         return <TaskUser key={`task_user_${uuidV4()}`} user={foundUser}
-                            update_callback={(newData) => update_callback(newData)}
-                            related_task_id={task.id} is_responsible={isResponsible} 
+                            related_task_id={task.id}
+                            assignation={assignation}
+                            is_responsible={isResponsible}
                             event_tasks={tasks} has_responsible={hasResponsible}
                             is_assigned={getUserAssignation(foundUser)} />
                     })
@@ -56,15 +67,15 @@ export default function TaskUsersSide(props) {
         }
 
         return foundData
-    }, [users, task, tasks])
+    }, [users, task, tasks, assignation])
 
     return (
         <Stack direction="column" spacing={4} display={is_visible ? 'flex' : 'none'}
             justifyContent="center" alignItems="center">
             {
                 getUsersList(
-                    {text_field_styles, task_tool_styles},
-                    `search_${task.id}`, 
+                    { text_field_styles, task_tool_styles },
+                    `search_${task.id}`,
                     (searchData) => getSearchResults(searchData),
                     () => close_callback()
                 )

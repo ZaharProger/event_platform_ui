@@ -5,4 +5,6 @@ export const defaultState = {
     selected_card_tab: null,
     trigger: false,
     users_side_tasks_ids: Array(),
+    assignation_list: Array(),
+    assignation_flag: false
 }

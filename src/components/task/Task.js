@@ -5,15 +5,20 @@ import { useDispatch, useSelector } from "react-redux"
 import useTextFieldStyles from "../../hooks/useTextFieldStyles"
 import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
-import { changeUsersSideTasksIds } from '../../redux/actions'
+import { changeAssignationFlag, changeAssignationList, 
+    changeUsersSideTasksIds } from '../../redux/actions'
 
 export default function Task(props) {
-    const { task, user, event_tasks, event_users,
-        sync_callback, delete_callback, update_callback } = props
+    const { task, user, event_tasks,
+        event_users, delete_callback } = props
 
     const dispatch = useDispatch()
+
     const usersSideTasksIds = useSelector(state => state.users_side_tasks_ids)
     const isTaskUsersSide = usersSideTasksIds.includes(task.id)
+
+    const assignation = useSelector(state => state.assignation_list)
+    const assignationFlag = useSelector(state => state.assignation_flag)
 
     const theme = useTheme()
     const textFieldStyles = useTextFieldStyles('outlined')
@@ -71,25 +76,34 @@ export default function Task(props) {
             }}>
             <TaskUsersSide is_visible={isTaskUsersSide} task={task}
                 users={event_users} tasks={event_tasks}
+                assignation={assignation}
                 text_field_styles={textFieldStyles}
                 task_tool_styles={taskToolStyles}
-                update_callback={(newData) => {
-                    sync_callback()
-                    update_callback(newData)
-                }}
-                close_callback={() => dispatch(
-                    changeUsersSideTasksIds(usersSideTasksIds.filter(taskId => {
-                        return taskId != task.id
-                    })))} />
+                close_callback={() => {
+                    dispatch(
+                        changeUsersSideTasksIds(usersSideTasksIds.filter(taskId => {
+                            return taskId != task.id
+                        }))
+                    )
+                }} />
             <TaskInfo is_visible={!isTaskUsersSide}
                 task={task} user={user}
+                assignation={assignation}
                 task_tool_styles={taskToolStyles}
                 text_field_styles={textFieldStyles}
                 task_states={taskStates}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
                 users_side_callback={() => {
-                    sync_callback()
+                    if (!assignationFlag) {
+                        dispatch(changeAssignationList(event_tasks.map(eventTask => {
+                            return {
+                                id: eventTask.id,
+                                users: [...eventTask.users]
+                            }
+                        })))
+                        dispatch(changeAssignationFlag(true))
+                    }
                     dispatch(changeUsersSideTasksIds([...usersSideTasksIds, task.id]))
                 }}
                 delete_callback={() => delete_callback()} />

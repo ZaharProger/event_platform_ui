@@ -1,5 +1,5 @@
 import { AppBar, Stack, TextField, useMediaQuery, useTheme } from '@mui/material'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
 import useValidation from '../../hooks/useValidation'
@@ -19,8 +19,32 @@ export default function DocFormHeader(props) {
     )
 
     const getButton = useButton(false)
-
     const textFieldStyles = useTextFieldStyles('outlined')
+
+    const assignation = useSelector(state => state.assignation_list)
+    const syncData = useCallback((dataToSync) => {
+        let newData = []
+
+        if (props.is_roadmap) {
+            newData = dataToSync.map(itemToSync => {
+                let itemUsers = [...itemToSync.users]
+                const foundAssignation = assignation.filter(item => item.id == itemToSync.id)
+
+                if (foundAssignation.length != 0) {
+                    if (foundAssignation[0].users !== itemUsers) {
+                        itemUsers = foundAssignation[0].users
+                    }
+                }
+
+                return {
+                    ...itemToSync,
+                    users: itemUsers,
+                }
+            })
+        }
+
+        return newData
+    }, [props.is_roadmap, assignation])
 
     const buttons = []
     if (props.doc_data.is_table || props.user.is_staff) {
@@ -28,14 +52,17 @@ export default function DocFormHeader(props) {
             buttons.push(
                 getButton(
                     saveButton, 
-                    () => props.save_callback(), 
+                    () => props.save_callback((dataToSync) => syncData(dataToSync)), 
                     () => !nameValidation.validate()
                 )
             )
         }
         if (props.doc_data.is_table) {
             buttons.push(
-                getButton(addButton, () => props.additional_callback()),
+                getButton(
+                    addButton, 
+                    () => props.additional_callback((dataToSync) => syncData(dataToSync))
+                ),
                 getButton(filterButton, () => props.filter_callback())
             )
         }

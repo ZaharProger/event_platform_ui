@@ -10,7 +10,7 @@ import useButton from '../../hooks/useButton'
 
 export default function TaskInfo(props) {
     const { is_visible, task, user, delete_callback,
-        task_state, task_states, task_tool_styles,
+        task_state, task_states, task_tool_styles, assignation,
         text_field_styles, task_color_callback, users_side_callback } = props
 
     const theme = useTheme()
@@ -32,15 +32,41 @@ export default function TaskInfo(props) {
         Дата окончания
     </Typography>
 
+    const getTaskUsersAmount = useCallback(() => {
+        let amount = 0
+    
+        if (task !== null) {
+            const foundAssignation = assignation.filter(item => item.id == task.id)
+            if (foundAssignation.length != 0) {
+                amount = foundAssignation[0].users.length
+            }
+            else if (task.users !== undefined) {
+                amount = task.users.length
+            }
+        }
+
+        return amount
+    }, [assignation, task])
+
     const getTaskUserIcons = useCallback(() => {
-        let userIcons = null
+        let usersIcons = null
 
         if (task !== null) {
-            if (task.users !== undefined) {
-                userIcons = <Stack direction="row" spacing={1}
+            let usersCollection = []
+
+            const foundAssignation = assignation.filter(item => item.id == task.id)
+            if (foundAssignation.length != 0) {
+                usersCollection = foundAssignation[0].users
+            }
+            else if (task.users !== undefined) {
+                usersCollection = task.users
+            }
+
+            if (usersCollection.length != 0) {
+                usersIcons = <Stack direction="row" spacing={1}
                     justifyContent="center" alignItems="center">
                     {
-                        [...task.users]
+                        [...usersCollection]
                             .sort((first, second) => {
                                 return second.is_responsible - first.is_responsible
                             })
@@ -61,8 +87,8 @@ export default function TaskInfo(props) {
             }
         }
 
-        return userIcons
-    }, [task])
+        return usersIcons
+    }, [assignation, task])
 
     return (
         <Stack direction="column" spacing={3} display={is_visible ? 'flex' : 'none'}
@@ -155,7 +181,7 @@ export default function TaskInfo(props) {
                                 <Typography color="secondary"
                                     variant="caption" textAlign="center">
                                     {
-                                        `Всего исполнителей: ${task.users.length}`
+                                        `Всего исполнителей: ${getTaskUsersAmount()}`
                                     }
                                 </Typography>
                                 :

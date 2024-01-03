@@ -8,11 +8,14 @@ import Task from '../task/Task'
 import { backendEndpoints, host } from "../routes"
 import useApi from '../../hooks/useApi'
 import FilterModal from "../modal/filterModal/FilterModal"
+import { useDispatch } from "react-redux"
+import { changeAssignationFlag } from "../../redux/actions"
 
 export default function TableDocForm(props) {
     const { data: { event_data, user, doc_data }, is_roadmap } = props
 
     const callApi = useApi()
+    const dispatch = useDispatch()
 
     const [docFields, setDocFields] = useState(is_roadmap ?
         [...event_data.tasks] : [...doc_data.fields]
@@ -45,10 +48,9 @@ export default function TableDocForm(props) {
                 }
 
                 updatedField[input.id] = formValue
-
                 if (is_roadmap) {
-                    updatedField.users = foundField[0].users
-                    updatedField.nested_tasks = []
+                    updatedField.users = [...foundField[0].users]
+                    updatedField.nested_tasks = [...foundField[0].nested_tasks]
                 }
             })
 
@@ -58,16 +60,18 @@ export default function TableDocForm(props) {
 
     const confirmButtonHandler = useCallback(() => {
         const actualDocData = getActualDocData(deleteItemId)
+
+        dispatch(changeAssignationFlag(false))
         setDocFields(actualDocData)
         setIsConfirmModalOpened(false)
     }, [docFields, deleteItemId])
 
-    const saveButtonHandler = useCallback(() => {
+    const saveButtonHandler = useCallback((syncFunction) => {
         const formData = {
             event_id: event_data.id,
             doc_id: doc_data.id,
             name: document.querySelector('#Doc-form-header').querySelector('input').value,
-            tasks: getActualDocData()
+            tasks: syncFunction(getActualDocData())
         }
 
         callApi(`${host}${backendEndpoints.tasks}`, 'PUT', JSON.stringify(formData), {
@@ -80,8 +84,9 @@ export default function TableDocForm(props) {
 
     }, [docFields, event_data, doc_data])
 
-    const addButtonHandler = useCallback(() => {
-        const actualDocData = getActualDocData()
+    const addButtonHandler = useCallback((syncFunction) => {
+        const actualDocData = syncFunction(getActualDocData())
+
         if (is_roadmap) {
             actualDocData.push({
                 id: uuidV4(),
@@ -94,6 +99,7 @@ export default function TableDocForm(props) {
             })
         }
 
+        dispatch(changeAssignationFlag(false))
         setDocFields(actualDocData)
     }, [is_roadmap])
 
@@ -101,9 +107,10 @@ export default function TableDocForm(props) {
         <Stack direction="column" spacing={2} justifyContent="center"
             alignItems="center">
             <DocFormHeader doc_data={doc_data} user={user}
-                save_callback={() => saveButtonHandler()}
+                is_roadmap={is_roadmap}
+                save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                 filter_callback={() => setIsFilterModalOpened(true)}
-                additional_callback={() => addButtonHandler()} />
+                additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
             <Stack direction="row" spacing={4}
                 justifyContent="center" alignItems="center"
                 useFlexGap flexWrap="wrap">
@@ -119,8 +126,6 @@ export default function TableDocForm(props) {
                                     user={user}
                                     event_tasks={docFields}
                                     event_users={event_data.users}
-                                    sync_callback={() => setDocFields(getActualDocData())}
-                                    update_callback={(newData) => setDocFields(newData)}
                                     delete_callback={() => {
                                         setDeleteItemId(docField.id)
                                         setIsConfirmModalOpened(true)

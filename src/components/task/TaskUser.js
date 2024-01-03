@@ -6,9 +6,13 @@ import {
 
 import useButton from '../../hooks/useButton'
 import { assignTool, unpinTool } from '../toolbar/tools'
+import { useDispatch } from 'react-redux'
+import { changeAssignationList } from '../../redux/actions'
 
 export default function TaskUser(props) {
     const { user: { id, name, email } } = props.user
+
+    const dispatch = useDispatch()
 
     const isMobile = useMediaQuery('(max-width: 1000px)')
     const theme = useTheme()
@@ -21,16 +25,18 @@ export default function TaskUser(props) {
     </Typography>
 
     const getTaskStat = useCallback((as_str = false) => {
-        const relatedTasksAmount = props.event_tasks
-            .filter(eventTask => {
-                return eventTask.users.filter(taskUser => taskUser.user.id == id).length != 0
+        const relatedTasksAmount = props.assignation
+            .filter(item => {
+                return item.users
+                    .filter(itemUser => itemUser.user.id == id)
+                    .length != 0
             })
             .length
 
         return as_str ?
             [
-                `${relatedTasksAmount}/${props.event_tasks.length}`,
-                `Задействован в ${relatedTasksAmount} из ${props.event_tasks.length} задач`
+                `${relatedTasksAmount}/${props.assignation.length}`,
+                `Задействован в ${relatedTasksAmount} из ${props.assignation.length} задач`
             ]
             :
             [relatedTasksAmount, props.event_tasks.length]
@@ -50,6 +56,66 @@ export default function TaskUser(props) {
     }, [props])
 
     const [caption, tooltipTitle] = getTaskStat(true)
+
+    const updateResponsibility = useCallback(() => {
+        dispatch(
+            changeAssignationList(props.assignation.map(item => {
+                const isChangedTask = item.id == props.related_task_id
+                return {
+                    id: item.id,
+                    users: item.users.map(itemUser => {
+                        const isChangedUser = itemUser.user.id == id
+                        return {
+                            ...itemUser,
+                            is_responsible: isChangedUser && isChangedTask ?
+                                !itemUser.is_responsible
+                                :
+                                itemUser.is_responsible
+                        }
+                    }),
+                }
+            }))
+        )
+    }, [props.assignation, props.related_task_id, id])
+
+    const changeAssignation = useCallback(() => {
+        dispatch(
+            changeAssignationList(props.assignation.map(item => {
+                const isChangedTask = item.id == props.related_task_id
+                let newUsers = []
+
+                if (props.is_assigned) {
+                    newUsers = item.users
+                        .filter(itemUser => {
+                            const isChangedUser = itemUser.user.id == id
+                            return !(isChangedUser && isChangedTask)
+                        })
+                }
+                else {
+                    newUsers = item.users
+                        .map(itemUser => {
+                            return {
+                                ...itemUser
+                            }
+                        })
+                    if (isChangedTask) {
+                        newUsers.push({
+                            user: {
+                                ...props.user.user
+                            },
+                            is_responsible: !props.has_responsible
+                        })
+                    }
+                }
+
+                return {
+                    id: item.id,
+                    users: newUsers
+                }
+            }))
+        )
+    }, [props.has_responsible, props.assignation, id,
+        props.user, props.related_task_id, props.is_assigned])
 
     return (
         <Stack direction={isMobile ? 'column' : 'row'} spacing={isMobile ? 2 : 6}
@@ -76,25 +142,7 @@ export default function TaskUser(props) {
                             alignItems: 'center',
                             marginRight: 'auto!important'
                         }} control={<Checkbox id={`is_responsible_${id}`}
-                            onChange={() => {
-                                props.update_callback(props.event_tasks.map(eventTask => {
-                                    const isChangedTask = eventTask.id == props.related_task_id
-                                    return {
-                                        ...eventTask,
-                                        users: eventTask.users.map(eventUser => {
-                                            const isChangedUser = eventUser.user.id == id
-                                            return {
-                                                ...eventUser,
-                                                is_responsible: isChangedUser && isChangedTask?
-                                                    !eventUser.is_responsible
-                                                    :
-                                                    eventUser.is_responsible
-                                            }
-                                        }),
-                                        nested_tasks: [...eventTask.nested_tasks],
-                                    }
-                                }))
-                            }}
+                            onChange={() => updateResponsibility()}
                             checked={props.is_responsible}
                             sx={{
                                 color: theme.palette.secondary.main,
@@ -122,40 +170,7 @@ export default function TaskUser(props) {
                 {
                     getTool(
                         props.is_assigned ? unpinTool : assignTool,
-                        () => props.update_callback(props.event_tasks.map(eventTask => {
-                            const isChangedTask = eventTask.id == props.related_task_id
-                            let newUsers = []
-
-                            if (props.is_assigned) {
-                                newUsers = eventTask.users
-                                    .filter(eventUser => {
-                                        const isChangedUser = eventUser.user.id == id
-                                        return !(isChangedUser && isChangedTask)
-                                    })
-                            }
-                            else {
-                                newUsers = eventTask.users
-                                    .map(eventUser => {
-                                        return {
-                                            ...eventUser
-                                        }
-                                    })
-                                if (isChangedTask) {
-                                    newUsers.push({
-                                        user: {
-                                            ...props.user.user
-                                        },
-                                        is_responsible: !props.has_responsible
-                                    })
-                                }
-                            }
-
-                            return {
-                                ...eventTask,
-                                users: newUsers,
-                                nested_tasks: [...eventTask.nested_tasks]
-                            }
-                        }))
+                        () => changeAssignation()
                     )
                 }
             </Stack>
