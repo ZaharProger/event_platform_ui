@@ -9,12 +9,14 @@ import {
     changeAssignationFlag, changeAssignationList,
     changeUsersSideTasksIds
 } from '../../redux/actions'
+import useSync from "../../hooks/useSync"
 
 export default function Task(props) {
     const { task, user, event_tasks,
         event_users, delete_callback } = props
 
     const dispatch = useDispatch()
+    const syncFunction = useSync()
 
     const usersSideTasksIds = useSelector(state => state.users_side_tasks_ids)
     const isTaskUsersSide = usersSideTasksIds.includes(task.id)
@@ -112,7 +114,9 @@ export default function Task(props) {
                     }
                     dispatch(changeUsersSideTasksIds([...usersSideTasksIds, task.id]))
                 }}
-                delete_callback={() => delete_callback()} />
+                delete_callback={() => delete_callback((isRoadmap, actualData, currentData) => {
+                    return syncFunction(isRoadmap, actualData, currentData)
+                })} />
         </Container>
     )
 }

@@ -10,6 +10,7 @@ import useApi from '../../hooks/useApi'
 import FilterModal from "../modal/filterModal/FilterModal"
 import { useDispatch } from "react-redux"
 import { changeAssignationFlag } from "../../redux/actions"
+import NotFound from "../notFound/NotFound"
 
 export default function TableDocForm(props) {
     const { data: { event_data, user, doc_data }, is_roadmap } = props
@@ -24,6 +25,7 @@ export default function TableDocForm(props) {
     const [deleteItemId, setDeleteItemId] = useState(-1)
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
     const [filterList, setFilterList] = useState({})
+    const [isAscending, setIsAscending] = useState(true)
 
     const getActualDocData = useCallback((itemToExclude = null) => {
         const className = is_roadmap ? 'Task' : ''
@@ -58,22 +60,31 @@ export default function TableDocForm(props) {
         })
     }, [docFields, is_roadmap])
 
-    const confirmButtonHandler = useCallback(() => {
-        const actualDocData = getActualDocData(deleteItemId)
+    const confirmButtonHandler = useCallback((syncFunction) => {
+        const actualDocData = syncFunction(
+            is_roadmap,
+            getActualDocData(deleteItemId),
+            docFields,
+            deleteItemId
+        )
 
         dispatch(changeAssignationFlag(false))
         setDocFields(actualDocData)
         setIsConfirmModalOpened(false)
-    }, [docFields, deleteItemId])
+    }, [docFields, deleteItemId, is_roadmap])
+
+    const deleteButtonHandler = useCallback((itemId, syncFunction) => {
+        setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
+        setDeleteItemId(itemId)
+        setIsConfirmModalOpened(true)
+    }, [is_roadmap, docFields])
 
     const saveButtonHandler = useCallback((syncFunction) => {
-        setFilterList({})
-
         const formData = {
             event_id: event_data.id,
             doc_id: doc_data.id,
             name: document.querySelector('#Doc-form-header').querySelector('input').value,
-            tasks: syncFunction(getActualDocData())
+            tasks: syncFunction(is_roadmap, getActualDocData(), docFields)
         }
 
         callApi(`${host}${backendEndpoints.tasks}`, 'PUT', JSON.stringify(formData), {
@@ -84,10 +95,10 @@ export default function TableDocForm(props) {
             }
         })
 
-    }, [docFields, event_data, doc_data])
+    }, [docFields, event_data, doc_data, is_roadmap])
 
     const addButtonHandler = useCallback((syncFunction) => {
-        const actualDocData = syncFunction(getActualDocData())
+        const actualDocData = syncFunction(is_roadmap, getActualDocData(), docFields)
 
         if (is_roadmap) {
             actualDocData.push({
@@ -104,7 +115,75 @@ export default function TableDocForm(props) {
         dispatch(changeAssignationFlag(false))
         setFilterList({})
         setDocFields(actualDocData)
-    }, [is_roadmap])
+    }, [is_roadmap, getActualDocData, docFields])
+
+    const filterButtonHandler = useCallback((syncFunction) => {
+        setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
+        setIsFilterModalOpened(true)
+    }, [is_roadmap, getActualDocData, docFields])
+
+    const syncButtonHandler = useCallback((syncFunction) => {
+        setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
+        setIsAscending(!isAscending)
+    }, [is_roadmap, docFields, getActualDocData, isAscending])
+
+    const getFields = useCallback(() => {
+        let data = []
+
+        if (docFields.length != 0) {
+            if (is_roadmap) {
+                data = docFields
+                    .filter(docField => {
+                        let taskStates = true
+                        let periods = true
+                        let users = true
+
+                        if (filterList.task_states !== undefined) {
+                            taskStates = filterList.task_states
+                                .includes(docField.state)
+                        }
+                        if (filterList.periods !== undefined) {
+                            periods = filterList.periods[0] >= docField.datetime_start &&
+                                docField.datetime_end <= filterList.periods[1]
+                        }
+                        if (filterList.users !== undefined) {
+                            users = docField.users
+                                .map(fieldUser => fieldUser.user.id)
+                                .filter(fieldUserId => {
+                                    return filterList.users.includes(fieldUserId)
+                                })
+                                .length != 0
+                        }
+
+                        return taskStates && periods && users
+                    })
+                    .sort((first, second) => {
+                        return isAscending ?
+                            first.datetime_start - second.datetime_start
+                            :
+                            second.datetime_start - first.datetime_start
+                    })
+                    .map(docField => {
+                        const fieldId = `task_${uuidV4()}`
+                        return <Task key={fieldId} task={{ ...docField }}
+                            user={user}
+                            event_tasks={docFields}
+                            event_users={event_data.users}
+                            delete_callback={(syncFunction) => {
+                                deleteButtonHandler(docField.id, syncFunction)
+                            }} />
+                    })
+            }
+        }
+
+        return <Stack direction="row" spacing={4}
+            justifyContent="center" alignItems="center"
+            useFlexGap flexWrap="wrap">
+            {
+                data.length != 0 ? data : data = <NotFound />
+            }
+        </Stack>
+    })
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
@@ -112,67 +191,21 @@ export default function TableDocForm(props) {
             <DocFormHeader doc_data={doc_data} user={user}
                 is_roadmap={is_roadmap}
                 save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
-                filter_callback={() => {
-                    setIsFilterModalOpened(true)
-                }}
+                filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
+                sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
                 additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
-            <Stack direction="row" spacing={4}
-                justifyContent="center" alignItems="center"
-                useFlexGap flexWrap="wrap">
-                {
-                    is_roadmap ?
-                        docFields
-                            .filter(docField => {
-                                let taskStates = true
-                                let periods = true
-                                let users = true
-
-                                if (filterList.task_states !== undefined) {
-                                    taskStates = filterList.task_states
-                                        .includes(docField.state)
-                                }
-                                if (filterList.periods !== undefined) {
-                                    periods = filterList.periods[0] >= docField.datetime_start &&
-                                        docField.datetime_end <= filterList.periods[1]
-                                }
-                                if (filterList.users !== undefined) {
-                                    users = docField.users
-                                        .map(fieldUser => fieldUser.user.id)
-                                        .filter(fieldUserId => {
-                                            return filterList.users.includes(fieldUserId)
-                                        })
-                                        .length != 0
-                                }
-
-                                return taskStates && periods && users
-                            })
-                            .sort((first, second) => {
-                                return first.datetime_start - second.datetime_start
-                            })
-                            .map(docField => {
-                                const fieldId = `task_${uuidV4()}`
-                                return <Task key={fieldId} task={{ ...docField }}
-                                    user={user}
-                                    event_tasks={docFields}
-                                    event_users={event_data.users}
-                                    delete_callback={() => {
-                                        setDeleteItemId(docField.id)
-                                        setIsConfirmModalOpened(true)
-                                    }} />
-                            })
-                        :
-                        null
-                }
-            </Stack>
+            {
+                getFields()
+            }
             <ConfirmModal is_opened={isConfirmModalOpened}
                 close_callback={() => setIsConfirmModalOpened(false)}
-                confirm_callback={() => confirmButtonHandler()}
+                confirm_callback={(syncFunction) => confirmButtonHandler(syncFunction)}
                 modal_header={`Удаление ${is_roadmap ? 'задачи' : 'записи'}`}
                 modal_content={
                     `Вы действительно хотите удалить эту ${is_roadmap ? 'задачу' : 'запись'}?`
                 } />
             {
-                is_roadmap ?
+                doc_data.is_table ?
                     <FilterModal is_opened={isFilterModalOpened}
                         data={docFields}
                         event_users={event_data.users}

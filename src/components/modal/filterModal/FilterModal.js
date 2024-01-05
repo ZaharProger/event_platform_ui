@@ -5,9 +5,10 @@ import {
     DialogContent, DialogActions, useTheme
 } from '@mui/material'
 import useButton from '../../../hooks/useButton'
-import { applyButton, cancelButton } from '../../buttons'
+import { applyButton, cancelButton, closeButton } from '../../buttons'
 import ModalBlockItem from '../ModalBlockItem'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { changeFilterStates, changeFilterUsers } from '../../../redux/actions'
 
 export default function FilterModal(props) {
     const theme = useTheme()
@@ -32,12 +33,18 @@ export default function FilterModal(props) {
         color: 'error'
     })
 
+    const dispatch = useDispatch()
+
     const filterUsers = useSelector(state => state.filter_users)
     const filterStates = useSelector(state => state.filter_states)
 
     const getButton = useButton(false)
     const buttons = [
-        getButton(cancelButton, () => props.close_callback()),
+        getButton(closeButton, () => props.close_callback()),
+        getButton(cancelButton, () => {
+            dispatch(changeFilterStates(Array()))
+            dispatch(changeFilterUsers(Array()))
+        }),
         getButton(applyButton, () => {
             if (props.confirm_callback !== null) {
                 const filterList = {}

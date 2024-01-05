@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"
 
 import Tool from "../components/toolbar/Tool"
 import { deleteTool, excludeTool, unpinTool } from "../components/toolbar/tools"
-import { cancelButton, deleteButton, signOutButton } from "../components/buttons"
+import { cancelButton, deleteButton, signOutButton, sortButton } from "../components/buttons"
+import { useState } from "react"
 
 export default function useButton(isTool) {
     const theme = useTheme()
@@ -13,6 +14,8 @@ export default function useButton(isTool) {
     const negativeButtons = [deleteButton, cancelButton, signOutButton]
 
     const navigate = useNavigate()
+
+    const [switchIcon, setSwitchIcon] = useState(true)
 
     return isTool ? function (tool, custom_callback = null,
         additional_styles = {}, compareWith = null) {
@@ -67,7 +70,13 @@ export default function useButton(isTool) {
                     }
                 }
                 :
-                (event) => custom_callback(event)
+                (event) => {
+                    if (button === sortButton) {
+                        setSwitchIcon(!switchIcon)
+                    }
+                    custom_callback(event)
+                }
+
             const isNegativeButton = negativeButtons.includes(button)
             const buttonBackgroundColor = isNegativeButton ?
                 theme.palette.error.main : theme.palette.secondary.main
@@ -83,6 +92,8 @@ export default function useButton(isTool) {
                 }
             }
 
+            const iconStyles = button === sortButton && switchIcon? 
+                {transform: 'rotateX(180deg)'} : {}
 
             component = <Button key={`button_${uuidV4()}`}
                 disableElevation
@@ -90,7 +101,7 @@ export default function useButton(isTool) {
                 onClick={(event) => callback(event)}
                 variant="contained"
                 startIcon={button.icon === null ?
-                    null : <SvgIcon inheritViewBox component={button.icon} />
+                    null : <SvgIcon inheritViewBox component={button.icon} sx={iconStyles} />
                 }
                 sx={{
                     fontSize: '0.8em',

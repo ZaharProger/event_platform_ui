@@ -1,11 +1,12 @@
 import { AppBar, Stack, TextField, useMediaQuery, useTheme } from '@mui/material'
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import useButton from '../../hooks/useButton'
 import useValidation from '../../hooks/useValidation'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
-import { saveButton, addButton, filterButton } from '../buttons'
+import { saveButton, addButton, filterButton, sortButton } from '../buttons'
 import { useSelector } from 'react-redux'
+import useSync from '../../hooks/useSync'
 
 export default function DocFormHeader(props) {
     const theme = useTheme()
@@ -21,30 +22,7 @@ export default function DocFormHeader(props) {
     const getButton = useButton(false)
     const textFieldStyles = useTextFieldStyles('outlined')
 
-    const assignation = useSelector(state => state.assignation_list)
-    const syncData = useCallback((dataToSync) => {
-        let newData = []
-
-        if (props.is_roadmap) {
-            newData = dataToSync.map(itemToSync => {
-                let itemUsers = [...itemToSync.users]
-                const foundAssignation = assignation.filter(item => item.id == itemToSync.id)
-
-                if (foundAssignation.length != 0) {
-                    if (foundAssignation[0].users !== itemUsers) {
-                        itemUsers = foundAssignation[0].users
-                    }
-                }
-
-                return {
-                    ...itemToSync,
-                    users: itemUsers,
-                }
-            })
-        }
-
-        return newData
-    }, [props.is_roadmap, assignation])
+    const syncFunction = useSync()
 
     const buttons = []
     if (props.doc_data.is_table || props.user.is_staff) {
@@ -52,7 +30,9 @@ export default function DocFormHeader(props) {
             buttons.push(
                 getButton(
                     saveButton, 
-                    () => props.save_callback((dataToSync) => syncData(dataToSync)), 
+                    () => props.save_callback((isRoadmap, dataToSync, currentData) => {
+                        return syncFunction(isRoadmap, dataToSync, currentData)
+                    }), 
                     () => !nameValidation.validate()
                 )
             )
@@ -61,9 +41,20 @@ export default function DocFormHeader(props) {
             buttons.push(
                 getButton(
                     addButton, 
-                    () => props.additional_callback((dataToSync) => syncData(dataToSync))
+                    () => props.additional_callback((isRoadmap, dataToSync, currentData) => {
+                        return syncFunction(isRoadmap, dataToSync, currentData)
+                    })
                 ),
-                getButton(filterButton, () => props.filter_callback())
+                getButton(filterButton, () => props.filter_callback(
+                    (isRoadmap, dataToSync, currentData) => {
+                        return syncFunction(isRoadmap, dataToSync, currentData)
+                    }
+                )),
+                getButton(sortButton, () => props.sort_callback(
+                    (isRoadmap, dataToSync, currentData) => {
+                        return syncFunction(isRoadmap, dataToSync, currentData)
+                    }
+                ))
             )
         }
     }
