@@ -13,7 +13,7 @@ import {
 import useSync from "../../hooks/useSync"
 
 export default function Task(props) {
-    const { task, user, event_tasks,
+    const { task, user, event_tasks, nested_task,
         event_users, delete_callback } = props
 
     const dispatch = useDispatch()
@@ -86,6 +86,7 @@ export default function Task(props) {
             <TaskUsersSide is_visible={isTaskUsersSide} task={task}
                 users={event_users} tasks={event_tasks}
                 user={user}
+                nested_task={nested_task}
                 assignation={assignation}
                 text_field_styles={textFieldStyles}
                 task_tool_styles={taskToolStyles}

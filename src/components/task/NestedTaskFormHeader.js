@@ -8,7 +8,7 @@ import useSync from '../../hooks/useSync'
 import { backTool } from '../toolbar/tools'
 import { changeNestedTask } from '../../redux/actions'
 
-export default function TaskFormHeader(props) {
+export default function NestedTaskFormHeader(props) {
     const theme = useTheme()
     const getButton = useButton(false)
     const getTool = useButton(true)
@@ -16,7 +16,17 @@ export default function TaskFormHeader(props) {
     const syncFunction = useSync()
     const dispatch = useDispatch()
 
-    const buttons = [getTool(backTool, () => dispatch(changeNestedTask(null)))]
+    const buttons = [
+        getTool(
+            backTool, 
+            () => {
+                props.close_callback((isRoadmap, dataToSync, currentData) => {
+                    return syncFunction(isRoadmap, dataToSync, currentData)
+                })
+                dispatch(changeNestedTask(null))
+            }
+        )
+    ]
     if (props.user.is_staff) {
         buttons.push(
             getButton(

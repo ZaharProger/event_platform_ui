@@ -7,7 +7,7 @@ import UsersListItem from '../usersList/UsersListItem'
 
 export default function TaskUsersSide(props) {
     const { is_visible, users, tasks, task, close_callback, user: accountUser,
-        text_field_styles, task_tool_styles, assignation } = props
+        text_field_styles, task_tool_styles, assignation, nested_task } = props
 
     const getUsersList = useUsersList(true)
 
@@ -41,9 +41,25 @@ export default function TaskUsersSide(props) {
                     })
                     .length != 0
 
-                foundData = searchData == '' ? [...users] : users.filter(eventUser => {
-                    return eventUser.user.name.toLowerCase().includes(searchData.toLowerCase())
-                })
+                if (nested_task !== null) {
+                    const foundTask = tasks.filter(eventTask => eventTask.id == nested_task.id)
+                    if (foundTask.length != 0) {
+                        foundData = searchData !== '' ?
+                            [...foundTask[0].users]
+                            :
+                            foundTask[0].users.filter(taskUser => {
+                                return taskUser.user.name.toLowerCase()
+                                    .includes(searchData.toLowerCase())
+                            })
+                    }
+                }
+                else {
+                    foundData = searchData == '' ? [...users] : users.filter(eventUser => {
+                        return eventUser.user.name.toLowerCase()
+                            .includes(searchData.toLowerCase())
+                    })
+                }
+
                 foundData = foundData
                     .sort((first, second) => first.user.name.localeCompare(second.user.name))
                     .map(foundUser => {
@@ -69,7 +85,7 @@ export default function TaskUsersSide(props) {
         }
 
         return foundData
-    }, [users, task, tasks, assignation, accountUser])
+    }, [users, task, tasks, assignation, accountUser, nested_task])
 
     return (
         <Fade in={is_visible} timeout={1500}>

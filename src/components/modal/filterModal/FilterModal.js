@@ -78,7 +78,7 @@ export default function FilterModal(props) {
                     <ModalBlockItem
                         type={'list'}
                         item_name={'Исполнители'}
-                        item_values={[props.event_users]} />
+                        item_values={[props.filter_values]} />
                 </Stack>
             </DialogContent>
             <DialogActions>

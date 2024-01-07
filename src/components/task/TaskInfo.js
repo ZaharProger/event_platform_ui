@@ -93,14 +93,15 @@ export default function TaskInfo(props) {
     const getNestedTasksAmount = useCallback(() => {
         return tasks
             .filter(taskItem => {
-                return taskItem.parent !== null ? taskItem.parent.id == task.id : false
+                return taskItem.parent === task.id
             })
             .length
     }, [task, tasks])
 
     return (
         <Fade in={is_visible} timeout={1500}>
-            <Stack direction="column" spacing={3} display={is_visible ? 'flex' : 'none'}
+            <Stack className="Task-info" direction="column" spacing={3} 
+                display={is_visible ? 'flex' : 'none'}
                 justifyContent="center" alignItems="center">
                 {
                     user.is_staff ?
