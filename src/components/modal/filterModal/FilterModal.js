@@ -76,13 +76,6 @@ export default function FilterModal(props) {
                         item_name={'Статус задач'}
                         item_values={taskStates} />
                     <ModalBlockItem
-                        type={'date'}
-                        item_name={'Сроки задач'}
-                        item_values={[
-                            'Начало периода',
-                            'Конец периода'
-                        ]} />
-                    <ModalBlockItem
                         type={'list'}
                         item_name={'Исполнители'}
                         item_values={[props.event_users]} />

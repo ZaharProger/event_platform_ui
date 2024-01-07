@@ -1,9 +1,8 @@
-import { Stack, TextField, Typography, useTheme } from '@mui/material'
+import { Stack, Typography, useTheme } from '@mui/material'
 import React, { useCallback } from 'react'
 
 import { v4 as uuidV4 } from "uuid"
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
-import { prepareDatetime } from '../../utils'
 import useUsersList from '../../hooks/useUsersList'
 import UsersListItem from '../usersList/UsersListItem'
 import TaskStateFilter from '../task/TaskStateFilter'
@@ -55,18 +54,6 @@ export default function ModalBlockItem(props) {
 
                                 blockContent = <TaskStateFilter key={blockContentKey}
                                     color={checkboxColor} value={itemValue} />
-                                break
-                            case 'date':
-                                blockContent = <TextField type="datetime-local"
-                                    key={blockContentKey}
-                                    defaultValue={prepareDatetime('', true)}
-                                    helperText={<Typography variant="subtitle2"
-                                        fontSize="0.8em" color="secondary">
-                                        {
-                                            itemValue
-                                        }
-                                    </Typography>} variant="outlined"
-                                    color="secondary" sx={{ ...textFieldStyles }} />
                                 break
                             case 'list':
                                 blockContent = getUsersList(

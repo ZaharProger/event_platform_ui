@@ -26,6 +26,7 @@ export default function TableDocForm(props) {
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
     const [filterList, setFilterList] = useState({})
     const [isAscending, setIsAscending] = useState(true)
+    console.log(filterList);
 
     const getActualDocData = useCallback((itemToExclude = null) => {
         const className = is_roadmap ? 'Task' : ''
@@ -43,7 +44,7 @@ export default function TableDocForm(props) {
                 let formValue = input.value
 
                 if (input.id.includes('datetime')) {
-                    let timestamp = (new Date(input.value).getTime() / 1000).toString()
+                    const timestamp = (new Date(input.value).getTime() / 1000).toString()
                     if (timestamp != 'NaN' && timestamp != '') {
                         formValue = timestamp
                     }
@@ -132,19 +133,25 @@ export default function TableDocForm(props) {
 
         if (docFields.length != 0) {
             if (is_roadmap) {
+                const earliestStartDate = docFields
+                    .sort((first, second) => {
+                        return first.datetime_start - second.datetime_start
+                    })
+                    [0].datetime_start
+                const latestEndDate = docFields
+                    .sort((first, second) => {
+                        return second.datetime_end - first.datetime_end
+                    })
+                    [0].datetime_end
+
                 data = docFields
                     .filter(docField => {
                         let taskStates = true
-                        let periods = true
                         let users = true
 
                         if (filterList.task_states !== undefined) {
                             taskStates = filterList.task_states
                                 .includes(docField.state)
-                        }
-                        if (filterList.periods !== undefined) {
-                            periods = filterList.periods[0] >= docField.datetime_start &&
-                                docField.datetime_end <= filterList.periods[1]
                         }
                         if (filterList.users !== undefined) {
                             users = docField.users
@@ -155,7 +162,7 @@ export default function TableDocForm(props) {
                                 .length != 0
                         }
 
-                        return taskStates && periods && users
+                        return taskStates && users
                     })
                     .sort((first, second) => {
                         return isAscending ?
@@ -207,7 +214,6 @@ export default function TableDocForm(props) {
             {
                 doc_data.is_table ?
                     <FilterModal is_opened={isFilterModalOpened}
-                        data={docFields}
                         event_users={event_data.users}
                         close_callback={() => setIsFilterModalOpened(false)}
                         confirm_callback={(newFilterList) => {
