@@ -1,8 +1,5 @@
-import {
-    Checkbox, FormControlLabel,
-    Stack, TextField, Typography, useTheme
-} from '@mui/material'
-import React, { useCallback, useState } from 'react'
+import { Stack, TextField, Typography, useTheme } from '@mui/material'
+import React, { useCallback } from 'react'
 
 import { v4 as uuidV4 } from "uuid"
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
@@ -17,7 +14,6 @@ export default function ModalBlockItem(props) {
     const theme = useTheme()
     const textFieldStyles = useTextFieldStyles('outlined')
 
-    const [checkedItems, setCheckedItems] = useState(Array())
     const getUsersList = useUsersList(false)
 
     const getSearchResults = useCallback((searchData) => {
