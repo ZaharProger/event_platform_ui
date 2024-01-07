@@ -24,6 +24,7 @@ export default function ModalBlockItem(props) {
                 .sort((first, second) => first.user.name.localeCompare(second.user.name))
                 .map(foundItem => {
                     return <UsersListItem key={`event_user_${uuidV4()}`}
+                        is_editable={true}
                         for_task={false}
                         user={foundItem} />
                 })

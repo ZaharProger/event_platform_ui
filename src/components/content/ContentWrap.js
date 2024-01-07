@@ -19,13 +19,15 @@ import {
     completeTool, publishTool, deleteTool,
     profileTool, addTool, backTool, downloadTool
 } from '../toolbar/tools'
-import { aboutEventButton, editButton, deleteButton, downloadButton, viewButton } from '../buttons'
+import { aboutEventButton, editButton, deleteButton, 
+    downloadButton, viewButton } from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
 import {
     changeSelectedCardTab, changeShowCompletedEvents,
-    changeData, changeUser
+    changeData, changeUser, changeFilterUsers, changeFilterStates, 
+    changeAssignationList, changeNestedTask
 } from '../../redux/actions'
 import JoinModal from '../modal/joinModal/JoinModal'
 import ConfirmModal from '../modal/confirmModal/ConfirmModal'
@@ -43,6 +45,7 @@ export default function ContentWrap() {
     const userData = useSelector(state => state.user)
     const showCompletedEvents = useSelector(state => state.show_completed_events)
     const selectedTab = useSelector(state => state.selected_card_tab)
+    const nestedTask = useSelector(state => state.nested_task)
 
     const location = useLocation()
     const navigate = useNavigate()
@@ -89,9 +92,11 @@ export default function ContentWrap() {
                             getTool(downloadTool)
                         )
                     }
-                    tools.unshift(
-                        getTool(backTool)
-                    )
+                    if (nestedTask === null) {
+                        tools.unshift(
+                            getTool(backTool)
+                        )
+                    }
                 }
             }
             else {
@@ -166,7 +171,7 @@ export default function ContentWrap() {
         }
 
         return tools
-    }, [userData, location, showCompletedEvents, selectedTab, foundItem])
+    }, [userData, location, showCompletedEvents, selectedTab, foundItem, nestedTask])
 
     const getContent = useCallback(() => {
         let content = null
@@ -303,7 +308,9 @@ export default function ContentWrap() {
                                     docData.event_data.users = foundItem[0].users
                                     docData.event_data.tasks = foundItem[0].tasks
                                 }
-                                content = <TableDocForm data={docData} is_roadmap={isRoadmap} />
+                                content = <TableDocForm data={docData} 
+                                    nested_task={nestedTask}
+                                    is_roadmap={isRoadmap} />
                             }
                             else {
                                 content = <TextDocForm data={docData} />
@@ -376,7 +383,7 @@ export default function ContentWrap() {
         }
 
         return content
-    }, [location, listData, userData, showCompletedEvents, foundItem])
+    }, [location, listData, userData, showCompletedEvents, foundItem, nestedTask])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
@@ -389,6 +396,10 @@ export default function ContentWrap() {
                 callApi(route, 'GET', null, null).then(resData => {
                     if (resData.status == 200) {
                         dispatch(changeData(resData.data.data))
+                        dispatch(changeFilterUsers(Array()))
+                        dispatch(changeFilterStates(Array()))
+                        dispatch(changeAssignationList(Array()))
+                        dispatch(changeNestedTask(null))
                     }
                     else {
                         dispatch(changeData(Array()))
@@ -432,7 +443,10 @@ export default function ContentWrap() {
             height: '100vh'
         }}>
             {
-                content !== null ? <Toolbar tools={buildTools()} /> : null
+                content !== null ? 
+                    <Toolbar tools={buildTools()} nested_task={nestedTask} /> 
+                    : 
+                    null
             }
             <Zoom in={true} timeout={600}>
                 <Container maxWidth="lg" sx={{

@@ -6,7 +6,7 @@ import useUsersList from '../../hooks/useUsersList'
 import UsersListItem from '../usersList/UsersListItem'
 
 export default function TaskUsersSide(props) {
-    const { is_visible, users, tasks, task, close_callback,
+    const { is_visible, users, tasks, task, close_callback, user: accountUser,
         text_field_styles, task_tool_styles, assignation } = props
 
     const getUsersList = useUsersList(true)
@@ -58,6 +58,7 @@ export default function TaskUsersSide(props) {
 
                         return <UsersListItem key={`task_user_${uuidV4()}`} user={foundUser}
                             related_task_id={task.id}
+                            is_editable={accountUser.is_staff}
                             assignation={assignation}
                             is_responsible={isResponsible}
                             for_task={true}
@@ -68,7 +69,7 @@ export default function TaskUsersSide(props) {
         }
 
         return foundData
-    }, [users, task, tasks, assignation])
+    }, [users, task, tasks, assignation, accountUser])
 
     return (
         <Fade in={is_visible} timeout={1500}>

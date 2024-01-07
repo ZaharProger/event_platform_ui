@@ -8,5 +8,6 @@ export const defaultState = {
     assignation_list: Array(),
     assignation_flag: false,
     filter_users: Array(),
-    filter_states: Array()
+    filter_states: Array(),
+    nested_task: null
 }

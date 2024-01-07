@@ -11,9 +11,10 @@ import FilterModal from "../modal/filterModal/FilterModal"
 import { useDispatch } from "react-redux"
 import { changeAssignationFlag } from "../../redux/actions"
 import NotFound from "../notFound/NotFound"
+import TaskFormHeader from "../task/TaskFormHeader"
 
 export default function TableDocForm(props) {
-    const { data: { event_data, user, doc_data }, is_roadmap } = props
+    const { data: { event_data, user, doc_data }, is_roadmap, nested_task } = props
 
     const callApi = useApi()
     const dispatch = useDispatch()
@@ -26,7 +27,6 @@ export default function TableDocForm(props) {
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
     const [filterList, setFilterList] = useState({})
     const [isAscending, setIsAscending] = useState(true)
-    console.log(filterList);
 
     const getActualDocData = useCallback((itemToExclude = null) => {
         const className = is_roadmap ? 'Task' : ''
@@ -38,6 +38,7 @@ export default function TableDocForm(props) {
         return fieldForms.map(fieldForm => {
             const updatedField = {}
             const foundField = docFields.filter(docField => docField.id == fieldForm.id)
+
             updatedField.id = foundField[0].id
 
             fieldForm.querySelectorAll('input, textarea, select').forEach(input => {
@@ -53,7 +54,7 @@ export default function TableDocForm(props) {
                 updatedField[input.id] = formValue
                 if (is_roadmap) {
                     updatedField.users = [...foundField[0].users]
-                    updatedField.nested_tasks = [...foundField[0].nested_tasks]
+                    updatedField.parent = foundField[0].parent
                 }
             })
 
@@ -107,7 +108,7 @@ export default function TableDocForm(props) {
                 datetime_start: '',
                 datetime_end: '',
                 state: 'Не назначена',
-                nested_tasks: [],
+                parent: nested_task !== null ? { id: nested_task.id } : null,
                 name: '',
                 users: [],
             })
@@ -116,7 +117,7 @@ export default function TableDocForm(props) {
         dispatch(changeAssignationFlag(false))
         setFilterList({})
         setDocFields(actualDocData)
-    }, [is_roadmap, getActualDocData, docFields])
+    }, [is_roadmap, getActualDocData, docFields, nested_task])
 
     const filterButtonHandler = useCallback((syncFunction) => {
         setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
@@ -133,25 +134,23 @@ export default function TableDocForm(props) {
 
         if (docFields.length != 0) {
             if (is_roadmap) {
-                const earliestStartDate = docFields
-                    .sort((first, second) => {
-                        return first.datetime_start - second.datetime_start
+                if (nested_task !== null) {
+                    data = docFields.filter(docField => {
+                        return docField.parent !== null ? 
+                            docField.parent.id == nested_task.id : false
                     })
-                    [0].datetime_start
-                const latestEndDate = docFields
-                    .sort((first, second) => {
-                        return second.datetime_end - first.datetime_end
-                    })
-                    [0].datetime_end
+                }
+                else {
+                    data = docFields.filter(docField => docField.parent === null)
+                }
 
-                data = docFields
+                data = data
                     .filter(docField => {
                         let taskStates = true
                         let users = true
 
                         if (filterList.task_states !== undefined) {
-                            taskStates = filterList.task_states
-                                .includes(docField.state)
+                            taskStates = filterList.task_states.includes(docField.state)
                         }
                         if (filterList.users !== undefined) {
                             users = docField.users
@@ -190,17 +189,28 @@ export default function TableDocForm(props) {
                 data.length != 0 ? data : data = <NotFound />
             }
         </Stack>
-    })
+    }, [docFields, user, event_data, is_roadmap, isAscending, filterList, nested_task])
 
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
             alignItems="center">
-            <DocFormHeader doc_data={doc_data} user={user}
-                is_roadmap={is_roadmap}
-                save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
-                filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
-                sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
-                additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
+            {
+                nested_task !== null ?
+                    <TaskFormHeader task={docFields
+                        .filter(docField => docField.id == nested_task.id)[0]}
+                        user={user}
+                        filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
+                        sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
+                        additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
+                    :
+                    <DocFormHeader doc_data={doc_data}
+                        user={user}
+                        is_roadmap={is_roadmap}
+                        save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
+                        filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
+                        sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
+                        additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
+            }
             {
                 getFields()
             }

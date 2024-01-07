@@ -41,7 +41,7 @@ export default function UsersListItem(props) {
             ]
             :
             [relatedTasksAmount, props.event_tasks.length]
-    }, [props])
+    }, [props, id])
 
     const getBusyColor = useCallback(() => {
         const [relatedTasksAmount, allTasksAmount] = getTaskStat()
@@ -54,12 +54,69 @@ export default function UsersListItem(props) {
                 theme.palette.action.main
                 :
                 theme.palette.error.main
-    }, [props])
+    }, [props, theme, getTaskStat])
 
     let taskStat = null
     if (props.for_task) {
         taskStat = getTaskStat(true)
     }
+
+    const getButtons = useCallback(() => {
+        return props.for_task ?
+            getTool(
+                props.is_assigned ? unpinTool : assignTool,
+                () => dispatch(
+                    changeAssignationList(props.assignation.map(item => {
+                        const isChangedTask = item.id == props.related_task_id
+                        let newUsers = []
+
+                        if (props.is_assigned) {
+                            newUsers = item.users
+                                .filter(itemUser => {
+                                    const isChangedUser = itemUser.user.id == id
+                                    return !(isChangedUser && isChangedTask)
+                                })
+                        }
+                        else {
+                            newUsers = item.users
+                                .map(itemUser => {
+                                    return {
+                                        ...itemUser
+                                    }
+                                })
+                            if (isChangedTask) {
+                                newUsers.push({
+                                    user: {
+                                        ...props.user.user
+                                    },
+                                    is_responsible: !props.has_responsible
+                                })
+                            }
+                        }
+
+                        return {
+                            id: item.id,
+                            users: newUsers
+                        }
+                    }))
+                )
+            )
+            :
+            props.is_editable ?
+                getTool(
+                    filterUsers.includes(id) ? excludeTool : includeTool,
+                    () => dispatch(
+                        changeFilterUsers(
+                            filterUsers.includes(id) ?
+                                filterUsers.filter(filterUser => filterUser != id)
+                                :
+                                [...filterUsers, id]
+                        )
+                    )
+                )
+                :
+                null
+    }, [props, id, filterUsers, dispatch, getTool])
 
     return (
         <Stack direction={isMobile ? 'column' : 'row'} spacing={isMobile ? 2 : 6}
@@ -80,7 +137,7 @@ export default function UsersListItem(props) {
                     {email}
                 </Typography>
                 {
-                    props.for_task ?
+                    props.for_task && props.is_editable ?
                         props.is_assigned && (!props.has_responsible || props.is_responsible) ?
                             <FormControlLabel sx={{
                                 display: 'flex',
@@ -136,62 +193,17 @@ export default function UsersListItem(props) {
                         null
                 }
             </Stack>
-            <Stack direction="column" spacing={1}
-                justifyContent="center" alignItems="center" >
-                {
-                    props.for_task ?
-                        getTool(
-                            props.is_assigned ? unpinTool : assignTool,
-                            () => dispatch(
-                                changeAssignationList(props.assignation.map(item => {
-                                    const isChangedTask = item.id == props.related_task_id
-                                    let newUsers = []
-                    
-                                    if (props.is_assigned) {
-                                        newUsers = item.users
-                                            .filter(itemUser => {
-                                                const isChangedUser = itemUser.user.id == id
-                                                return !(isChangedUser && isChangedTask)
-                                            })
-                                    }
-                                    else {
-                                        newUsers = item.users
-                                            .map(itemUser => {
-                                                return {
-                                                    ...itemUser
-                                                }
-                                            })
-                                        if (isChangedTask) {
-                                            newUsers.push({
-                                                user: {
-                                                    ...props.user.user
-                                                },
-                                                is_responsible: !props.has_responsible
-                                            })
-                                        }
-                                    }
-                    
-                                    return {
-                                        id: item.id,
-                                        users: newUsers
-                                    }
-                                }))
-                            )
-                        )
-                        :
-                        getTool(
-                            filterUsers.includes(id) ? excludeTool : includeTool,
-                            () => dispatch(
-                                changeFilterUsers(
-                                    filterUsers.includes(id) ?
-                                        filterUsers.filter(filterUser => filterUser != id)
-                                        :
-                                        [...filterUsers, id]
-                                )
-                            )
-                        )
-                }
-            </Stack>
+            {
+                props.for_task || props.is_editable ?
+                    <Stack direction="column" spacing={1}
+                        justifyContent="center" alignItems="center">
+                        {
+                            getButtons()
+                        }
+                    </Stack>
+                    :
+                    null
+            }
         </Stack>
     )
 }

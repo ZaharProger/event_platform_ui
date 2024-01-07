@@ -9,7 +9,7 @@ import { addNestedTool, assignTool, deleteTool, viewTool } from '../toolbar/tool
 import useButton from '../../hooks/useButton'
 
 export default function TaskInfo(props) {
-    const { is_visible, task, user, delete_callback,
+    const { is_visible, task, tasks, user, delete_callback, nested_callback,
         task_state, task_states, task_tool_styles, assignation,
         text_field_styles, task_color_callback, users_side_callback } = props
 
@@ -89,6 +89,14 @@ export default function TaskInfo(props) {
 
         return usersIcons
     }, [assignation, task])
+
+    const getNestedTasksAmount = useCallback(() => {
+        return tasks
+            .filter(taskItem => {
+                return taskItem.parent !== null ? taskItem.parent.id == task.id : false
+            })
+            .length
+    }, [task, tasks])
 
     return (
         <Fade in={is_visible} timeout={1500}>
@@ -205,7 +213,7 @@ export default function TaskInfo(props) {
                                 <Typography color="secondary" variant="caption"
                                     textAlign="center">
                                     {
-                                        `Всего подзадач: ${task.nested_tasks.length}`
+                                        `Всего подзадач: ${getNestedTasksAmount()}`
                                     }
                                 </Typography>
                                 :
@@ -215,7 +223,7 @@ export default function TaskInfo(props) {
                             user.is_staff ?
                                 getTool(
                                     addNestedTool,
-                                    () => console.log(1),
+                                    () => nested_callback(),
                                     task_tool_styles
                                 )
                                 :

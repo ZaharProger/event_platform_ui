@@ -1,4 +1,4 @@
-import { AppBar, Stack, TextField, useMediaQuery, useTheme } from '@mui/material'
+import { AppBar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material'
 import React from 'react'
 
 import useButton from '../../hooks/useButton'
@@ -29,22 +29,22 @@ export default function DocFormHeader(props) {
         if (props.user.is_staff) {
             buttons.push(
                 getButton(
-                    saveButton, 
+                    saveButton,
                     () => props.save_callback((isRoadmap, dataToSync, currentData) => {
                         return syncFunction(isRoadmap, dataToSync, currentData)
-                    }), 
+                    }),
                     () => !nameValidation.validate()
+                ),
+                getButton(
+                    addButton,
+                    () => props.additional_callback((isRoadmap, dataToSync, currentData) => {
+                        return syncFunction(isRoadmap, dataToSync, currentData)
+                    })
                 )
             )
         }
         if (props.doc_data.is_table) {
             buttons.push(
-                getButton(
-                    addButton, 
-                    () => props.additional_callback((isRoadmap, dataToSync, currentData) => {
-                        return syncFunction(isRoadmap, dataToSync, currentData)
-                    })
-                ),
                 getButton(filterButton, () => props.filter_callback(
                     (isRoadmap, dataToSync, currentData) => {
                         return syncFunction(isRoadmap, dataToSync, currentData)
@@ -64,7 +64,7 @@ export default function DocFormHeader(props) {
     const docHeaderStyles = {
         padding: '10px',
         borderRadius: '10px',
-        backgroundColor: !prevTrigger? 'transparent' : theme.palette.primary.main,
+        backgroundColor: !prevTrigger ? 'transparent' : theme.palette.primary.main,
     }
     if (!prevTrigger) {
         docHeaderStyles.boxShadow = 'none'
@@ -74,12 +74,23 @@ export default function DocFormHeader(props) {
         <AppBar position="sticky" sx={docHeaderStyles} id="Doc-form-header">
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
                 justifyContent="center" alignItems="center">
-                <TextField id="name" required fullWidth={!isNearMobile}
-                    onInput={(event) => nameValidation.set(event.target.value)}
-                    defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
-                    label="Название" variant="outlined"
-                    color="secondary" sx={{ ...textFieldStyles }} />
-                <Stack spacing={1} direction="row" 
+                {
+                    props.user.is_staff ?
+                        <TextField id="name" required fullWidth={!isNearMobile}
+                            onInput={(event) => nameValidation.set(event.target.value)}
+                            defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
+                            label="Название" variant="outlined"
+                            color="secondary" sx={{ ...textFieldStyles }} />
+                        :
+                        <Typography variant="subtitle1" fontWeight="bold"
+                            fontSize="1.2em" marginRight={isMobile ? 'center' : 'auto!important'}
+                            color="secondary" textAlign="center">
+                            {
+                                props.doc_data !== null ? props.doc_data.name : ''
+                            }
+                        </Typography>
+                }
+                <Stack spacing={1} direction="row"
                     justifyContent="center" alignItems="center">
                     {
                         buttons

@@ -7,6 +7,7 @@ import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
 import {
     changeAssignationFlag, changeAssignationList,
+    changeNestedTask,
     changeUsersSideTasksIds
 } from '../../redux/actions'
 import useSync from "../../hooks/useSync"
@@ -84,6 +85,7 @@ export default function Task(props) {
             }}>
             <TaskUsersSide is_visible={isTaskUsersSide} task={task}
                 users={event_users} tasks={event_tasks}
+                user={user}
                 assignation={assignation}
                 text_field_styles={textFieldStyles}
                 task_tool_styles={taskToolStyles}
@@ -95,6 +97,7 @@ export default function Task(props) {
                     )
                 }} />
             <TaskInfo is_visible={!isTaskUsersSide}
+                tasks={event_tasks}
                 task={task} user={user}
                 assignation={assignation}
                 task_tool_styles={taskToolStyles}
@@ -102,6 +105,10 @@ export default function Task(props) {
                 task_states={taskStates}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
+                nested_callback={() => dispatch(changeNestedTask({
+                    id: task.id,
+                    name: task.name
+                }))}
                 users_side_callback={() => {
                     if (!assignationFlag) {
                         dispatch(changeAssignationList(event_tasks.map(eventTask => {
