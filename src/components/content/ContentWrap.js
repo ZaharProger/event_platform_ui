@@ -19,15 +19,17 @@ import {
     completeTool, publishTool, deleteTool,
     profileTool, addTool, backTool, downloadTool
 } from '../toolbar/tools'
-import { aboutEventButton, editButton, deleteButton, 
-    downloadButton, viewButton } from '../buttons'
+import {
+    aboutEventButton, editButton, deleteButton,
+    downloadButton, viewButton
+} from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
 import {
     changeSelectedCardTab, changeShowCompletedEvents,
-    changeData, changeUser, changeFilterUsers, changeFilterStates, 
-    changeAssignationList, changeNestedTask
+    changeData, changeUser, changeFilterUsers, changeFilterStates,
+    changeAssignationList, changeNestedTask, changeUsersSideTasksIds, changeAssignationFlag
 } from '../../redux/actions'
 import JoinModal from '../modal/joinModal/JoinModal'
 import ConfirmModal from '../modal/confirmModal/ConfirmModal'
@@ -308,7 +310,7 @@ export default function ContentWrap() {
                                     docData.event_data.users = foundItem[0].users
                                     docData.event_data.tasks = foundItem[0].tasks
                                 }
-                                content = <TableDocForm data={docData} 
+                                content = <TableDocForm data={docData}
                                     nested_task={nestedTask}
                                     is_roadmap={isRoadmap} />
                             }
@@ -387,6 +389,13 @@ export default function ContentWrap() {
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
+            dispatch(changeFilterUsers(Array()))
+            dispatch(changeFilterStates(Array()))
+            dispatch(changeAssignationList(Array()))
+            dispatch(changeUsersSideTasksIds(Array()))
+            dispatch(changeAssignationFlag(false))
+            dispatch(changeNestedTask(null))
+
             if (responseData.status == 200) {
                 let route = `${host}${backendEndpoints.events}`
                 if (eventId !== undefined) {
@@ -396,10 +405,6 @@ export default function ContentWrap() {
                 callApi(route, 'GET', null, null).then(resData => {
                     if (resData.status == 200) {
                         dispatch(changeData(resData.data.data))
-                        dispatch(changeFilterUsers(Array()))
-                        dispatch(changeFilterStates(Array()))
-                        dispatch(changeAssignationList(Array()))
-                        dispatch(changeNestedTask(null))
                     }
                     else {
                         dispatch(changeData(Array()))
@@ -443,9 +448,9 @@ export default function ContentWrap() {
             height: '100vh'
         }}>
             {
-                content !== null ? 
-                    <Toolbar tools={buildTools()} nested_task={nestedTask} /> 
-                    : 
+                content !== null ?
+                    <Toolbar tools={buildTools()} nested_task={nestedTask} />
+                    :
                     null
             }
             <Zoom in={true} timeout={600}>

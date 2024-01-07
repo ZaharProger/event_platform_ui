@@ -62,7 +62,7 @@ export default function UsersListItem(props) {
     }
 
     const getButtons = useCallback(() => {
-        return props.for_task ?
+        return props.for_task && props.is_editable ?
             getTool(
                 props.is_assigned ? unpinTool : assignTool,
                 () => dispatch(

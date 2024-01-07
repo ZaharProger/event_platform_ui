@@ -221,14 +221,11 @@ export default function TaskInfo(props) {
                                 null
                         }
                         {
-                            user.is_staff ?
-                                getTool(
-                                    addNestedTool,
-                                    () => nested_callback(),
-                                    task_tool_styles
-                                )
-                                :
-                                null
+                            getTool(
+                                addNestedTool,
+                                () => nested_callback(),
+                                task_tool_styles
+                            )
                         }
                     </Stack>
                 </Stack>
