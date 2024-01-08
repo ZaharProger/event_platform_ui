@@ -1,5 +1,5 @@
 import { useTheme, Stack, TextField, Typography, Fade } from '@mui/material'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { v4 as uuidV4 } from "uuid"
 import { prepareDatetime } from '../../utils'
@@ -10,7 +10,7 @@ import useButton from '../../hooks/useButton'
 
 export default function TaskInfo(props) {
     const { is_visible, task, tasks, user, delete_callback, nested_callback,
-        task_state, task_states, task_tool_styles, assignation,
+        task_state, task_states, task_tool_styles, assignation, nested_task,
         text_field_styles, task_color_callback, users_side_callback } = props
 
     const theme = useTheme()
@@ -98,9 +98,11 @@ export default function TaskInfo(props) {
             .length
     }, [task, tasks])
 
+    const [taskName, setTaskName] = useState(task !== null ? task.name : '')
+
     return (
         <Fade in={is_visible} timeout={1500}>
-            <Stack className="Task-info" direction="column" spacing={3} 
+            <Stack className="Task-info" direction="column" spacing={3}
                 display={is_visible ? 'flex' : 'none'}
                 justifyContent="center" alignItems="center">
                 {
@@ -125,8 +127,9 @@ export default function TaskInfo(props) {
                 }
                 <Stack direction="column" spacing={2}
                     justifyContent="flex-start" alignItems="center">
-                    <TextField id="name" defaultValue={task !== null ? task.name : ''}
+                    <TextField id="name" defaultValue={taskName}
                         disabled={!user.is_staff}
+                        onInput={(event) => setTaskName(event.target.value)}
                         fullWidth label="Название задачи" variant="outlined"
                         color="secondary" sx={{ ...text_field_styles }} />
                     <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
@@ -206,28 +209,33 @@ export default function TaskInfo(props) {
                             )
                         }
                     </Stack>
-                    <Stack direction="row" spacing={2} marginRight="auto!important"
-                        justifyContent="center" alignItems="center"
-                        useFlexGap flexWrap="wrap">
-                        {
-                            task !== null ?
-                                <Typography color="secondary" variant="caption"
-                                    textAlign="center">
-                                    {
-                                        `Всего подзадач: ${getNestedTasksAmount()}`
-                                    }
-                                </Typography>
-                                :
-                                null
-                        }
-                        {
-                            getTool(
-                                addNestedTool,
-                                () => nested_callback(),
-                                task_tool_styles
-                            )
-                        }
-                    </Stack>
+                    {
+                        nested_task === null ?
+                            <Stack direction="row" spacing={2} marginRight="auto!important"
+                                justifyContent="center" alignItems="center"
+                                useFlexGap flexWrap="wrap">
+                                {
+                                    task !== null ?
+                                        <Typography color="secondary" variant="caption"
+                                            textAlign="center">
+                                            {
+                                                `Всего подзадач: ${getNestedTasksAmount()}`
+                                            }
+                                        </Typography>
+                                        :
+                                        null
+                                }
+                                {
+                                    getTool(
+                                        addNestedTool,
+                                        () => nested_callback(taskName),
+                                        task_tool_styles
+                                    )
+                                }
+                            </Stack>
+                            :
+                            null
+                    }
                 </Stack>
             </Stack>
         </Fade>

@@ -7,14 +7,13 @@ import TaskUsersSide from "./TaskUsersSide"
 import TaskInfo from "./TaskInfo"
 import {
     changeAssignationFlag, changeAssignationList,
-    changeNestedTask,
-    changeUsersSideTasksIds
+    changeNestedTask, changeUsersSideTasksIds
 } from '../../redux/actions'
 import useSync from "../../hooks/useSync"
 
 export default function Task(props) {
     const { task, user, event_tasks, nested_task,
-        event_users, delete_callback } = props
+        event_users, delete_callback, nested_callback } = props
 
     const dispatch = useDispatch()
     const syncFunction = useSync()
@@ -99,6 +98,7 @@ export default function Task(props) {
                 }} />
             <TaskInfo is_visible={!isTaskUsersSide}
                 tasks={event_tasks}
+                nested_task={nested_task}
                 task={task} user={user}
                 assignation={assignation}
                 task_tool_styles={taskToolStyles}
@@ -106,10 +106,15 @@ export default function Task(props) {
                 task_states={taskStates}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
-                nested_callback={() => dispatch(changeNestedTask({
-                    id: task.id,
-                    name: task.name
-                }))}
+                nested_callback={(taskName) => {
+                    nested_callback((isRoadmap, actualData, currentData) => {
+                        return syncFunction(isRoadmap, actualData, currentData)
+                    })
+                    dispatch(changeNestedTask({
+                        id: task.id,
+                        name: taskName
+                    }))
+                }}
                 users_side_callback={() => {
                     if (!assignationFlag) {
                         dispatch(changeAssignationList(event_tasks.map(eventTask => {

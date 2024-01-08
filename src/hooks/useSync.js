@@ -31,8 +31,10 @@ export default function useSync() {
         const syncData = [
             ...currentData.filter(currentItem => {
                 let include = !newDataIds.includes(currentItem.id)
+
                 if (excludeItemId !== null) {
-                    include = include && currentItem.id != excludeItemId
+                    const hasParent = isRoadmap ? excludeItemId === currentItem.parent : false
+                    include = include && currentItem.id != excludeItemId && !hasParent
                 }
 
                 return include

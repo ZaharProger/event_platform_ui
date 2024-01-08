@@ -52,10 +52,12 @@ export default function EventForm(props) {
 
                 if (input.id.includes('datetime')) {
                     let timestamp = (new Date(input.value).getTime() / 1000).toString()
-                    if (timestamp != 'NaN' && timestamp != '') {
+                    if (!isNaN(timestamp) && timestamp != '') {
                         formValue = timestamp
                     }
-
+                    else {
+                        formValue = null
+                    }
                 }
                 if (props.is_edit) {
                     bodyData[input.id] = formValue

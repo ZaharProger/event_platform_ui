@@ -48,13 +48,17 @@ export default function TableDocForm(props) {
                     let formValue = input.value
 
                     if (input.id.includes('datetime')) {
-                        const timestamp = (new Date(input.value).getTime() / 1000).toString()
-                        if (timestamp != 'NaN' && timestamp != '') {
+                        const timestamp = new Date(input.value).getTime() / 1000
+                        if (!isNaN(timestamp) && timestamp != '') {
                             formValue = timestamp
+                        }
+                        else {
+                            formValue = null
                         }
                     }
 
                     updatedField[input.id] = formValue
+
                     if (is_roadmap) {
                         updatedField.users = [...foundField[0].users]
                         updatedField.parent = foundField[0].parent
@@ -127,12 +131,12 @@ export default function TableDocForm(props) {
         setIsFilterModalOpened(true)
     }, [is_roadmap, getActualDocData, docFields])
 
-    const syncButtonHandler = useCallback((syncFunction) => {
+    const sortButtonHandler = useCallback((syncFunction) => {
         setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
         setIsAscending(!isAscending)
     }, [is_roadmap, docFields, getActualDocData, isAscending])
 
-    const closeNestedTaskHandler = useCallback((syncFunction) => {
+    const nestedTaskHandler = useCallback((syncFunction) => {
         setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
     }, [docFields, getActualDocData, is_roadmap])
 
@@ -181,6 +185,9 @@ export default function TableDocForm(props) {
                             nested_task={nested_task}
                             event_tasks={docFields}
                             event_users={event_data.users}
+                            nested_callback={(syncFunction) => {
+                                nestedTaskHandler(syncFunction)
+                            }}
                             delete_callback={(syncFunction) => {
                                 deleteButtonHandler(docField.id, syncFunction)
                             }} />
@@ -205,9 +212,9 @@ export default function TableDocForm(props) {
                     <NestedTaskFormHeader task={docFields
                         .filter(docField => docField.id == nested_task.id)[0]}
                         user={user}
-                        close_callback={(syncFunction) => closeNestedTaskHandler(syncFunction)}
+                        close_callback={(syncFunction) => nestedTaskHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
-                        sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
+                        sort_callback={(syncFunction) => sortButtonHandler(syncFunction)}
                         additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
                     :
                     <DocFormHeader doc_data={doc_data}
@@ -215,7 +222,7 @@ export default function TableDocForm(props) {
                         is_roadmap={is_roadmap}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
-                        sort_callback={(syncFunction) => syncButtonHandler(syncFunction)}
+                        sort_callback={(syncFunction) => sortButtonHandler(syncFunction)}
                         additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
             }
             {

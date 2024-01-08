@@ -21,7 +21,7 @@ export default function Toolbar(props) {
                     props.nested_task !== null ?
                         <Typography variant="subtitle1" fontWeight="bold"
                             fontSize="1.2em" marginRight="auto!important"
-                            padding="10px" overflow="auto"
+                            padding="20px 10px" overflow="auto"
                             color="secondary" textAlign="center">
                             {
                                 props.nested_task.name
