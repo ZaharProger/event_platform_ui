@@ -49,7 +49,7 @@ export default function TableDocForm(props) {
 
                     if (input.id.includes('datetime')) {
                         const timestamp = new Date(input.value).getTime() / 1000
-                        if (!isNaN(timestamp) && timestamp != '') {
+                        if (!isNaN(timestamp) && timestamp !== '') {
                             formValue = timestamp
                         }
                         else {
@@ -112,8 +112,8 @@ export default function TableDocForm(props) {
         if (is_roadmap) {
             actualDocData.push({
                 id: uuidV4(),
-                datetime_start: '',
-                datetime_end: '',
+                datetime_start: 0,
+                datetime_end: null,
                 state: 'Не назначена',
                 parent: nested_task !== null ? nested_task.id : null,
                 name: '',

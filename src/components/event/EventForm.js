@@ -51,8 +51,8 @@ export default function EventForm(props) {
                 let formValue = input.value
 
                 if (input.id.includes('datetime')) {
-                    let timestamp = (new Date(input.value).getTime() / 1000).toString()
-                    if (!isNaN(timestamp) && timestamp != '') {
+                    let timestamp = new Date(input.value).getTime() / 1000
+                    if (!isNaN(timestamp) && timestamp !== '') {
                         formValue = timestamp
                     }
                     else {
@@ -193,14 +193,22 @@ export default function EventForm(props) {
                             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
                                 <TextField id="datetime_start"
                                     defaultValue={props.event_data !== null ?
-                                        prepareDatetime(props.event_data.datetime_start, true) : ''}
+                                        prepareDatetime(props.event_data.datetime_start, true)
+                                        :
+                                        prepareDatetime(null, true)
+                                    }
                                     type="datetime-local"
                                     helperText={datetimeStartLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />
                                 <TextField id="datetime_end"
                                     defaultValue={props.event_data !== null ?
                                         props.event_data.datetime_end !== null ?
-                                            prepareDatetime(props.event_data.datetime_end, true) : '' : ''}
+                                            prepareDatetime(props.event_data.datetime_end, true)
+                                            :
+                                            ''
+                                        :
+                                        ''
+                                    }
                                     type="datetime-local"
                                     helperText={datetimeEndLabel} variant="outlined"
                                     color="secondary" sx={{ ...textFieldStyles }} />

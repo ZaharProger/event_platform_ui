@@ -65,41 +65,68 @@ export default function UsersListItem(props) {
         return props.for_task && props.is_editable ?
             getTool(
                 props.is_assigned ? unpinTool : assignTool,
-                () => dispatch(
-                    changeAssignationList(props.assignation.map(item => {
-                        const isChangedTask = item.id == props.related_task_id
-                        let newUsers = []
+                () => {
+                    const tasksDict = {}
+                    const parentTasks = props.event_tasks
+                        .filter(eventTask => eventTask.parent === null)
 
-                        if (props.is_assigned) {
-                            newUsers = item.users
-                                .filter(itemUser => {
-                                    const isChangedUser = itemUser.user.id == id
-                                    return !(isChangedUser && isChangedTask)
-                                })
+                    parentTasks.forEach(parentTask => tasksDict[parentTask.id] = [])
+                    props.event_tasks.forEach(eventTask => {
+                        if (eventTask.parent !== null) {
+                            tasksDict[eventTask.parent].push(eventTask.id)
                         }
-                        else {
-                            newUsers = item.users
-                                .map(itemUser => {
-                                    return {
-                                        ...itemUser
-                                    }
-                                })
-                            if (isChangedTask) {
-                                newUsers.push({
-                                    user: {
-                                        ...props.user.user
-                                    },
-                                    is_responsible: !props.has_responsible
-                                })
+                    })
+
+                    let isNested = false
+                    dispatch(
+                        changeAssignationList(props.assignation.map(item => {
+                            if (tasksDict[props.related_task_id] !== undefined) {
+                                isNested = tasksDict[props.related_task_id]
+                                    .includes(item.id)
                             }
-                        }
+                            const isChangedTask = item.id == props.related_task_id
+                            let newUsers = []
 
-                        return {
-                            id: item.id,
-                            users: newUsers
-                        }
-                    }))
-                )
+                            if (props.is_assigned) {
+                                newUsers = item.users
+                                    .filter(itemUser => {
+                                        const isChangedUser = itemUser.user.id == id
+                                        let result
+
+                                        if (isNested) {
+                                            result = !isChangedUser
+                                        }
+                                        else {
+                                            result = !(isChangedUser && isChangedTask)
+                                        }
+
+                                        return result
+                                    })
+                            }
+                            else {
+                                newUsers = item.users
+                                    .map(itemUser => {
+                                        return {
+                                            ...itemUser
+                                        }
+                                    })
+                                if (isChangedTask) {
+                                    newUsers.push({
+                                        user: {
+                                            ...props.user.user
+                                        },
+                                        is_responsible: !props.has_responsible
+                                    })
+                                }
+                            }
+
+                            return {
+                                id: item.id,
+                                users: newUsers
+                            }
+                        }))
+                    )
+                }
             )
             :
             props.is_editable ?

@@ -143,7 +143,12 @@ export default function TaskInfo(props) {
                             color="secondary" sx={{ ...text_field_styles }} />
                         <TextField id="datetime_end"
                             defaultValue={task !== null ?
-                                prepareDatetime(task.datetime_end, true) : ''
+                                task.datetime_end !== null ?
+                                    prepareDatetime(task.datetime_end, true)
+                                    :
+                                    ''
+                                :
+                                ''
                             }
                             disabled={!user.is_staff}
                             type="datetime-local"
