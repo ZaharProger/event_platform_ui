@@ -12,7 +12,7 @@ export default function Footer() {
                 </Icon>
                 <Typography variant="caption" display="block" color='secondary'
                     gutterBottom textAlign='center'>
-                    Платформа поддержки организации научных мероприятий
+                    Платформа поддержки организации мероприятий
                     <br />
                     2023
                 </Typography>

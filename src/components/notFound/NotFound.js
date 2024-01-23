@@ -8,7 +8,7 @@ export default function NotFound(props) {
             <SentimentVeryDissatisfiedIcon color="secondary" sx={{
                 fontSize: '3.5em',
             }} />
-            <Typography variant='subtitle1' display="block"
+            <Typography variant='subtitle1'
                 gutterBottom color="secondary" textAlign="center">
                     Ничего не найдено!
                     <br />
