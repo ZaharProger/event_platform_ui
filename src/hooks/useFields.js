@@ -3,18 +3,18 @@ import { prepareDatetime } from '../utils'
 import { TextField, Typography } from "@mui/material"
 
 export default function useFields() {
-    return function(fields, styles={}, editable=false) {
-        return fields.map((field, i) => {
+    return function(fieldsData, styles={}, editable=false, updateCallback=null) {
+        return fieldsData.fields.map(field => {
             let component
             
-            if (field.is_date) {
+            if (field.field_type == 'date') {
                 const datetimeEndLabel = <Typography variant="subtitle2"
                     fontSize="0.8em" color="secondary">
                     {
                         field.name
                     }
                 </Typography>
-                component = <TextField id={field.id} key={`field_${uuidV4()}`}
+                component = <TextField id={`${field.id}`} key={`field_${uuidV4()}`}
                     defaultValue={prepareDatetime(field.value, true)}
                     className="DocField"
                     disabled={!editable}
@@ -23,10 +23,17 @@ export default function useFields() {
                     color="secondary" sx={{ ...styles }} />
             }
             else {
-                component = <TextField key={`field_${uuidV4()}`} id={field.id}
+                component = <TextField id={field.id}
+                    key={`field_${uuidV4()}`}
                     className="DocField"
+                    onInput={() => {
+                        if (updateCallback !== null && field.field_type == 'number') {
+                            updateCallback(field)
+                        }
+                    }}
                     defaultValue={field.value}
                     disabled={!editable}
+                    type={field.field_type}
                     fullWidth={field.is_fullwidth}
                     label={field.name} variant="outlined"
                     color="secondary" sx={{ ...styles }} />

@@ -1,6 +1,6 @@
 import {DATA, TRIGGER, SELECTED_CARD_TAB, 
     SHOW_COMPLETED_EVENTS, USER, USERS_SIDE_TASKS_IDS, ASSIGNATION_LIST, 
-    ASSIGNATION_FLAG, FILTER_USERS, FILTER_STATES, NESTED_TASK} from './constants'
+    ASSIGNATION_FLAG, FILTER_USERS, FILTER_STATES, NESTED_TASK, MONEY_TOTAL} from './constants'
 
 export const changeData = (data) => {
     return {
@@ -76,5 +76,12 @@ export const changeNestedTask = (nestedTask) => {
     return {
         type: NESTED_TASK,
         nested_task: nestedTask
+    }
+}
+
+export const changeMoneyTotal = (moneyTotal) => {
+    return {
+        type: MONEY_TOTAL,
+        money_total: moneyTotal
     }
 }

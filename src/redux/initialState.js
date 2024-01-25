@@ -9,5 +9,6 @@ export const defaultState = {
     assignation_flag: false,
     filter_users: Array(),
     filter_states: Array(),
-    nested_task: null
+    nested_task: null,
+    money_total: null
 }

@@ -43,42 +43,48 @@ export default function useSync() {
             ]
         }
         else {
+            const newData = currentData.map(currentItem => {
+                return {
+                    ...currentItem,
+                    values: currentItem.values.map(value => {
+                        return {
+                            ...value
+                        }
+                    })
+                }
+            })
             let fieldValuesIndex = -1
+  
             for (let i = 0; i < actualData.length; ++i) {
-                const fieldIndex = i % currentData.length
+                const fieldIndex = i % newData.length
                 if (fieldIndex == 0) {
                     ++fieldValuesIndex
                 }
 
-                if (currentData[fieldIndex].values[fieldValuesIndex] !== undefined) {
-                    currentData[fieldIndex].values[fieldValuesIndex] = {
+                if (newData[fieldIndex].values[fieldValuesIndex].value !== undefined) {
+                    newData[fieldIndex].values[fieldValuesIndex] = {
                         ...actualData[i]
                     }
                 }
-                else {
+                else {                   
                     const include = !excludeItemIds.includes(
-                        currentData[fieldIndex].values[fieldValuesIndex].id
+                        newData[fieldIndex].values[fieldValuesIndex].id
                     )
                     if (include) {
-                        currentData[fieldIndex].values.push({
+                        newData[fieldIndex].values.push({
                             ...actualData[i]
                         })
                     }
                     else {
-                        currentData[fieldIndex].values[fieldValuesIndex].value = undefined
+                        newData[fieldIndex].values[fieldValuesIndex].value = undefined
                     }
                 }
             }
-            syncData = currentData.map(currentItem => {
+            syncData = newData.map(currentItem => {
                 return {
                     ...currentItem,
                     values: currentItem.values
                         .filter(value => value.value !== undefined)
-                        .map(value => {
-                            return {
-                                ...value
-                            }
-                        })
                 }
             })
         }

@@ -1,5 +1,5 @@
 import { AppBar, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import useButton from '../../hooks/useButton'
 import useValidation from '../../hooks/useValidation'
@@ -60,6 +60,8 @@ export default function DocFormHeader(props) {
     }
 
     const prevTrigger = useSelector(state => state.trigger)
+    const moneyTotalFlag = useSelector(state => state.money_total)
+    const [additionalCaption, setAdditionalCaption] = useState('')
 
     const docHeaderStyles = {
         padding: '10px',
@@ -69,6 +71,17 @@ export default function DocFormHeader(props) {
     if (!prevTrigger) {
         docHeaderStyles.boxShadow = 'none'
     }
+
+    useEffect(() => {
+        if (moneyTotalFlag !== null) {
+            if (moneyTotalFlag) {
+                setAdditionalCaption(props.additional_value_callback())
+            }
+        }
+        else {
+            setAdditionalCaption(props.additional_value_callback(true))
+        }
+    }, [props, moneyTotalFlag])
 
     return (
         <AppBar position="sticky" sx={docHeaderStyles} id="Doc-form-header">
@@ -94,14 +107,15 @@ export default function DocFormHeader(props) {
                             </Typography>
                     }
                     {
-                        props.additional_value !== null ?
+                        props.additional_value_callback !== null?
                             <Typography variant="caption"
                                 fontSize="0.9em"
                                 fontWeight="bold"
+                                id="total-money"
                                 marginRight="auto!important"
                                 color="secondary" textAlign="center">
                                 {
-                                    `ИТОГО: ${props.additional_value}`
+                                    additionalCaption
                                 }
                             </Typography>
                             :
