@@ -3,11 +3,11 @@ import { useSelector } from "react-redux"
 export default function useSync() {
     const assignation = useSelector(state => state.assignation_list)
 
-    return function (isRoadmap, actualData, currentData, excludeItemId=null) {
-        let newData = []
+    return function (isRoadmap, actualData, currentData, excludeItemIds=[]) {
+        let syncData
 
         if (isRoadmap) {
-            newData = actualData.map(actualItem => {
+            const newData = actualData.map(actualItem => {
                 const newItem = {
                     ...actualItem
                 }
@@ -25,22 +25,63 @@ export default function useSync() {
 
                 return newItem
             })
+            const newDataIds = newData.map(newItem => newItem.id)
+
+            syncData = [
+                ...currentData.filter(currentItem => {
+                    let include = !newDataIds.includes(currentItem.id)
+    
+                    if (excludeItemIds.length != 0) {
+                        const hasParent = isRoadmap ? 
+                            excludeItemIds.includes(currentItem.parent) : false
+                        include = include && !excludeItemIds.includes(currentItem.id) && !hasParent
+                    }
+    
+                    return include
+                }),
+                ...newData
+            ]
         }
-
-        const newDataIds = newData.map(newItem => newItem.id)
-        const syncData = [
-            ...currentData.filter(currentItem => {
-                let include = !newDataIds.includes(currentItem.id)
-
-                if (excludeItemId !== null) {
-                    const hasParent = isRoadmap ? excludeItemId === currentItem.parent : false
-                    include = include && currentItem.id != excludeItemId && !hasParent
+        else {
+            let fieldValuesIndex = -1
+            for (let i = 0; i < actualData.length; ++i) {
+                const fieldIndex = i % currentData.length
+                if (fieldIndex == 0) {
+                    ++fieldValuesIndex
                 }
 
-                return include
-            }),
-            ...newData
-        ]
+                if (currentData[fieldIndex].values[fieldValuesIndex] !== undefined) {
+                    currentData[fieldIndex].values[fieldValuesIndex] = {
+                        ...actualData[i]
+                    }
+                }
+                else {
+                    const include = !excludeItemIds.includes(
+                        currentData[fieldIndex].values[fieldValuesIndex].id
+                    )
+                    if (include) {
+                        currentData[fieldIndex].values.push({
+                            ...actualData[i]
+                        })
+                    }
+                    else {
+                        currentData[fieldIndex].values[fieldValuesIndex].value = undefined
+                    }
+                }
+            }
+            syncData = currentData.map(currentItem => {
+                return {
+                    ...currentItem,
+                    values: currentItem.values
+                        .filter(value => value.value !== undefined)
+                        .map(value => {
+                            return {
+                                ...value
+                            }
+                        })
+                }
+            })
+        }
 
         return syncData
     }

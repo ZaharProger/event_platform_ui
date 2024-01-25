@@ -50,7 +50,7 @@ export default function EventForm(props) {
             .forEach(input => {
                 let formValue = input.value
 
-                if (input.id.includes('datetime')) {
+                if (input.type.includes('datetime')) {
                     let timestamp = new Date(input.value).getTime() / 1000
                     if (!isNaN(timestamp) && timestamp !== '') {
                         formValue = timestamp

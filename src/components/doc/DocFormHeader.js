@@ -25,7 +25,7 @@ export default function DocFormHeader(props) {
     const syncFunction = useSync()
 
     const buttons = []
-    if (props.doc_data.is_table || props.user.is_staff) {
+    if (props.doc_data.is_table || props.user.is_staff || props.is_roadmap) {
         if (props.user.is_staff) {
             buttons.push(
                 getButton(
@@ -43,7 +43,7 @@ export default function DocFormHeader(props) {
                 )
             )
         }
-        if (props.doc_data.is_table) {
+        if (props.is_roadmap) {
             buttons.push(
                 getButton(filterButton, () => props.filter_callback(
                     (isRoadmap, dataToSync, currentData) => {
@@ -74,22 +74,40 @@ export default function DocFormHeader(props) {
         <AppBar position="sticky" sx={docHeaderStyles} id="Doc-form-header">
             <Stack spacing={2} direction={isMobile ? 'column' : 'row'} width="100%"
                 justifyContent="center" alignItems="center">
-                {
-                    props.user.is_staff ?
-                        <TextField id="name" required fullWidth={!isNearMobile}
-                            onInput={(event) => nameValidation.set(event.target.value)}
-                            defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
-                            label="Название" variant="outlined"
-                            color="secondary" sx={{ ...textFieldStyles }} />
-                        :
-                        <Typography variant="subtitle1" fontWeight="bold"
-                            fontSize="1.2em" marginRight={isMobile ? 'center' : 'auto!important'}
-                            color="secondary" textAlign="center">
-                            {
-                                props.doc_data !== null ? props.doc_data.name : ''
-                            }
-                        </Typography>
-                }
+                <Stack spacing={1} direction="row" useFlexGap flexWrap="wrap"
+                    justifyContent="center" alignItems="center">
+                    {
+                        props.user.is_staff ?
+                            <TextField id="name" required fullWidth={!isNearMobile}
+                                onInput={(event) => nameValidation.set(event.target.value)}
+                                defaultValue={props.doc_data !== null ? props.doc_data.name : ''}
+                                label="Название" variant="outlined"
+                                color="secondary" sx={{ ...textFieldStyles }} />
+                            :
+                            <Typography variant="subtitle1" fontWeight="bold"
+                                fontSize="1.2em"
+                                marginRight={isMobile ? 'center' : 'auto!important'}
+                                color="secondary" textAlign="center">
+                                {
+                                    props.doc_data !== null ? props.doc_data.name : ''
+                                }
+                            </Typography>
+                    }
+                    {
+                        props.additional_value !== null ?
+                            <Typography variant="caption"
+                                fontSize="0.9em"
+                                fontWeight="bold"
+                                marginRight="auto!important"
+                                color="secondary" textAlign="center">
+                                {
+                                    `ИТОГО: ${props.additional_value}`
+                                }
+                            </Typography>
+                            :
+                            null
+                    }
+                </Stack>
                 <Stack spacing={1} direction="row"
                     justifyContent="center" alignItems="center">
                     {

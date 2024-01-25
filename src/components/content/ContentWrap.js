@@ -299,19 +299,27 @@ export default function ContentWrap() {
                                 const docTypes = localStorage.getItem('doc_types') !== null ?
                                     JSON.parse(localStorage.getItem('doc_types')) : []
                                 let roadMapDocType = ''
+                                let moneyDocType = ''
                                 if (docTypes.length != 0) {
                                     roadMapDocType = docTypes.filter(docType => docType.label == 'Roadmap')
-                                    roadMapDocType = roadMapDocType[0].value.toLocaleLowerCase()
+                                    roadMapDocType = roadMapDocType[0].value.toLowerCase()
+                                    moneyDocType = docTypes.filter(docType => docType.label == 'Money')
+                                    moneyDocType = moneyDocType[0].value.toLowerCase()
                                 }
 
                                 let isRoadmap = false
+                                let isMoney = false
                                 if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
                                     isRoadmap = true
                                     docData.event_data.users = foundItem[0].users
                                     docData.event_data.tasks = foundItem[0].tasks
                                 }
+                                else if (foundDoc.doc_type.toLowerCase().includes(moneyDocType)) {
+                                    isMoney = true
+                                }
                                 content = <TableDocForm data={docData}
                                     nested_task={nestedTask}
+                                    is_money={isMoney}
                                     is_roadmap={isRoadmap} />
                             }
                             else {

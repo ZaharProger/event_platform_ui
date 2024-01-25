@@ -12,9 +12,10 @@ import { useDispatch } from "react-redux"
 import { changeAssignationFlag } from "../../redux/actions"
 import NotFound from "../notFound/NotFound"
 import NestedTaskFormHeader from "../task/NestedTaskFormHeader"
+import Money from "../money/Money"
 
 export default function TableDocForm(props) {
-    const { data: { event_data, user, doc_data }, is_roadmap, nested_task } = props
+    const { data: { event_data, user, doc_data }, is_roadmap, is_money, nested_task } = props
 
     const callApi = useApi()
     const dispatch = useDispatch()
@@ -23,48 +24,56 @@ export default function TableDocForm(props) {
         [...event_data.tasks] : [...doc_data.fields]
     )
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
-    const [deleteItemId, setDeleteItemId] = useState(-1)
+    const [deleteItemIds, setDeleteItemIds] = useState([-1])
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
     const [filterList, setFilterList] = useState({})
     const [isAscending, setIsAscending] = useState(true)
 
-    const getActualDocData = useCallback((itemToExclude = null) => {
-        const className = is_roadmap ? 'Task' : ''
+    const getActualDocData = useCallback((itemsToExclude=[]) => {
+        const className = is_roadmap ? 'Task' : 'DocField'
         let fieldForms = Array.from(document.getElementsByClassName(className))
-        if (itemToExclude !== null) {
-            fieldForms = fieldForms.filter(fieldForm => fieldForm.id != itemToExclude)
+        if (itemsToExclude.length != 0 && is_roadmap) {
+            fieldForms = fieldForms.filter(fieldForm => !itemsToExclude.includes(fieldForm.id))
         }
-
+        
         return fieldForms.map(fieldForm => {
             const updatedField = {}
-            const foundField = docFields.filter(docField => docField.id == fieldForm.id)
+            let fieldFormData
 
-            updatedField.id = foundField[0].id
+            if (is_roadmap) {
+                const foundField = docFields.filter(docField => docField.id == fieldForm.id)
+                updatedField.id = foundField[0].id
+                updatedField.users = [...foundField[0].users]
+                updatedField.parent = foundField[0].parent
+                fieldFormData = fieldForm
+                    .querySelector('.Task-info')
+                    .querySelectorAll('input, textarea, select')
+            }
+            else {
+                fieldFormData = fieldForm.querySelectorAll('input, textarea, select')
+            }
 
-            fieldForm
-                .querySelector('.Task-info')
-                .querySelectorAll('input, textarea, select')
-                .forEach(input => {
-                    let formValue = input.value
-
-                    if (input.id.includes('datetime')) {
-                        const timestamp = new Date(input.value).getTime() / 1000
-                        if (!isNaN(timestamp) && timestamp !== '') {
-                            formValue = timestamp
-                        }
-                        else {
-                            formValue = null
-                        }
+            fieldFormData.forEach(input => {
+                let formValue = input.value
+                if (input.type.includes('datetime')) {
+                    const timestamp = new Date(input.value).getTime() / 1000
+                    if (!isNaN(timestamp) && timestamp !== '') {
+                        formValue = timestamp
                     }
+                    else {
+                        formValue = null
+                    }
+                }
 
+                if (is_roadmap) {
                     updatedField[input.id] = formValue
-
-                    if (is_roadmap) {
-                        updatedField.users = [...foundField[0].users]
-                        updatedField.parent = foundField[0].parent
-                    }
-                })
-
+                }
+                else {
+                    updatedField.id = input.id
+                    updatedField.value = itemsToExclude.includes(input.id)? undefined : formValue
+                }
+            })
+          
             return updatedField
         })
     }, [docFields, is_roadmap])
@@ -72,19 +81,19 @@ export default function TableDocForm(props) {
     const confirmButtonHandler = useCallback((syncFunction) => {
         const actualDocData = syncFunction(
             is_roadmap,
-            getActualDocData(deleteItemId),
+            getActualDocData(deleteItemIds),
             docFields,
-            deleteItemId
+            deleteItemIds
         )
 
         dispatch(changeAssignationFlag(false))
         setDocFields(actualDocData)
         setIsConfirmModalOpened(false)
-    }, [docFields, deleteItemId, is_roadmap])
+    }, [docFields, deleteItemIds, is_roadmap])
 
-    const deleteButtonHandler = useCallback((itemId, syncFunction) => {
+    const deleteButtonHandler = useCallback((itemIds, syncFunction) => {
         setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
-        setDeleteItemId(itemId)
+        setDeleteItemIds(itemIds)
         setIsConfirmModalOpened(true)
     }, [is_roadmap, docFields])
 
@@ -108,7 +117,7 @@ export default function TableDocForm(props) {
 
     const addButtonHandler = useCallback((syncFunction) => {
         const actualDocData = syncFunction(is_roadmap, getActualDocData(), docFields)
-
+        
         if (is_roadmap) {
             actualDocData.push({
                 id: uuidV4(),
@@ -119,10 +128,18 @@ export default function TableDocForm(props) {
                 name: '',
                 users: [],
             })
+            dispatch(changeAssignationFlag(false))
+            setFilterList({})
+        }
+        else {
+            for (let i = 0; i < actualDocData.length; ++i) {
+                actualDocData[i].values.push({
+                    id: uuidV4(),
+                    value: ''
+                })
+            }
         }
 
-        dispatch(changeAssignationFlag(false))
-        setFilterList({})
         setDocFields(actualDocData)
     }, [is_roadmap, getActualDocData, docFields, nested_task])
 
@@ -189,8 +206,34 @@ export default function TableDocForm(props) {
                                 nestedTaskHandler(syncFunction)
                             }}
                             delete_callback={(syncFunction) => {
-                                deleteButtonHandler(docField.id, syncFunction)
+                                deleteButtonHandler([docField.id], syncFunction)
                             }} />
+                    })
+            }
+            else {
+                for (let i = 0; i < docFields[0].values.length; ++i) {
+                    const dataGroup = []
+                    for (let j = 0; j < docFields.length; ++j) {
+                        dataGroup.push({
+                            id: docFields[j].values[i].id,
+                            name: docFields[j].name,
+                            value: docFields[j].values[i].value,
+                            is_date: docFields[j].field_type == 'дата',
+                            is_fullwidth: j == 0
+                        })
+                    }
+                    data.push(dataGroup)
+                }
+
+                data = data
+                    .map(fields => {
+                        const fieldsIds = fields.map(field => field.id)
+                        return <Money key={`money_${uuidV4()}`}
+                            is_editable={user.is_staff}
+                            delete_callback={(syncFunction) => {
+                                deleteButtonHandler(fieldsIds, syncFunction)
+                            }}
+                            data={fields} />
                     })
             }
         }
@@ -199,18 +242,37 @@ export default function TableDocForm(props) {
             justifyContent="center" alignItems="center"
             useFlexGap flexWrap="wrap">
             {
-                data.length != 0 ? data : data = <NotFound />
+                data.length != 0 ? data : <NotFound />
             }
         </Stack>
-    }, [docFields, user, event_data, is_roadmap, isAscending, filterList, nested_task])
+    }, [docFields, user, event_data, is_roadmap, is_money,
+        isAscending, filterList, nested_task])
 
+    const getTotal = useCallback(() => {
+        const priceFields = docFields.filter(docField => {
+            const fieldName = docField.name.toLowerCase()
+            return fieldName.includes('количество') ||
+                fieldName.includes('цена') || fieldName.includes('стоимость')
+        })
+
+        let total = 0
+        if (priceFields.length != 0) {
+            for (let i = 0; i < priceFields[0].values.length; ++i) {
+                total += priceFields[0].values[i].value * priceFields[1].values[i].value
+            }
+        }
+
+        return total
+    }, [docFields])
+    
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
             alignItems="center">
             {
                 nested_task !== null ?
                     <NestedTaskFormHeader task={docFields
-                        .filter(docField => docField.id == nested_task.id)[0]}
+                        .filter(docField => docField.id == nested_task.id)[0]
+                    }
                         user={user}
                         close_callback={(syncFunction) => nestedTaskHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
@@ -219,6 +281,7 @@ export default function TableDocForm(props) {
                     :
                     <DocFormHeader doc_data={doc_data}
                         user={user}
+                        additional_value={is_money ? getTotal() : null}
                         is_roadmap={is_roadmap}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
@@ -236,7 +299,7 @@ export default function TableDocForm(props) {
                     `Вы действительно хотите удалить эту ${is_roadmap ? 'задачу' : 'запись'}?`
                 } />
             {
-                doc_data.is_table ?
+                is_roadmap ?
                     <FilterModal is_opened={isFilterModalOpened}
                         filter_values={
                             is_roadmap ?

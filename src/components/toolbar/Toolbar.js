@@ -19,14 +19,27 @@ export default function Toolbar(props) {
             <AppBar position="sticky">
                 {
                     props.nested_task !== null ?
-                        <Typography variant="subtitle1" fontWeight="bold"
-                            fontSize="1.2em" marginRight="auto!important"
-                            padding="20px 10px" overflow="auto"
-                            color="secondary" textAlign="center">
+                        <Stack spacing={2} direction="row" alignItems="center">
                             {
-                                props.nested_task.name
+                                props.nested_task !== null ?
+                                    <Typography variant="subtitle1" fontWeight="bold"
+                                        fontSize="1.2em" marginRight="auto!important"
+                                        padding="20px 10px" overflow="auto"
+                                        color="secondary" textAlign="center">
+                                        {
+                                            props.nested_task.name
+                                        }
+                                    </Typography>
+                                    :
+                                    null
                             }
-                        </Typography>
+                            <Stack direction="row" alignItems="center"
+                                padding="10px" overflow="auto">
+                                {
+                                    props.tools
+                                }
+                            </Stack>
+                        </Stack>
                         :
                         <Stack direction="row" alignItems="center"
                             padding="10px" overflow="auto">
