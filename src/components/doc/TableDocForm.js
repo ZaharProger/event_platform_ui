@@ -234,7 +234,7 @@ export default function TableDocForm(props) {
                             name: docFields[j].name,
                             value: docFields[j].values[i].value,
                             field_type: docFields[j].field_type,
-                            is_fullwidth: j == 0
+                            is_fullwidth: is_money? j == 0 : j == 0 || j == 1
                         })
                     }
                     data.push(dataGroup)
@@ -329,7 +329,7 @@ export default function TableDocForm(props) {
                     :
                     <DocFormHeader doc_data={doc_data}
                         user={user}
-                        additional_value_callback={is_money ? () => getTotal() : null}
+                        additional_value_callback={is_money ? () => getTotal() : () => {}}
                         is_roadmap={is_roadmap}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}

@@ -1,4 +1,4 @@
-import { Fade, Stack } from '@mui/material'
+import { Fade, Stack, useTheme } from '@mui/material'
 import React from 'react'
 import useSync from '../../hooks/useSync'
 import useButton from '../../hooks/useButton'
@@ -12,6 +12,8 @@ export default function DefaultDocItem(props) {
 
     const getTool = useButton(true)
     const syncFunction = useSync()
+
+    const theme = useTheme()
 
     return (
         <Fade in={true} timeout={700}>
@@ -32,7 +34,9 @@ export default function DefaultDocItem(props) {
                     )
                 }
                 <Stack spacing={2} direction="row" padding="10px"
-                    alignItems="center">
+                    bgcolor={theme.palette.primary.main}
+                    borderRadius="10px"
+                    alignItems="center" useFlexGap flexWrap="wrap">
                     {
                         getFields(
                             props.data,
