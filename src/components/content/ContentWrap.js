@@ -138,8 +138,8 @@ export default function ContentWrap() {
                             setModalContent('Вы действительно хотите удалить это мероприятие?')
                         })
                         tools.unshift(
-                            preparedCompleteTool,
                             preparedPublishTool,
+                            preparedCompleteTool,
                             preparedDeleteTool
                         )
 
