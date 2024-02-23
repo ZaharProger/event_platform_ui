@@ -310,7 +310,7 @@ export default function TableDocForm(props) {
         }
         dispatch(changeMoneyTotal(false))
 
-        return `ИТОГО: ${total}`
+        return `ИТОГО: ${total.toFixed(2)}`
     }, [docFields])
 
     return (

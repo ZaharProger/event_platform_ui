@@ -38,7 +38,7 @@ export default function Money(props) {
             total = fields[0].value * fields[1].value
         }
 
-        return total
+        return total.toFixed(2)
     }, [props])
 
     const updateItemTotal = useCallback((callField={}) => {
