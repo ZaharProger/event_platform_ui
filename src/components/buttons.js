@@ -63,11 +63,6 @@ export const saveButton = {
     label: 'Сохранить'
 }
 
-export const resetButton = {
-    icon: null,
-    label: 'Сбросить данные для входа'
-}
-
 export const signInButton = {
     icon: null,
     label: 'Войти'

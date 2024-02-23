@@ -141,11 +141,6 @@ export default function Profile(props) {
                 <Stack direction="row" useFlexGap flexWrap="wrap"
                     marginLeft="auto!important" spacing={2}>
                     {
-                        getButton(resetButton, () => console.log(1), null, {
-                            width: isMobile ? '100%' : 'auto'
-                        })
-                    }
-                    {
                         getButton(signOutButton, () => signOutButtonHandler(), null, {
                             width: isMobile ? '100%' : 'auto'
                         })
