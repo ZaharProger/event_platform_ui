@@ -172,23 +172,16 @@ export const excludeTool = {
     route: null
 }
 
-export const addGroup = {
+export const addGroupTool = {
     label: 'Добавить группу',
     icon: GroupAddIcon,
     type: toolTypes.button,
     route: null
 }
 
-export const registerUser = {
+export const registerUserTool = {
     label: 'Регистрация пользователя',
     icon: PersonAddIcon,
-    type: toolTypes.button,
-    route: null
-}
-
-export const addDoc = {
-    label: 'Новый документ',
-    icon: NoteAddIcon,
     type: toolTypes.button,
     route: null
 }

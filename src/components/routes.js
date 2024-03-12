@@ -14,12 +14,14 @@ export const routes = {
 export const backendEndpoints = {
     user_account: '/users/account/',
     user_groups: '/users/groups/',
+    register: '/users/register/',
     auth: '/users/auth/',
     logout: '/users/logout/',
     events: '/events/',
     join_event: '/events/join',
     complete_event: '/events/complete',
     docs: '/docs/',
+    templates: '/docs/templates/',
     settings: '/settings/',
     tasks: '/tasks/'
 }

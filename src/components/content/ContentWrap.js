@@ -17,7 +17,7 @@ import ListItemButtons from './ListItemButtons'
 import {
     createTool, joinTool, showCompletedEventsTool, mainTool, docsTool, participantsTool,
     completeTool, publishTool, deleteTool,
-    profileTool, addTool, backTool, downloadTool, addGroup
+    profileTool, addTool, backTool, downloadTool, addGroup, usersTool, registerUser, registerUserTool, addGroupTool
 } from '../toolbar/tools'
 import {
     aboutEventButton, editButton, deleteButton,
@@ -55,6 +55,8 @@ export default function ContentWrap() {
     const navigate = useNavigate()
     const eventId = useParams().id
     const docId = useParams().docId
+    const groupName = useParams().name
+    const userId = useParams().userId
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
@@ -171,15 +173,30 @@ export default function ContentWrap() {
                 }
             }
         }
-        else if (location.pathname == routes.admin) {
-            tools.unshift(getTool(addGroup, () => setIsCreateGroupModalOpened(true)))
+        else if (location.pathname.includes(routes.admin)) {
+            if (location.pathname.includes(routes.admin_group_docs)) {
+                tools.unshift(
+                    getTool(backTool),
+                    getTool(docsTool, () => {}),
+                    getTool(usersTool, () => {})
+                )
+            }
+            else if (location.pathname.includes(routes.admin_group_users) && userId === undefined) {
+                tools.unshift(getTool(
+                    registerUserTool, 
+                    () => {}
+                ))
+            }
+            else {
+                tools.unshift(getTool(addGroupTool, () => setIsCreateGroupModalOpened(true)))
+            }
         }
         else {
             tools.unshift(getTool(backTool))
         }
 
         return tools
-    }, [userData, location, showCompletedEvents, selectedTab, foundItem, nestedTask])
+    }, [userData, location, showCompletedEvents, selectedTab, foundItem, nestedTask, userId])
 
     const getContent = useCallback(() => {
         let content = null
@@ -409,7 +426,16 @@ export default function ContentWrap() {
             if (userData !== null) {
                 if (userData.is_superuser) {
                     if (listData.length == 0) {
-                        caption = 'Создайте новую группу'
+                        if (location.pathname.includes(routes.admin_group_docs)) {
+                            caption = 'Добавьте шаблоны пакета документов для этой группы'
+                        }
+                        else if (location.pathname.includes(routes.admin_group_users)) {
+                            caption = 'Добавьте новых пользователей в группу'
+                        }
+                        else {
+                            caption = 'Создайте новую группу'
+                        }
+
                         content = <NotFound additional_caption={caption} />
                     }
                     else {
@@ -417,34 +443,79 @@ export default function ContentWrap() {
                             const buttons = []
                             buttons.push(
                                 getButton(editButton, () => {
-                                    navigate(`${routes.admin}${routes.admin_group}${listItem.name}${routes.admin_group_docs}`)
+                                    let route = `${routes.admin}${routes.admin_group}`
+
+                                    if (location.pathname == routes.admin) {
+                                        route += `${listItem.name}${routes.admin_group_docs}`
+                                    }
+                                    else if (location.pathname.includes(routes.admin_group_docs)) {
+                                        route += `${groupName}${routes.admin_group_docs}${listItem.id}`
+                                    }
+                                    else if (location.pathname.includes(routes.admin_group_users)) {
+                                        route += `${groupName}${routes.admin_group_users}${listItem.id}`
+                                    }
+
+                                    navigate(route)
                                 }),
                                 getButton(deleteButton, () => {
                                     setIsConfirmModalOpened(true)
+                                    let route = `${host}`
+                                    let modalHeader
+                                    let modalContent
+
+                                    if (location.pathname == routes.admin) {
+                                        route += `${backendEndpoints.user_groups}?name=${listItem.name}`
+                                        modalHeader = 'Удаление группы'
+                                        modalContent = 'Вы действительно хотите удалить эту группу?'
+                                    }
+                                    else if (location.pathname.includes(routes.admin_group_docs)) {
+                                        route += `${backendEndpoints.templates}?id=${listItem.id}`
+                                        modalHeader = 'Удаление шаблона документа'
+                                        modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
+                                    }
+                                    else if (location.pathname.includes(routes.admin_group_users)) {
+                                        route += `${backendEndpoints.user_account}?id=${listItem.id}`
+                                        modalHeader = 'Удаление пользователя'
+                                        modalContent = 'Вы действительно хотите удалить этого пользователя из системы?'
+                                    }
+
                                     setConfirmCallback(() => {
                                         return () => {
-                                            const route = `${host}${backendEndpoints.user_groups}?name=${listItem.name}`
                                             callApi(route, 'DELETE', null, null).then(_ => {
                                                 setIsConfirmModalOpened(false)
                                                 window.location.reload()
                                             })
                                         }
                                     })
-                                    setModalHeader('Удаление группы')
-                                    setModalContent('Вы действительно хотите удалить эту группу?')
+
+                                    setModalHeader(modalHeader)
+                                    setModalContent(modalContent)
                                 })
                             )
+
+                            let itemInfo
                             
+                            if (location.pathname == routes.admin) {
+                                itemInfo = <GroupShortInfo data={{group_info: listItem}} />
+                            }
+                            else if (location.pathname.includes(routes.admin_group_docs)) {
+                                itemInfo = null
+                            }
+                            else if (location.pathname.includes(routes.admin_group_users)) {
+                                itemInfo = null
+                            }
+
                             const itemData = {
-                                item_info: <GroupShortInfo data={{
-                                    group_info: listItem
-                                }} />,
+                                item_info: itemInfo,
                                 item_buttons: <ListItemButtons buttons={buttons} />
                             }
                             return <ContentListItem key={`list_item_${uuidV4()}`} 
                                 data={itemData} />
                         })} />
                     }
+                }
+                else {
+                    navigate(routes.home)
                 }
             }
             else {
