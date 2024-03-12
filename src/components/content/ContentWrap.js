@@ -17,7 +17,7 @@ import ListItemButtons from './ListItemButtons'
 import {
     createTool, joinTool, showCompletedEventsTool, mainTool, docsTool, participantsTool,
     completeTool, publishTool, deleteTool,
-    profileTool, addTool, backTool, downloadTool
+    profileTool, addTool, backTool, downloadTool, addGroup
 } from '../toolbar/tools'
 import {
     aboutEventButton, editButton, deleteButton,
@@ -36,6 +36,8 @@ import ConfirmModal from '../modal/confirmModal/ConfirmModal'
 import MoreModal from '../modal/moreModal/MoreModal'
 import useApi from '../../hooks/useApi'
 import useButton from '../../hooks/useButton'
+import GroupShortInfo from '../group/GroupShortInfo'
+import CreateGroupModal from '../modal/createGroupModal/CreateGroupModal'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -56,6 +58,7 @@ export default function ContentWrap() {
 
     const [isProfileOpened, setIsProfileOpened] = useState(false)
     const [isJoinModalOpened, setIsJoinModalOpened] = useState(false)
+    const [isCreateGroupModalOpened, setIsCreateGroupModalOpened] = useState(false)
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
     const [confirmCallback, setConfirmCallback] = useState(null)
     const [modalHeader, setModalHeader] = useState('')
@@ -168,6 +171,9 @@ export default function ContentWrap() {
                 }
             }
         }
+        else if (location.pathname == routes.admin) {
+            tools.unshift(getTool(addGroup, () => setIsCreateGroupModalOpened(true)))
+        }
         else {
             tools.unshift(getTool(backTool))
         }
@@ -180,24 +186,26 @@ export default function ContentWrap() {
         let caption = ''
 
         if (location.pathname == routes.home) {
+            if (userData !== null) {
+                if (userData.is_superuser) {
+                    navigate(routes.admin)
+                }
+            }
+
             if (listData.length == 0) {
                 if (userData !== null) {
-                    if (userData.is_superuser) {
-                        caption = 'Добавьте шаблоны документов согласно СТО вашей организации'
+                    if (showCompletedEvents) {
+                        caption = 'Вы не завершили ни одного мероприятия'
+                    }
+                    else if (userData.is_staff) {
+                        caption = 'Создайте новое мероприятие или присоединитесь к существующему'
                     }
                     else {
-                        if (showCompletedEvents) {
-                            caption = 'Вы не завершили ни одного мероприятия'
-                        }
-                        else if (userData.is_staff) {
-                            caption = 'Создайте новое мероприятие или присоединитесь к существующему'
-                        }
-                        else {
-                            caption = 'Присоединитесь к мероприятию по коду приглашения'
-                        }
+                        caption = 'Присоединитесь к мероприятию по коду приглашения'
                     }
+
+                    content = <NotFound additional_caption={caption} />
                 }
-                content = <NotFound additional_caption={caption} />
             }
             else {
                 let preparedListData = listData
@@ -272,6 +280,9 @@ export default function ContentWrap() {
                 if (userData.is_staff) {
                     content = <EventForm event_data={null} is_edit={false} />
                 }
+                else if (userData.is_superuser) {
+                    navigate(routes.admin)
+                }
                 else {
                     navigate(routes.home)
                 }
@@ -279,7 +290,10 @@ export default function ContentWrap() {
         }
         else if (location.pathname.includes(routes.event_card)) {
             if (userData !== null && foundItem.length != 0) {
-                if (!userData.is_superuser && !foundItem[0].is_complete) {
+                if (userData.is_superuser) {
+                    navigate(routes.admin)
+                }
+                else if (!userData.is_superuser && !foundItem[0].is_complete) {
                     const isOrganizer = foundItem[0].users
                         .filter(user => user.is_organizer && user.user.id == userData.user.id)
                         .length != 0
@@ -391,109 +405,165 @@ export default function ContentWrap() {
                 }
             }
         }
-
-        return content
-    }, [location, listData, userData, showCompletedEvents, foundItem, nestedTask])
-
-    useEffect(() => {
-        callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
-            dispatch(changeFilterUsers(Array()))
-            dispatch(changeFilterStates(Array()))
-            dispatch(changeAssignationList(Array()))
-            dispatch(changeUsersSideTasksIds(Array()))
-            dispatch(changeAssignationFlag(false))
-            dispatch(changeNestedTask(null))
-
-            if (responseData.status == 200) {
-                let route = `${host}${backendEndpoints.events}`
-                if (eventId !== undefined) {
-                    route += `?id=${eventId}`
-                }
-
-                callApi(route, 'GET', null, null).then(resData => {
-                    if (resData.status == 200) {
-                        dispatch(changeData(resData.data.data))
+        else if (location.pathname.includes(routes.admin)) {
+            if (userData !== null) {
+                if (userData.is_superuser) {
+                    if (listData.length == 0) {
+                        caption = 'Создайте новую группу'
+                        content = <NotFound additional_caption={caption} />
                     }
                     else {
-                        dispatch(changeData(Array()))
-                        navigate('-1')
+                        content = <ContentList data={listData.map(listItem => {
+                            const buttons = []
+                            buttons.push(
+                                getButton(editButton, () => {
+                                    navigate(`${routes.admin}${routes.admin_group}${listItem.name}${routes.admin_group_docs}`)
+                                }),
+                                getButton(deleteButton, () => {
+                                    setIsConfirmModalOpened(true)
+                                    setConfirmCallback(() => {
+                                        return () => {
+                                            const route = `${host}${backendEndpoints.user_groups}?name=${listItem.name}`
+                                            callApi(route, 'DELETE', null, null).then(_ => {
+                                                setIsConfirmModalOpened(false)
+                                                window.location.reload()
+                                            })
+                                        }
+                                    })
+                                    setModalHeader('Удаление группы')
+                                    setModalContent('Вы действительно хотите удалить эту группу?')
+                                })
+                            )
+                            
+                            const itemData = {
+                                item_info: <GroupShortInfo data={{
+                                    group_info: listItem
+                                }} />,
+                                item_buttons: <ListItemButtons buttons={buttons} />
+                            }
+                            return <ContentListItem key={`list_item_${uuidV4()}`} 
+                                data={itemData} />
+                        })} />
                     }
-                })
-                if (responseData.data !== userData) {
-                    dispatch(changeUser(responseData.data.data))
-                }
-                if (location.pathname === routes.auth) {
-                    navigate(routes.home)
                 }
             }
             else {
-                if (location.pathname !== routes.auth) {
-                    dispatch(changeUser(null))
-                    navigate(routes.auth)
+                navigate(routes.home)
+            }
+        }
+
+        return content
+}, [location, listData, userData, showCompletedEvents, foundItem, nestedTask])
+
+useEffect(() => {
+    callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
+        dispatch(changeFilterUsers(Array()))
+        dispatch(changeFilterStates(Array()))
+        dispatch(changeAssignationList(Array()))
+        dispatch(changeUsersSideTasksIds(Array()))
+        dispatch(changeAssignationFlag(false))
+        dispatch(changeNestedTask(null))
+
+        if (responseData.status == 200) {
+            let route
+
+            if (responseData.data.data.is_superuser) {
+                route = `${host}${backendEndpoints.user_groups}`
+            }
+            else {
+                route = `${host}${backendEndpoints.events}`
+                if (eventId !== undefined) {
+                    route += `?id=${eventId}`
                 }
             }
-        })
-    }, [location.pathname, eventId, docId])
 
-    useEffect(() => {
-        callApi(`${host}${backendEndpoints.settings}`, 'GET', null, null).then(responseData => {
-            if (responseData.status == 200) {
-                localStorage.setItem('event_types', JSON.stringify(responseData.data.data.event_types))
-                localStorage.setItem('task_states', JSON.stringify(responseData.data.data.task_states))
-                localStorage.setItem('doc_types', JSON.stringify(responseData.data.data.doc_types))
+            callApi(route, 'GET', null, null).then(resData => {
+                if (resData.status == 200) {
+                    dispatch(changeData(resData.data.data))
+                }
+                else {
+                    dispatch(changeData(Array()))
+                    navigate('-1')
+                }
+            })
+
+            if (responseData.data !== userData) {
+                dispatch(changeUser(responseData.data.data))
             }
-        })
-    }, [])
-
-    const content = getContent()
-
-    return (
-        <Container id="Content-wrap" maxWidth={false} disableGutters sx={{
-            backgroundColor: theme.palette.secondary,
-            display: 'flex',
-            flexDirection: 'column',
-            margin: 'auto',
-            height: '100vh'
-        }}>
-            {
-                content !== null ?
-                    <Toolbar tools={buildTools()} nested_task={nestedTask} />
-                    :
-                    null
+            if (location.pathname === routes.auth) {
+                navigate(responseData.data.data.is_superuser? routes.admin : routes.home)
             }
-            <Zoom in={true} timeout={600}>
-                <Container maxWidth="lg" sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: listData.length != 0 || location.pathname === routes.create_event ?
-                        theme.palette.info.main : theme.palette.primary.main,
-                    borderRadius: 10,
-                    width: '100%',
-                    padding: '20px',
-                    margin: '20px auto 20px auto'
-                }}>
-                    {
-                        content
-                    }
-                </Container>
-            </Zoom>
-            <Drawer anchor="top" open={isProfileOpened}
-                onClose={() => setIsProfileOpened(false)}>
-                <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
-            </Drawer>
-            <JoinModal is_opened={isJoinModalOpened}
-                close_callback={() => setIsJoinModalOpened(false)} />
-            <MoreModal is_opened={openedEvent !== null} data={{
-                event_info: openedEvent,
-                user: userData
-            }} close_callback={() => setOpenedEvent(null)} />
-            <ConfirmModal is_opened={isConfirmModalOpened}
-                close_callback={() => setIsConfirmModalOpened(false)}
-                confirm_callback={() => confirmCallback()}
-                modal_header={modalHeader}
-                modal_content={modalContent} />
-            <Footer />
-        </Container>
-    )
+        }
+        else {
+            if (location.pathname !== routes.auth) {
+                dispatch(changeUser(null))
+                navigate(routes.auth)
+            }
+        }
+    })
+}, [location.pathname, eventId, docId])
+
+useEffect(() => {
+    callApi(`${host}${backendEndpoints.settings}`, 'GET', null, null).then(responseData => {
+        if (responseData.status == 200) {
+            localStorage.setItem('event_types', JSON.stringify(responseData.data.data.event_types))
+            localStorage.setItem('task_states', JSON.stringify(responseData.data.data.task_states))
+            localStorage.setItem('doc_types', JSON.stringify(responseData.data.data.doc_types))
+        }
+    })
+}, [])
+
+const content = getContent()
+
+return (
+    <Container id="Content-wrap" maxWidth={false} disableGutters sx={{
+        backgroundColor: theme.palette.secondary,
+        display: 'flex',
+        flexDirection: 'column',
+        margin: 'auto',
+        height: '100vh'
+    }}>
+        {
+            content !== null ?
+                <Toolbar tools={buildTools()} nested_task={nestedTask} />
+                :
+                null
+        }
+        <Zoom in={true} timeout={600}>
+            <Container maxWidth="lg" sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: listData.length != 0 || location.pathname === routes.create_event ?
+                    theme.palette.info.main : theme.palette.primary.main,
+                borderRadius: 10,
+                width: '100%',
+                padding: '20px',
+                margin: '20px auto 20px auto'
+            }}>
+                {
+                    content
+                }
+            </Container>
+        </Zoom>
+        <Drawer anchor="top" open={isProfileOpened}
+            onClose={() => setIsProfileOpened(false)}>
+            <Profile close_callback={() => setIsProfileOpened(false)} data={userData} />
+        </Drawer>
+        <JoinModal is_opened={isJoinModalOpened}
+            close_callback={() => setIsJoinModalOpened(false)} />
+        <CreateGroupModal is_opened={isCreateGroupModalOpened}
+            close_callback={() => setIsCreateGroupModalOpened(false)} />
+        <MoreModal is_opened={openedEvent !== null} data={{
+            event_info: openedEvent,
+            user: userData
+        }} close_callback={() => setOpenedEvent(null)} />
+        <ConfirmModal is_opened={isConfirmModalOpened}
+            close_callback={() => setIsConfirmModalOpened(false)}
+            confirm_callback={() => confirmCallback()}
+            modal_header={modalHeader}
+            modal_content={modalContent} />
+        <Footer />
+    </Container>
+)
 }

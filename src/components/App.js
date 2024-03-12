@@ -26,6 +26,11 @@ export default function App() {
                 <Route path={`${routes.event_card}:id${routes.event_card_docs}`} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id${routes.event_card_docs}:docId`} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id${routes.event_card_participants}`} element={<ContentWrap />} />
+                <Route path={routes.admin} element={<ContentWrap />} />
+                <Route path={`${routes.admin}${routes.admin_group}:id`} element={<ContentWrap />} />
+                <Route path={`${routes.admin}${routes.admin_group}:id${routes.admin_group_users}`} element={<ContentWrap />} />
+                <Route path={`${routes.admin}${routes.admin_group}:id${routes.admin_group_docs}`} element={<ContentWrap />} />
+                <Route path={`${routes.admin}${routes.admin_group}:id${routes.admin_group_docs}:docId`} element={<ContentWrap />} />
                 <Route path='*'
                     element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
             </Routes>

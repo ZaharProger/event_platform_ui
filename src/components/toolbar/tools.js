@@ -13,6 +13,9 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight'
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import GroupAddIcon from '@mui/icons-material/GroupAdd'
+import NoteAddIcon from '@mui/icons-material/NoteAdd'
+import PersonAddIcon from '@mui/icons-material/PersonAdd'
 
 import { routes } from '../routes'
 
@@ -92,6 +95,13 @@ export const participantsTool = {
     route: null
 }
 
+export const usersTool = {
+    label: 'Пользователи',
+    icon: PeopleIcon,
+    type: toolTypes.button,
+    route: null
+}
+
 export const completeTool = {
     label: 'Завершить',
     icon: CheckCircleIcon,
@@ -158,6 +168,27 @@ export const includeTool = {
 export const excludeTool = {
     label: 'Исключить',
     icon: RemoveCircleIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const addGroup = {
+    label: 'Добавить группу',
+    icon: GroupAddIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const registerUser = {
+    label: 'Регистрация пользователя',
+    icon: PersonAddIcon,
+    type: toolTypes.button,
+    route: null
+}
+
+export const addDoc = {
+    label: 'Новый документ',
+    icon: NoteAddIcon,
     type: toolTypes.button,
     route: null
 }

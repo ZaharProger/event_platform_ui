@@ -4,11 +4,16 @@ export const routes = {
     auth: '/auth',
     event_card: '/events/',
     event_card_docs: '/docs/',
-    event_card_participants: '/participants'
+    event_card_participants: '/participants',
+    admin: '/admin',
+    admin_group: '/groups/',
+    admin_group_users: '/users/',
+    admin_group_docs: '/docs/'
 }
 
 export const backendEndpoints = {
     user_account: '/users/account/',
+    user_groups: '/users/groups/',
     auth: '/users/auth/',
     logout: '/users/logout/',
     events: '/events/',
