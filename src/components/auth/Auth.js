@@ -33,7 +33,7 @@ export default function Auth() {
         callApi(`${host}${backendEndpoints.auth}`, 'POST', formData, null).then(responseData => {
             if (responseData.status == 200) {
                 errorMessage.set(null)
-                navigate(responseData.data.is_superuser? routes.admin : routes.home)
+                navigate(responseData.data.is_superuser? routes.admin_group : routes.home)
             }
             else {
                 errorMessage.set(responseData.data.message)

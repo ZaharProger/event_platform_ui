@@ -24,13 +24,13 @@ export default function App() {
                 <Route path={routes.create_event} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id`} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id${routes.event_card_docs}`} element={<ContentWrap />} />
-                <Route path={`${routes.event_card}:id${routes.event_card_docs}:docId`} element={<ContentWrap />} />
+                <Route path={`${routes.event_card}:id${routes.event_card_docs}:eventDocId`} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id${routes.event_card_participants}`} element={<ContentWrap />} />
-                <Route path={routes.admin} element={<ContentWrap />} />
-                <Route path={`${routes.admin}${routes.admin_group}:name${routes.admin_group_users}`} element={<ContentWrap />} />
-                <Route path={`${routes.admin}${routes.admin_group}:name${routes.admin_group_docs}`} element={<ContentWrap />} />
-                <Route path={`${routes.admin}${routes.admin_group}:name${routes.admin_group_docs}:docId`} element={<ContentWrap />} />
-                <Route path={`${routes.admin}${routes.admin_group}:name${routes.admin_group_users}:userId`} element={<ContentWrap />} />
+                <Route path={routes.admin_group} element={<ContentWrap />} />
+                <Route path={`${routes.admin_group}/:name${routes.admin_group_users}`} element={<ContentWrap />} />
+                <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}`} element={<ContentWrap />} />
+                <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}/:groupDocId`} element={<ContentWrap />} />
+                <Route path={`${routes.admin_group}/:name${routes.admin_group_users}/:userId`} element={<ContentWrap />} />
                 <Route path='*'
                     element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
             </Routes>
