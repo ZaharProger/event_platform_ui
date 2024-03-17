@@ -207,10 +207,7 @@ export default function ContentWrap() {
                 if (userData.is_superuser) {
                     navigate(routes.admin)
                 }
-            }
-
-            if (listData.length == 0) {
-                if (userData !== null) {
+                else if (listData.length == 0) {
                     if (showCompletedEvents) {
                         caption = 'Вы не завершили ни одного мероприятия'
                     }
@@ -223,72 +220,72 @@ export default function ContentWrap() {
 
                     content = <NotFound additional_caption={caption} />
                 }
-            }
-            else {
-                let preparedListData = listData
-                if (showCompletedEvents) {
-                    preparedListData = listData.filter(listItem => listItem.is_complete)
-                }
-                if (preparedListData.length == 0) {
-                    caption = 'Вы не завершили ни одного мероприятия'
-                    content = <NotFound additional_caption={caption} />
-                }
                 else {
-                    content = <ContentList data={preparedListData.map(listItem => {
-                        const buttons = Array()
+                    let preparedListData = listData
+                    if (showCompletedEvents) {
+                        preparedListData = listData.filter(listItem => listItem.is_complete)
+                    }
+                    if (preparedListData.length == 0) {
+                        caption = 'Вы не завершили ни одного мероприятия'
+                        content = <NotFound additional_caption={caption} />
+                    }
+                    else {
+                        content = <ContentList data={preparedListData.map(listItem => {
+                            const buttons = Array()
 
-                        const isOrganizer = listItem.users.filter(user => {
-                            return user.user.id === userData.user.id && user.is_organizer
-                        }).length != 0
+                            const isOrganizer = listItem.users.filter(user => {
+                                return user.user.id === userData.user.id && user.is_organizer
+                            }).length != 0
 
-                        buttons.push(getButton(aboutEventButton, () => setOpenedEvent(listItem)))
-                        if (listItem.is_complete) {
-                            if (isOrganizer) {
-                                buttons.push(getButton(deleteButton, () => {
-                                    setIsConfirmModalOpened(true)
-                                    setConfirmCallback(() => {
-                                        return () => {
-                                            const route = `${host}${backendEndpoints.events}?id=${listItem.id}`
-                                            callApi(route, 'DELETE', null, null).then(_ => {
-                                                setIsConfirmModalOpened(false)
-                                                window.location.reload()
-                                            })
-                                        }
-                                    })
-                                    setModalHeader('Удаление мероприятия')
-                                    setModalContent('Вы действительно хотите удалить это мероприятие?')
+                            buttons.push(getButton(aboutEventButton, () => setOpenedEvent(listItem)))
+                            if (listItem.is_complete) {
+                                if (isOrganizer) {
+                                    buttons.push(getButton(deleteButton, () => {
+                                        setIsConfirmModalOpened(true)
+                                        setConfirmCallback(() => {
+                                            return () => {
+                                                const route = `${host}${backendEndpoints.events}?id=${listItem.id}`
+                                                callApi(route, 'DELETE', null, null).then(_ => {
+                                                    setIsConfirmModalOpened(false)
+                                                    window.location.reload()
+                                                })
+                                            }
+                                        })
+                                        setModalHeader('Удаление мероприятия')
+                                        setModalContent('Вы действительно хотите удалить это мероприятие?')
+                                    }))
+                                }
+                            }
+                            else {
+                                buttons.push(getButton(userData.is_staff ? editButton : viewButton, () => {
+                                    let route
+                                    if (isOrganizer) {
+                                        dispatch(changeSelectedCardTab(mainTool.label))
+                                        route = `${routes.event_card}${listItem.id}`
+                                    }
+                                    else if (userData.is_staff) {
+                                        dispatch(changeSelectedCardTab(participantsTool.label))
+                                        route = `${routes.event_card}${listItem.id}${routes.event_card_participants}`
+                                    }
+                                    else {
+                                        dispatch(changeSelectedCardTab(docsTool.label))
+                                        route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
+                                    }
+
+                                    navigate(route)
                                 }))
                             }
-                        }
-                        else {
-                            buttons.push(getButton(userData.is_staff ? editButton : viewButton, () => {
-                                let route
-                                if (isOrganizer) {
-                                    dispatch(changeSelectedCardTab(mainTool.label))
-                                    route = `${routes.event_card}${listItem.id}`
-                                }
-                                else if (userData.is_staff) {
-                                    dispatch(changeSelectedCardTab(participantsTool.label))
-                                    route = `${routes.event_card}${listItem.id}${routes.event_card_participants}`
-                                }
-                                else {
-                                    dispatch(changeSelectedCardTab(docsTool.label))
-                                    route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
-                                }
 
-                                navigate(route)
-                            }))
-                        }
-
-                        const itemData = {
-                            item_info: <EventShortInfo data={{
-                                event_info: listItem,
-                                user: userData
-                            }} />,
-                            item_buttons: <ListItemButtons buttons={buttons} />
-                        }
-                        return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
-                    })} />
+                            const itemData = {
+                                item_info: <EventShortInfo data={{
+                                    event_info: listItem,
+                                    user: userData
+                                }} />,
+                                item_buttons: <ListItemButtons buttons={buttons} />
+                            }
+                            return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                        })} />
+                    }
                 }
             }
         }
@@ -529,6 +526,7 @@ export default function ContentWrap() {
 useEffect(() => {
     callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
         dispatch(changeFilterUsers(Array()))
+        dispatch(changeData(Array()))
         dispatch(changeFilterStates(Array()))
         dispatch(changeAssignationList(Array()))
         dispatch(changeUsersSideTasksIds(Array()))
