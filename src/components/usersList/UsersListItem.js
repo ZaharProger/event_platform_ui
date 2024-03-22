@@ -151,12 +151,12 @@ export default function UsersListItem(props) {
             padding="10px"
             width="100%"
             borderRadius="10px"
-            border={`2px solid ${theme.palette.secondary.main}`}
+            border={props.for_admin? '' : `2px solid ${theme.palette.secondary.main}`}
             justifyContent={isMobile ? 'center' : 'space-between'} alignItems="center">
             <Stack spacing={0} justifyContent="flex-start"
                 alignItems="center" width="100%">
                 <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
-                    display="block" fontWeight="bold" fontSize="0.9em">
+                    display="block" fontWeight="bold" fontSize={props.for_admin? '1em' : "0.9em"}>
                     {name}
                 </Typography>
                 <Typography variant="caption" marginRight="auto!important"

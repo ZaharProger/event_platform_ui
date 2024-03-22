@@ -38,6 +38,8 @@ import useApi from '../../hooks/useApi'
 import useButton from '../../hooks/useButton'
 import GroupShortInfo from '../group/GroupShortInfo'
 import CreateGroupModal from '../modal/createGroupModal/CreateGroupModal'
+import UsersListItem from '../usersList/UsersListItem'
+import RegisterModal from '../modal/registerModal/RegisterModal'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -64,6 +66,7 @@ export default function ContentWrap() {
     const [isCreateGroupModalOpened, setIsCreateGroupModalOpened] = useState(false)
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
     const [confirmCallback, setConfirmCallback] = useState(null)
+    const [isRegisterModalOpened, setIsRegisterModalOpened] = useState(false)
     const [modalHeader, setModalHeader] = useState('')
     const [modalContent, setModalContent] = useState('')
     const [openedEvent, setOpenedEvent] = useState(null)
@@ -72,7 +75,10 @@ export default function ContentWrap() {
     const getButton = useButton(false)
 
     let foundItem
-    if (location.pathname.includes(routes.admin_group_docs)) {
+    if (location.pathname.includes(routes.event_card)) {
+        foundItem = listData.filter(listItem => listItem.id == eventId)
+    }
+    else if (location.pathname.includes(routes.admin_group_docs)) {
         foundItem = {
             name: listData.name,
             objects: listData.docs !== undefined ?
@@ -96,9 +102,6 @@ export default function ContentWrap() {
                 :
                 []
         }
-    }
-    else if (location.pathname.includes(routes.event_card)) {
-        foundItem = listData.filter(listItem => listItem.id == eventId)
     }
 
     const buildTools = useCallback(() => {
@@ -204,15 +207,18 @@ export default function ContentWrap() {
             if (location.pathname.includes(routes.admin_group_docs)) {
                 tools.unshift(
                     getTool(backTool),
-                    getTool(docsTool, () => { }),
-                    getTool(usersTool, () => { })
+                    getTool(docsTool, () => { }, {}, selectedTab),
+                    getTool(usersTool, () => {
+                        const route = `${routes.admin_group}/${groupName}${routes.admin_group_users}`
+                        navigate(route)
+                    })
                 )
             }
-            else if (location.pathname.includes(routes.admin_group_users) && userId === undefined) {
-                tools.unshift(getTool(
-                    registerUserTool,
-                    () => { }
-                ))
+            else if (location.pathname.includes(routes.admin_group_users)) {
+                tools.unshift(
+                    getTool(backTool),
+                    getTool(registerUserTool, () => setIsRegisterModalOpened(true))
+                )
             }
             else {
                 tools.unshift(getTool(addGroupTool, () => setIsCreateGroupModalOpened(true)))
@@ -476,44 +482,28 @@ export default function ContentWrap() {
                     }
                     else {
                         let preparedListData
-                        if (location.pathname.includes(routes.admin_group_docs)) {
-                            preparedListData = foundItem.objects
-                        }
-                        else if (location.pathname.includes(routes.admin_group_users)) {
-                            preparedListData = foundItem.objects
+                        if (location.pathname == routes.admin_group) {
+                            preparedListData = listData instanceof Array ?
+                                listData.map(listItem => listItem.name)
+                                :
+                                [listData.name]
                         }
                         else {
-                            preparedListData = Object.keys(listData).includes('name') ?
-                                [listData.name]
-                                :
-                                listData.map(listItem => listItem.name)
+                            if (location.pathname.includes(routes.admin_group_docs)) {
+                                dispatch(changeSelectedCardTab(docsTool.label))
+                            }
+                            preparedListData = foundItem.objects
                         }
 
                         content = <ContentList data={preparedListData.map(listItem => {
-                            const buttons = []
-                            buttons.push(
-                                getButton(editButton, () => {
-                                    let route = `${routes.admin_group}/`
-    
-                                    if (location.pathname.includes(routes.admin_group)) {
-                                        route += `${listItem}${routes.admin_group_docs}`
-                                    }
-                                    else if (location.pathname.includes(routes.admin_group_docs)) {
-                                        route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
-                                    }
-                                    else if (location.pathname.includes(routes.admin_group_users)) {
-                                        route += `${groupName}${routes.admin_group_users}/${listItem.id}`
-                                    }
-    
-                                    navigate(route)
-                                }),
+                            const buttons = [
                                 getButton(deleteButton, () => {
                                     setIsConfirmModalOpened(true)
                                     let route = `${host}`
                                     let modalHeader
                                     let modalContent
     
-                                    if (location.pathname.includes(routes.admin_group)) {
+                                    if (location.pathname == routes.admin_group) {
                                         route += `${backendEndpoints.user_groups}?name=${listItem}`
                                         modalHeader = 'Удаление группы'
                                         modalContent = 'Вы действительно хотите удалить эту группу?'
@@ -524,7 +514,7 @@ export default function ContentWrap() {
                                         modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
                                     }
                                     else if (location.pathname.includes(routes.admin_group_users)) {
-                                        route += `${backendEndpoints.user_account}?id=${listItem.id}`
+                                        route += `${backendEndpoints.user_account}?id=${listItem.user.id}`
                                         modalHeader = 'Удаление пользователя'
                                         modalContent = 'Вы действительно хотите удалить этого пользователя из системы?'
                                     }
@@ -541,18 +531,40 @@ export default function ContentWrap() {
                                     setModalHeader(modalHeader)
                                     setModalContent(modalContent)
                                 })
-                            )
+                            ]
+                            if (!location.pathname.includes(routes.admin_group_users)) {
+                                buttons.unshift(
+                                    getButton(editButton, () => {
+                                        let route = `${routes.admin_group}/`
+        
+                                        if (location.pathname == routes.admin_group) {
+                                            dispatch(changeSelectedCardTab(docsTool.label))
+                                            route += `${listItem}${routes.admin_group_docs}`
+                                        }
+                                        else {
+                                            route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
+                                        }
+        
+                                        navigate(route)
+                                    })
+                                )
+                            }
     
                             let itemInfo
     
-                            if (location.pathname.includes(routes.admin_group)) {
+                            if (location.pathname == routes.admin_group) {
                                 itemInfo = <GroupShortInfo data={{ group_info: listItem }} />
                             }
                             else if (location.pathname.includes(routes.admin_group_docs)) {
-                                itemInfo = null
+                                itemInfo = <DocShortInfo data={{
+                                    doc_info: listItem
+                                }} />
                             }
                             else if (location.pathname.includes(routes.admin_group_users)) {
-                                itemInfo = null
+                                itemInfo = <UsersListItem is_editable={false}
+                                for_task={false}
+                                for_admin={true}
+                                user={listItem} />
                             }
     
                             const itemData = {
@@ -680,6 +692,8 @@ export default function ContentWrap() {
                 close_callback={() => setIsJoinModalOpened(false)} />
             <CreateGroupModal is_opened={isCreateGroupModalOpened}
                 close_callback={() => setIsCreateGroupModalOpened(false)} />
+            <RegisterModal is_opened={isRegisterModalOpened} group_name={groupName}
+                close_callback={() => setIsRegisterModalOpened(false)} />
             <MoreModal is_opened={openedEvent !== null} data={{
                 event_info: openedEvent,
                 user: userData

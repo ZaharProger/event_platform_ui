@@ -30,7 +30,6 @@ export default function App() {
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_users}`} element={<ContentWrap />} />
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}`} element={<ContentWrap />} />
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}/:groupDocId`} element={<ContentWrap />} />
-                <Route path={`${routes.admin_group}/:name${routes.admin_group_users}/:userId`} element={<ContentWrap />} />
                 <Route path='*'
                     element={<NotFound additional_caption={'Запрашиваемый ресурс не существует'} />} />
             </Routes>

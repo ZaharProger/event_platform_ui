@@ -7,7 +7,8 @@ export const routes = {
     event_card_participants: '/participants',
     admin_group: '/admin/groups',
     admin_group_users: '/users',
-    admin_group_docs: '/docs'
+    admin_group_docs: '/docs',
+    create_doc: '/create/doc'
 }
 
 export const backendEndpoints = {
