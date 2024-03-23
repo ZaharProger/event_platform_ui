@@ -6,10 +6,10 @@ import { resetButton, saveButton, signOutButton } from '../buttons'
 import { backTool } from '../toolbar/tools'
 import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
-import { useNavigate } from 'react-router-dom'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
+import useRoute from '../../hooks/useRoute'
 
 export default function Profile(props) {
     const nameValidation = useValidation(
@@ -24,7 +24,7 @@ export default function Profile(props) {
     const errorMessage = useError()
 
     const callApi = useApi()
-    const navigate = useNavigate()
+    const navigate = useRoute()
 
     const isMobile = useMediaQuery('(max-width: 1000px)')
 
@@ -41,7 +41,7 @@ export default function Profile(props) {
         }).then(responseData => {
             if (responseData.status == 200) {
                 errorMessage.set(null)
-                window.location.reload()
+                navigate(null)
             }
             else {
                 errorMessage.set(responseData.data.message)

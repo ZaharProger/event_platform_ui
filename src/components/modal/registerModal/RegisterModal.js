@@ -12,11 +12,13 @@ import {
 } from '@mui/material'
 import { cancelButton, continueButton } from '../../buttons'
 import { backendEndpoints, host } from '../../routes'
+import useRoute from '../../../hooks/useRoute'
 
 export default function RegisterModal(props) {
     const theme = useTheme()
 
     const callApi = useApi()
+    const navigate = useRoute()
 
     const nameValidation = useValidation(
         '',
@@ -44,7 +46,7 @@ export default function RegisterModal(props) {
         })
             .then(responseData => {
                 if (responseData.status == 200) {
-                    window.location.reload()
+                    navigate(null)
                 }
                 else {
                     errorMessage.set(responseData.data.message)

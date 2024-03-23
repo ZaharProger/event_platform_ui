@@ -26,6 +26,8 @@ export default function ModalBlockItem(props) {
                     return <UsersListItem key={`event_user_${uuidV4()}`}
                         is_editable={true}
                         for_task={false}
+                        for_admin={false}
+                        for_modal={true}
                         user={foundItem} />
                 })
             :

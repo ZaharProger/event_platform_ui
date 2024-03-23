@@ -5,7 +5,7 @@ import {
 } from '@mui/material'
 
 import useButton from '../../hooks/useButton'
-import { assignTool, excludeTool, includeTool, unpinTool } from '../toolbar/tools'
+import { assignTool, deleteTool, excludeTool, includeTool, unpinTool } from '../toolbar/tools'
 import { useDispatch, useSelector } from 'react-redux'
 import { changeAssignationList, changeFilterUsers } from '../../redux/actions'
 
@@ -62,74 +62,83 @@ export default function UsersListItem(props) {
     }
 
     const getButtons = useCallback(() => {
-        return props.for_task && props.is_editable ?
-            getTool(
-                props.is_assigned ? unpinTool : assignTool,
-                () => {
-                    const tasksDict = {}
-                    const parentTasks = props.event_tasks
-                        .filter(eventTask => eventTask.parent === null)
-
-                    parentTasks.forEach(parentTask => tasksDict[parentTask.id] = [])
-                    props.event_tasks.forEach(eventTask => {
-                        if (eventTask.parent !== null) {
-                            tasksDict[eventTask.parent].push(eventTask.id)
-                        }
-                    })
-
-                    let isNested = false
-                    dispatch(
-                        changeAssignationList(props.assignation.map(item => {
-                            if (tasksDict[props.related_task_id] !== undefined) {
-                                isNested = tasksDict[props.related_task_id]
-                                    .includes(item.id)
+        const buttons = []
+        if (props.for_task && props.is_editable) {
+            buttons.push(
+                getTool(
+                    props.is_assigned ? unpinTool : assignTool,
+                    () => {
+                        const tasksDict = {}
+                        const parentTasks = props.event_tasks
+                            .filter(eventTask => eventTask.parent === null)
+    
+                        parentTasks.forEach(parentTask => tasksDict[parentTask.id] = [])
+                        props.event_tasks.forEach(eventTask => {
+                            if (eventTask.parent !== null) {
+                                tasksDict[eventTask.parent].push(eventTask.id)
                             }
-                            const isChangedTask = item.id == props.related_task_id
-                            let newUsers = []
-
-                            if (props.is_assigned) {
-                                newUsers = item.users
-                                    .filter(itemUser => {
-                                        const isChangedUser = itemUser.user.id == id
-                                        let result
-
-                                        if (isNested) {
-                                            result = !isChangedUser
-                                        }
-                                        else {
-                                            result = !(isChangedUser && isChangedTask)
-                                        }
-
-                                        return result
-                                    })
-                            }
-                            else {
-                                newUsers = item.users
-                                    .map(itemUser => {
-                                        return {
-                                            ...itemUser
-                                        }
-                                    })
-                                if (isChangedTask) {
-                                    newUsers.push({
-                                        user: {
-                                            ...props.user.user
-                                        },
-                                        is_responsible: !props.has_responsible
-                                    })
+                        })
+    
+                        let isNested = false
+                        dispatch(
+                            changeAssignationList(props.assignation.map(item => {
+                                if (tasksDict[props.related_task_id] !== undefined) {
+                                    isNested = tasksDict[props.related_task_id]
+                                        .includes(item.id)
                                 }
-                            }
-
-                            return {
-                                id: item.id,
-                                users: newUsers
-                            }
-                        }))
-                    )
-                }
+                                const isChangedTask = item.id == props.related_task_id
+                                let newUsers = []
+    
+                                if (props.is_assigned) {
+                                    newUsers = item.users
+                                        .filter(itemUser => {
+                                            const isChangedUser = itemUser.user.id == id
+                                            let result
+    
+                                            if (isNested) {
+                                                result = !isChangedUser
+                                            }
+                                            else {
+                                                result = !(isChangedUser && isChangedTask)
+                                            }
+    
+                                            return result
+                                        })
+                                }
+                                else {
+                                    newUsers = item.users
+                                        .map(itemUser => {
+                                            return {
+                                                ...itemUser
+                                            }
+                                        })
+                                    if (isChangedTask) {
+                                        newUsers.push({
+                                            user: {
+                                                ...props.user.user
+                                            },
+                                            is_responsible: !props.has_responsible
+                                        })
+                                    }
+                                }
+    
+                                return {
+                                    id: item.id,
+                                    users: newUsers
+                                }
+                            }))
+                        )
+                    }
+                )
             )
-            :
-            props.is_editable ?
+        }
+        else if (props.for_admin && props.is_editable) {
+            buttons.push(
+                getTool(deleteTool, () => props.custom_callback(id))
+            )
+        }
+        else if (props.is_editable) {
+            buttons.push(
                 getTool(
                     filterUsers.includes(id) ? excludeTool : includeTool,
                     () => dispatch(
@@ -141,8 +150,10 @@ export default function UsersListItem(props) {
                         )
                     )
                 )
-                :
-                null
+            )
+        }
+
+        return buttons
     }, [props, id, filterUsers, dispatch, getTool])
 
     return (
@@ -151,12 +162,12 @@ export default function UsersListItem(props) {
             padding="10px"
             width="100%"
             borderRadius="10px"
-            border={props.for_admin? '' : `2px solid ${theme.palette.secondary.main}`}
+            border={props.for_modal? `2px solid ${theme.palette.secondary.main}` : ''}
             justifyContent={isMobile ? 'center' : 'space-between'} alignItems="center">
             <Stack spacing={0} justifyContent="flex-start"
                 alignItems="center" width="100%">
                 <Typography variant="subtitle1" color="secondary" marginRight="auto!important"
-                    display="block" fontWeight="bold" fontSize={props.for_admin? '1em' : "0.9em"}>
+                    display="block" fontWeight="bold" fontSize={props.for_modal? '0.9em' : "1em"}>
                     {name}
                 </Typography>
                 <Typography variant="caption" marginRight="auto!important"
@@ -221,7 +232,7 @@ export default function UsersListItem(props) {
                 }
             </Stack>
             {
-                props.for_task || props.is_editable ?
+                props.for_task || props.is_editable || props.for_admin ?
                     <Stack direction="column" spacing={1}
                         justifyContent="center" alignItems="center">
                         {

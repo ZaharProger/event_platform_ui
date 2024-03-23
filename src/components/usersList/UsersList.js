@@ -38,7 +38,7 @@ export default function UsersList(props) {
                     padding: '10px'
                 }}
                 width="100%"
-                height="300px"
+                height={props.for_modal? "300px" : "500px"}
                 overflow="auto"
                 alignItems="center">
                 {

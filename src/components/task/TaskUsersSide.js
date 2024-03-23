@@ -78,6 +78,8 @@ export default function TaskUsersSide(props) {
                             assignation={assignation}
                             is_responsible={isResponsible}
                             for_task={true}
+                            for_modal={true}
+                            for_admin={false}
                             event_tasks={tasks} has_responsible={hasResponsible}
                             is_assigned={getUserAssignation(foundUser)} />
                     })

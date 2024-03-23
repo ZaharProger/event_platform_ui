@@ -1,6 +1,5 @@
 import { Stack, Icon, TextField, Container, useTheme, Fade, Typography, useMediaQuery } from '@mui/material'
 import React, { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import logo from '../../assets/images/logo-full.svg'
 import useButton from '../../hooks/useButton'
@@ -11,6 +10,7 @@ import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
 import { backendEndpoints, host, routes } from '../routes'
+import useRoute from '../../hooks/useRoute'
 
 export default function Auth() {
     const [isHelpOpened, setIsHelpOpened] = useState(false)
@@ -22,7 +22,7 @@ export default function Auth() {
     const theme = useTheme()
 
     const callApi = useApi()
-    const navigate = useNavigate()
+    const navigate = useRoute()
 
     const authButtonHandler = useCallback(() => {
         const formData = new FormData()

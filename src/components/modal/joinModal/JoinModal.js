@@ -10,10 +10,12 @@ import useApi from '../../../hooks/useApi'
 import { backendEndpoints, host } from '../../routes'
 import useError from '../../../hooks/useError'
 import useTextFieldStyles from '../../../hooks/useTextFieldStyles'
+import useRoute from '../../../hooks/useRoute'
 
 export default function JoinModal(props) {
     const callApi = useApi()
-
+    const navigate = useRoute()
+    
     const {set: setFieldValue, validate, get: getFieldValue} = useValidation('', /^[A-Z0-9]{8}$/)
     const errorMessage = useError()
 
@@ -23,7 +25,7 @@ export default function JoinModal(props) {
         callApi(`${host}${backendEndpoints.join_event}?secret_code=${getFieldValue()}`, 'GET', null, null)
             .then(responseData => {
                 if (responseData.status == 200) {
-                    window.location.reload()
+                    navigate(null)
                 }
                 else {
                     errorMessage.set(responseData.data.message)

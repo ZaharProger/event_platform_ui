@@ -10,9 +10,9 @@ import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
 import { host, backendEndpoints, routes } from '../routes'
-import { useNavigate } from 'react-router-dom'
 import { prepareDatetime } from '../../utils'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
+import useRoute from '../../hooks/useRoute'
 
 export default function EventForm(props) {
     const theme = useTheme()
@@ -41,7 +41,7 @@ export default function EventForm(props) {
     const getButton = useButton(false)
 
     const callApi = useApi()
-    const navigate = useNavigate()
+    const navigate = useRoute()
 
     const saveButtonHandler = useCallback(() => {
         const bodyData = props.is_edit ? {} : new FormData()
@@ -85,7 +85,7 @@ export default function EventForm(props) {
                 if (responseData.status == 200) {
                     errorMessage.set(null)
                     if (props.is_edit) {
-                        window.location.reload()
+                        navigate(null)
                     }
                     else {
                         navigate(`${routes.event_card}${responseData.data.data.id}`)

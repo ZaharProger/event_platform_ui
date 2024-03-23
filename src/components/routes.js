@@ -12,6 +12,7 @@ export const routes = {
 }
 
 export const backendEndpoints = {
+    users: '/users/',
     user_account: '/users/account/',
     user_groups: '/users/groups/',
     register: '/users/register/',

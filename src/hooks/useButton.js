@@ -1,11 +1,11 @@
 import { SvgIcon, Button, useTheme } from "@mui/material"
 import { v4 as uuidV4 } from "uuid"
-import { useNavigate } from "react-router-dom"
 
 import Tool from "../components/toolbar/Tool"
 import { deleteTool, excludeTool, unpinTool } from "../components/toolbar/tools"
 import { cancelButton, deleteButton, signOutButton, sortButton } from "../components/buttons"
 import { useState } from "react"
+import useRoute from "./useRoute"
 
 export default function useButton(isTool) {
     const theme = useTheme()
@@ -13,7 +13,7 @@ export default function useButton(isTool) {
     const negativeTools = [deleteTool, unpinTool, excludeTool]
     const negativeButtons = [deleteButton, cancelButton, signOutButton]
 
-    const navigate = useNavigate()
+    const navigate = useRoute()
 
     const [switchIcon, setSwitchIcon] = useState(true)
 

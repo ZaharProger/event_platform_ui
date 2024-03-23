@@ -8,9 +8,11 @@ import { Dialog, DialogActions, DialogContent,
     DialogTitle, TextField, Typography } from '@mui/material'
 import { cancelButton, continueButton } from '../../buttons'
 import { backendEndpoints, host } from '../../routes'
+import useRoute from '../../../hooks/useRoute'
 
 export default function CreateGroupModal(props) {
     const callApi = useApi()
+    const navigate = useRoute()
 
     const {set: setFieldValue, validate, get: getFieldValue} = useValidation('', /[А-Яа-яA-Za-z\s\-.,_]+/)
     const errorMessage = useError()
@@ -27,7 +29,7 @@ export default function CreateGroupModal(props) {
         })
             .then(responseData => {
                 if (responseData.status == 200) {
-                    window.location.reload()
+                    navigate(null)
                 }
                 else {
                     errorMessage.set(responseData.data.message)

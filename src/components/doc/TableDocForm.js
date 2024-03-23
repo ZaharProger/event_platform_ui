@@ -14,12 +14,14 @@ import NotFound from "../notFound/NotFound"
 import NestedTaskFormHeader from "../task/NestedTaskFormHeader"
 import Money from "../money/Money"
 import DefaultDocItem from "./DefaultDocItem"
+import useRoute from "../../hooks/useRoute"
 
 export default function TableDocForm(props) {
     const { data: { event_data, user, doc_data }, is_roadmap, is_money, nested_task } = props
 
     const callApi = useApi()
     const dispatch = useDispatch()
+    const navigate = useRoute()
 
     const [docFields, setDocFields] = useState(is_roadmap ?
         [...event_data.tasks] : [...doc_data.fields]
@@ -124,7 +126,7 @@ export default function TableDocForm(props) {
             'Content-Type': 'application/json'
         }).then(responseData => {
             if (responseData.status == 200) {
-                window.location.reload()
+                navigate(null)
             }
         })
 

@@ -1,7 +1,7 @@
 import { Container, Drawer, Zoom, useTheme } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 import { v4 as uuidV4 } from "uuid"
 import ContentList from './ContentList'
@@ -16,8 +16,8 @@ import TableDocForm from '../doc/TableDocForm'
 import ListItemButtons from './ListItemButtons'
 import {
     createTool, joinTool, showCompletedEventsTool, mainTool, docsTool, participantsTool,
-    completeTool, publishTool, deleteTool,
-    profileTool, addTool, backTool, downloadTool, usersTool, registerUserTool, addGroupTool
+    completeTool, deleteTool, profileTool, addTool, backTool, downloadTool, usersTool,
+    registerUserTool, addGroupTool, publishTool
 } from '../toolbar/tools'
 import {
     aboutEventButton, editButton, deleteButton,
@@ -40,11 +40,17 @@ import GroupShortInfo from '../group/GroupShortInfo'
 import CreateGroupModal from '../modal/createGroupModal/CreateGroupModal'
 import UsersListItem from '../usersList/UsersListItem'
 import RegisterModal from '../modal/registerModal/RegisterModal'
+import useUsersList from '../../hooks/useUsersList'
+import useTextFieldStyles from '../../hooks/useTextFieldStyles'
+import useRoute from '../../hooks/useRoute'
 
 export default function ContentWrap() {
     const theme = useTheme()
+    const textFieldStyles = useTextFieldStyles('outlined')
 
     const callApi = useApi()
+
+    const getUsersList = useUsersList(false, false)
 
     const dispatch = useDispatch()
     const listData = useSelector(state => state.data)
@@ -54,7 +60,7 @@ export default function ContentWrap() {
     const nestedTask = useSelector(state => state.nested_task)
 
     const location = useLocation()
-    const navigate = useNavigate()
+    const navigate = useRoute()
     const eventId = useParams().id
     const eventDocId = useParams().eventDocId
     const groupDocId = useParams().groupDocId
@@ -104,6 +110,48 @@ export default function ContentWrap() {
         }
     }
 
+    const getSearchResults = useCallback((dataToFilter, searchData) => {
+        let customCallback = location.pathname.includes(routes.admin_group) ?
+            (idToDelete) => {
+                const route = `${host}${backendEndpoints.user_account}?id=${idToDelete}`
+                const modalHeader = 'Удаление пользователя'
+                const modalContent = 'Вы действительно хотите удалить этого пользователя из системы?'
+
+                setConfirmCallback(() => {
+                    return () => {
+                        callApi(route, 'DELETE', null, null).then(_ => {
+                            setIsConfirmModalOpened(false)
+                            navigate(null)
+                        })
+                    }
+                })
+
+                setModalHeader(modalHeader)
+                setModalContent(modalContent)
+                setIsConfirmModalOpened(true)
+            }
+            :
+            null
+
+        return dataToFilter.length != 0 ?
+            dataToFilter
+                .filter(itemValue => itemValue.user.name.toLowerCase()
+                    .includes(searchData.toLowerCase())
+                )
+                .sort((first, second) => first.user.name.localeCompare(second.user.name))
+                .map(foundItem => {
+                    return <UsersListItem key={`user_${uuidV4()}`}
+                        for_modal={false}
+                        is_editable={true}
+                        for_admin={location.pathname.includes(routes.admin_group)}
+                        user={foundItem}
+                        custom_callback={(idToDelete) => customCallback(idToDelete)}
+                    />
+                })
+            :
+            []
+    }, [location])
+
     const buildTools = useCallback(() => {
         const tools = [getTool(profileTool, () => setIsProfileOpened(true))]
 
@@ -137,6 +185,9 @@ export default function ContentWrap() {
                         )
                     }
                 }
+            }
+            else if (location.pathname.includes(routes.event_card_participants)) {
+                tools.unshift(getTool(backTool))
             }
             else {
                 if (userData !== null && foundItem.length != 0) {
@@ -189,7 +240,10 @@ export default function ContentWrap() {
                             dispatch(changeSelectedCardTab(docsTool.label))
                             navigate(`${routes.event_card}${eventId}${routes.event_card_docs}`)
                         }, {}, selectedTab),
-                        getTool(participantsTool, () => console.log(1), {}, selectedTab),
+                        getTool(participantsTool, () => {
+                            dispatch(changeSelectedCardTab(publishTool.label))
+                            navigate(`${routes.event_card}${eventId}${routes.event_card_participants}`)
+                        }, {}, selectedTab),
                     )
                     if (isOrganizer) {
                         tools.unshift(
@@ -281,7 +335,7 @@ export default function ContentWrap() {
                                                 const route = `${host}${backendEndpoints.events}?id=${listItem.id}`
                                                 callApi(route, 'DELETE', null, null).then(_ => {
                                                     setIsConfirmModalOpened(false)
-                                                    window.location.reload()
+                                                    navigate(null)
                                                 })
                                             }
                                         })
@@ -337,119 +391,121 @@ export default function ContentWrap() {
             }
         }
         else if (location.pathname.includes(routes.event_card)) {
-            if (userData !== null && foundItem.length != 0) {
+            if (userData !== null) {
                 if (userData.is_superuser) {
                     navigate(routes.admin_group)
                 }
-                else if (!userData.is_superuser && !foundItem[0].is_complete) {
-                    const isOrganizer = foundItem[0].users
-                        .filter(user => user.is_organizer && user.user.id == userData.user.id)
-                        .length != 0
-
-                    if (location.pathname.includes(routes.event_card_docs)) {
-                        dispatch(changeSelectedCardTab(docsTool.label))
-                        if (eventDocId !== undefined) {
-                            const foundDoc = foundItem[0].docs.filter(doc => doc.id == eventDocId)[0]
-                            const docData = {
-                                event_data: {
-                                    id: foundItem[0].id,
-                                },
-                                user: userData,
-                                doc_data: foundDoc
+                else if (foundItem.length != 0) {
+                    if (!foundItem[0].is_complete) {
+                        const isOrganizer = foundItem[0].users
+                            .filter(user => user.is_organizer && user.user.id == userData.user.id)
+                            .length != 0
+    
+                        if (location.pathname.includes(routes.event_card_docs)) {
+                            dispatch(changeSelectedCardTab(docsTool.label))
+                            if (eventDocId !== undefined) {
+                                const foundDoc = foundItem[0].docs.filter(doc => doc.id == eventDocId)[0]
+                                const docData = {
+                                    event_data: {
+                                        id: foundItem[0].id,
+                                    },
+                                    user: userData,
+                                    doc_data: foundDoc
+                                }
+                                if (foundDoc.is_table) {
+                                    const docTypes = localStorage.getItem('doc_types') !== null ?
+                                        JSON.parse(localStorage.getItem('doc_types')) : []
+                                    let roadMapDocType = ''
+                                    let moneyDocType = ''
+                                    if (docTypes.length != 0) {
+                                        roadMapDocType = docTypes.filter(docType => docType.label == 'Roadmap')
+                                        roadMapDocType = roadMapDocType[0].value.toLowerCase()
+                                        moneyDocType = docTypes.filter(docType => docType.label == 'Money')
+                                        moneyDocType = moneyDocType[0].value.toLowerCase()
+                                    }
+    
+                                    let isRoadmap = false
+                                    let isMoney = false
+                                    if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
+                                        isRoadmap = true
+                                        docData.event_data.users = foundItem[0].users
+                                        docData.event_data.tasks = foundItem[0].tasks
+                                    }
+                                    else if (foundDoc.doc_type.toLowerCase().includes(moneyDocType)) {
+                                        isMoney = true
+                                    }
+                                    content = <TableDocForm data={docData}
+                                        nested_task={nestedTask}
+                                        is_money={isMoney}
+                                        is_roadmap={isRoadmap} />
+                                }
+                                else {
+                                    content = <TextDocForm data={docData} />
+                                }
                             }
-                            if (foundDoc.is_table) {
-                                const docTypes = localStorage.getItem('doc_types') !== null ?
-                                    JSON.parse(localStorage.getItem('doc_types')) : []
-                                let roadMapDocType = ''
-                                let moneyDocType = ''
-                                if (docTypes.length != 0) {
-                                    roadMapDocType = docTypes.filter(docType => docType.label == 'Roadmap')
-                                    roadMapDocType = roadMapDocType[0].value.toLowerCase()
-                                    moneyDocType = docTypes.filter(docType => docType.label == 'Money')
-                                    moneyDocType = moneyDocType[0].value.toLowerCase()
-                                }
-
-                                let isRoadmap = false
-                                let isMoney = false
-                                if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
-                                    isRoadmap = true
-                                    docData.event_data.users = foundItem[0].users
-                                    docData.event_data.tasks = foundItem[0].tasks
-                                }
-                                else if (foundDoc.doc_type.toLowerCase().includes(moneyDocType)) {
-                                    isMoney = true
-                                }
-                                content = <TableDocForm data={docData}
-                                    nested_task={nestedTask}
-                                    is_money={isMoney}
-                                    is_roadmap={isRoadmap} />
+                            else if (foundItem[0].docs.length != 0) {
+                                content = <ContentList data={foundItem[0].docs.map(doc => {
+                                    const buttons = [
+                                        getButton(downloadButton, () => {
+                                            const route = `${host}${backendEndpoints.docs}?id=${doc.id}`
+                                            callApi(route, 'GET', null, null, true).then(responseData => {
+                                                if (responseData.status == 200) {
+                                                    const contentWrap = document.querySelector('#Content-wrap')
+    
+                                                    const downloadRef = document.createElement('a')
+                                                    downloadRef.href = URL.createObjectURL(responseData.data)
+                                                    downloadRef.download = 'doc.xlsx'
+                                                    downloadRef.style.display = 'none'
+                                                    contentWrap.appendChild(downloadRef)
+    
+                                                    downloadRef.click()
+                                                    URL.revokeObjectURL(downloadRef.href);
+                                                    contentWrap.removeChild(downloadRef)
+                                                }
+                                            })
+                                        }),
+                                        getButton(userData.is_staff ? editButton : viewButton, () => {
+                                            dispatch(changeSelectedCardTab(docsTool.label))
+                                            const route =
+                                                `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
+                                            navigate(route)
+                                        })
+                                    ]
+                                    const itemData = {
+                                        item_info: <DocShortInfo data={{
+                                            doc_info: doc
+                                        }} />,
+                                        item_buttons: <ListItemButtons buttons={buttons} />
+                                    }
+                                    return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
+                                })} />
                             }
                             else {
-                                content = <TextDocForm data={docData} />
+                                const caption = userData.is_staff ?
+                                    'Создайте новый документ для вашего мероприятия!'
+                                    :
+                                    'Подождите. Скоро здесь появится что-нибудь интересное!'
+                                content = <NotFound additional_caption={caption} />
                             }
                         }
-                        else if (foundItem[0].docs.length != 0) {
-                            content = <ContentList data={foundItem[0].docs.map(doc => {
-                                const buttons = [
-                                    getButton(downloadButton, () => {
-                                        const route = `${host}${backendEndpoints.docs}?id=${doc.id}`
-                                        callApi(route, 'GET', null, null, true).then(responseData => {
-                                            if (responseData.status == 200) {
-                                                const contentWrap = document.querySelector('#Content-wrap')
-
-                                                const downloadRef = document.createElement('a')
-                                                downloadRef.href = URL.createObjectURL(responseData.data)
-                                                downloadRef.download = 'doc.xlsx'
-                                                downloadRef.style.display = 'none'
-                                                contentWrap.appendChild(downloadRef)
-
-                                                downloadRef.click()
-                                                URL.revokeObjectURL(downloadRef.href);
-                                                contentWrap.removeChild(downloadRef)
-                                            }
-                                        })
-                                    }),
-                                    getButton(userData.is_staff ? editButton : viewButton, () => {
-                                        dispatch(changeSelectedCardTab(docsTool.label))
-                                        const route =
-                                            `${routes.event_card}${eventId}${routes.event_card_docs}${doc.id}`
-                                        navigate(route)
-                                    })
-                                ]
-                                const itemData = {
-                                    item_info: <DocShortInfo data={{
-                                        doc_info: doc
-                                    }} />,
-                                    item_buttons: <ListItemButtons buttons={buttons} />
-                                }
-                                return <ContentListItem key={`list_item_${uuidV4()}`} data={itemData} />
-                            })} />
-                        }
                         else {
-                            const caption = userData.is_staff ?
-                                'Создайте новый документ для вашего мероприятия!'
-                                :
-                                'Подождите. Скоро здесь появится что-нибудь интересное!'
-                            content = <NotFound additional_caption={caption} />
-                        }
-                    }
-                    else if (location.pathname.includes(routes.event_card_participants)) {
-                        dispatch(changeSelectedCardTab(participantsTool.label))
-                        caption = 'Скоро здесь появится что-нибудь интересное'
-                        content = <NotFound additional_caption={caption} />
-                    }
-                    else {
-                        if (isOrganizer) {
-                            dispatch(changeSelectedCardTab(mainTool.label))
-                            content = <EventForm event_data={foundItem[0]} is_edit={true} />
-                        }
-                        else {
-                            navigate(routes.home)
+                            if (isOrganizer) {
+                                dispatch(changeSelectedCardTab(mainTool.label))
+                                content = <EventForm event_data={foundItem[0]} is_edit={true} />
+                            }
+                            else {
+                                navigate(routes.home)
+                            }
                         }
                     }
                 }
-                else {
-                    navigate(routes.home)
+                else if (location.pathname.includes(routes.event_card_participants)) {
+                    dispatch(changeSelectedCardTab(participantsTool.label))
+                    content = getUsersList(
+                        { text_field_styles: textFieldStyles },
+                        'search_filter',
+                        (searchData) => getSearchResults(listData, searchData)
+                    )
                 }
             }
         }
@@ -495,48 +551,48 @@ export default function ContentWrap() {
                             preparedListData = foundItem.objects
                         }
 
-                        content = <ContentList data={preparedListData.map(listItem => {
-                            const buttons = [
-                                getButton(deleteButton, () => {
-                                    setIsConfirmModalOpened(true)
-                                    let route = `${host}`
-                                    let modalHeader
-                                    let modalContent
-    
-                                    if (location.pathname == routes.admin_group) {
-                                        route += `${backendEndpoints.user_groups}?name=${listItem}`
-                                        modalHeader = 'Удаление группы'
-                                        modalContent = 'Вы действительно хотите удалить эту группу?'
-                                    }
-                                    else if (location.pathname.includes(routes.admin_group_docs)) {
-                                        route += `${backendEndpoints.templates}?id=${listItem.id}`
-                                        modalHeader = 'Удаление шаблона документа'
-                                        modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
-                                    }
-                                    else if (location.pathname.includes(routes.admin_group_users)) {
-                                        route += `${backendEndpoints.user_account}?id=${listItem.user.id}`
-                                        modalHeader = 'Удаление пользователя'
-                                        modalContent = 'Вы действительно хотите удалить этого пользователя из системы?'
-                                    }
-    
-                                    setConfirmCallback(() => {
-                                        return () => {
-                                            callApi(route, 'DELETE', null, null).then(_ => {
-                                                setIsConfirmModalOpened(false)
-                                                window.location.reload()
-                                            })
+                        if (location.pathname.includes(routes.admin_group_users)) {
+                            content = getUsersList(
+                                { text_field_styles: textFieldStyles },
+                                'search_filter',
+                                (searchData) => getSearchResults(preparedListData, searchData)
+                            )
+                        }
+                        else {
+                            content = <ContentList data={preparedListData.map(listItem => {
+                                const buttons = [
+                                    getButton(deleteButton, () => {
+                                        setIsConfirmModalOpened(true)
+                                        let route = `${host}`
+                                        let modalHeader
+                                        let modalContent
+
+                                        if (location.pathname == routes.admin_group) {
+                                            route += `${backendEndpoints.user_groups}?name=${listItem}`
+                                            modalHeader = 'Удаление группы'
+                                            modalContent = 'Вы действительно хотите удалить эту группу?'
                                         }
-                                    })
-    
-                                    setModalHeader(modalHeader)
-                                    setModalContent(modalContent)
-                                })
-                            ]
-                            if (!location.pathname.includes(routes.admin_group_users)) {
-                                buttons.unshift(
+                                        else {
+                                            route += `${backendEndpoints.templates}?id=${listItem.id}`
+                                            modalHeader = 'Удаление шаблона документа'
+                                            modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
+                                        }
+
+                                        setConfirmCallback(() => {
+                                            return () => {
+                                                callApi(route, 'DELETE', null, null).then(_ => {
+                                                    setIsConfirmModalOpened(false)
+                                                    navigate(null)
+                                                })
+                                            }
+                                        })
+
+                                        setModalHeader(modalHeader)
+                                        setModalContent(modalContent)
+                                    }),
                                     getButton(editButton, () => {
                                         let route = `${routes.admin_group}/`
-        
+
                                         if (location.pathname == routes.admin_group) {
                                             dispatch(changeSelectedCardTab(docsTool.label))
                                             route += `${listItem}${routes.admin_group_docs}`
@@ -544,44 +600,29 @@ export default function ContentWrap() {
                                         else {
                                             route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
                                         }
-        
+
                                         navigate(route)
                                     })
-                                )
-                            }
-    
-                            let itemInfo
-    
-                            if (location.pathname == routes.admin_group) {
-                                itemInfo = <GroupShortInfo data={{ group_info: listItem }} />
-                            }
-                            else if (location.pathname.includes(routes.admin_group_docs)) {
-                                itemInfo = <DocShortInfo data={{
-                                    doc_info: listItem
-                                }} />
-                            }
-                            else if (location.pathname.includes(routes.admin_group_users)) {
-                                itemInfo = <UsersListItem is_editable={false}
-                                for_task={false}
-                                for_admin={true}
-                                user={listItem} />
-                            }
-    
-                            const itemData = {
-                                item_info: itemInfo,
-                                item_buttons: <ListItemButtons buttons={buttons} />
-                            }
-                            return <ContentListItem key={`list_item_${uuidV4()}`}
-                                data={itemData} />
-                        })} />
+                                ]
+
+                                const itemData = {
+                                    item_info: location.pathname == routes.admin_group ?
+                                        <GroupShortInfo data={{ group_info: listItem }} />
+                                        :
+                                        <DocShortInfo data={{
+                                            doc_info: listItem
+                                        }} />,
+                                    item_buttons: <ListItemButtons buttons={buttons} />
+                                }
+                                return <ContentListItem key={`list_item_${uuidV4()}`}
+                                    data={itemData} />
+                            })} />
+                        }
                     }
                 }
                 else {
                     navigate(routes.home)
                 }
-            }
-            else {
-                navigate(routes.home)
             }
         }
 
@@ -591,14 +632,6 @@ export default function ContentWrap() {
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
-            dispatch(changeFilterUsers(Array()))
-            dispatch(changeData(Array()))
-            dispatch(changeFilterStates(Array()))
-            dispatch(changeAssignationList(Array()))
-            dispatch(changeUsersSideTasksIds(Array()))
-            dispatch(changeAssignationFlag(false))
-            dispatch(changeNestedTask(null))
-
             if (responseData.status == 200) {
                 let route
 
@@ -607,6 +640,9 @@ export default function ContentWrap() {
                     if (groupName !== undefined) {
                         route += `?name=${groupName}`
                     }
+                }
+                else if (location.pathname.includes(routes.event_card_participants)) {
+                    route = `${host}${backendEndpoints.users}?id=${eventId}`
                 }
                 else {
                     route = `${host}${backendEndpoints.events}`
@@ -617,11 +653,8 @@ export default function ContentWrap() {
 
                 callApi(route, 'GET', null, null).then(resData => {
                     if (resData.status == 200) {
-                        if (responseData.data !== userData) {
-                            dispatch(changeUser(responseData.data.data))
-                        }
                         dispatch(changeData(resData.data.data))
-
+                        
                         if (location.pathname === routes.auth) {
                             navigate(responseData.data.data.is_superuser ? routes.admin_group : routes.home)
                         }
@@ -631,6 +664,10 @@ export default function ContentWrap() {
                         navigate('-1')
                     }
                 })
+
+                if (responseData.data !== userData) {
+                    dispatch(changeUser(responseData.data.data))
+                }
             }
             else {
                 if (location.pathname !== routes.auth) {
