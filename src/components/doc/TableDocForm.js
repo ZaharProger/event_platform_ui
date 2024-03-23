@@ -89,6 +89,10 @@ export default function TableDocForm(props) {
             deleteItemIds
         )
 
+        if (deleteItemIds.length != 0) {
+            console.log(actualDocData);
+        }
+
         if (is_roadmap) {
             dispatch(changeAssignationFlag(false))
         }

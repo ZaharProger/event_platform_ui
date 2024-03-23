@@ -21,15 +21,14 @@ import {
 } from '../toolbar/tools'
 import {
     aboutEventButton, editButton, deleteButton,
-    downloadButton, viewButton
+    downloadButton, viewButton, applyButton
 } from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
 import Profile from '../profile/Profile'
 import {
     changeSelectedCardTab, changeShowCompletedEvents,
-    changeData, changeUser, changeFilterUsers, changeFilterStates,
-    changeAssignationList, changeNestedTask, changeUsersSideTasksIds, changeAssignationFlag
+    changeData, changeUser, changeFilterUsers
 } from '../../redux/actions'
 import JoinModal from '../modal/joinModal/JoinModal'
 import ConfirmModal from '../modal/confirmModal/ConfirmModal'
@@ -58,6 +57,7 @@ export default function ContentWrap() {
     const showCompletedEvents = useSelector(state => state.show_completed_events)
     const selectedTab = useSelector(state => state.selected_card_tab)
     const nestedTask = useSelector(state => state.nested_task)
+    const filterUsers = useSelector(state => state.filter_users)
 
     const location = useLocation()
     const navigate = useRoute()
@@ -151,6 +151,24 @@ export default function ContentWrap() {
             :
             []
     }, [location])
+
+    const updateEventParticipants = useCallback((participants) => {
+        const body = {
+            event_id: eventId,
+            users: participants.map(participant => {
+                return {
+                    id: participant
+                }
+            })
+        }
+        callApi(`${host}${backendEndpoints.participants}`, 'POST', JSON.stringify(body), {
+            'Content-Type': 'application/json'
+        }).then(responseData => {
+            if (responseData.status == 200) {
+                navigate(null)
+            }
+        })
+    }, [eventId])
 
     const buildTools = useCallback(() => {
         const tools = [getTool(profileTool, () => setIsProfileOpened(true))]
@@ -351,10 +369,6 @@ export default function ContentWrap() {
                                         dispatch(changeSelectedCardTab(mainTool.label))
                                         route = `${routes.event_card}${listItem.id}`
                                     }
-                                    else if (userData.is_staff) {
-                                        dispatch(changeSelectedCardTab(participantsTool.label))
-                                        route = `${routes.event_card}${listItem.id}${routes.event_card_participants}`
-                                    }
                                     else {
                                         dispatch(changeSelectedCardTab(docsTool.label))
                                         route = `${routes.event_card}${listItem.id}${routes.event_card_docs}`
@@ -504,7 +518,8 @@ export default function ContentWrap() {
                     content = getUsersList(
                         { text_field_styles: textFieldStyles },
                         'search_filter',
-                        (searchData) => getSearchResults(listData, searchData)
+                        (searchData) => getSearchResults(listData, searchData),
+                        [getButton(applyButton, () => updateEventParticipants(filterUsers))]
                     )
                 }
             }
@@ -654,6 +669,12 @@ export default function ContentWrap() {
                 callApi(route, 'GET', null, null).then(resData => {
                     if (resData.status == 200) {
                         dispatch(changeData(resData.data.data))
+                        if (location.pathname.includes(routes.event_card_participants)) {
+                            const eventUserIds = resData.data.data
+                                .filter(item => item.is_event_member)
+                                .map(item => item.user.id)
+                            dispatch(changeFilterUsers(eventUserIds))
+                        }
                         
                         if (location.pathname === routes.auth) {
                             navigate(responseData.data.data.is_superuser ? routes.admin_group : routes.home)

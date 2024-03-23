@@ -11,6 +11,13 @@ export default function UsersList(props) {
     const getTool = useButton(true)
     const getButton = useButton(false)
 
+    const buttons = [
+        getButton(searchButton, () => props.search_callback())
+    ]
+    props.additional_buttons.forEach(additionalButton => {
+        buttons.push(additionalButton)
+    })
+
     return (
         <Stack direction="column" spacing={1}
             justifyContent="center" alignItems="center">
@@ -23,13 +30,10 @@ export default function UsersList(props) {
                         null
                 }
                 <TextField id={props.search_field_id} fullWidth
-                    label="ФИО исполнителя" variant="outlined"
+                    label="ФИО участника" variant="outlined"
                     color="secondary" sx={{ ...props.text_field_styles }} />
                 {
-                    getButton(
-                        searchButton,
-                        () => props.search_callback()
-                    )
+                    buttons
                 }
             </Stack>
             <Stack direction="column" spacing={4}

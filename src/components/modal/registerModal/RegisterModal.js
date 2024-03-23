@@ -37,7 +37,7 @@ export default function RegisterModal(props) {
         const formData = {
             name: nameValidation.get(),
             email: emailValidation.get(),
-            is_staff: !isEventGroupMember.get(),
+            is_staff: isEventGroupMember.get(),
             group_name: props.group_name
         }
 

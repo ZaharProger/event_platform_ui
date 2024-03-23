@@ -20,7 +20,7 @@ export default function Money(props) {
 
     const dispatch = useDispatch()
 
-    const getTotal = useCallback((fieldsData=[]) => {
+    const getTotal = useCallback((fieldsData = []) => {
         let fields
         if (fieldsData.length != 0) {
             fields = fieldsData
@@ -41,7 +41,7 @@ export default function Money(props) {
         return total.toFixed(2)
     }, [props])
 
-    const updateItemTotal = useCallback((callField={}) => {
+    const updateItemTotal = useCallback((callField = {}) => {
         const inputs = []
         let totalLabel = null
 
@@ -73,18 +73,21 @@ export default function Money(props) {
             <Stack direction="row"
                 spacing={1} alignItems="center" justifyContent="center">
                 {
-                    getTool(
-                        deleteTool,
-                        () => props.delete_callback(
-                            (isRoadmap, dataToSync, currentData) => {
-                                return syncFunction(isRoadmap, dataToSync, currentData)
+                    props.is_editable ?
+                        getTool(
+                            deleteTool,
+                            () => props.delete_callback(
+                                (isRoadmap, dataToSync, currentData) => {
+                                    return syncFunction(isRoadmap, dataToSync, currentData)
+                                }
+                            ),
+                            {
+                                marginRight: 'auto!important',
+                                display: 'flex'
                             }
-                        ),
-                        {
-                            marginRight: 'auto!important',
-                            display: 'flex'
-                        }
-                    )
+                        )
+                        :
+                        null
                 }
                 <Stack direction="column" spacing={1} bgcolor={theme.palette.primary.main}
                     borderRadius="10px">

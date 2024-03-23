@@ -36,10 +36,11 @@ export default function useSync() {
                             excludeItemIds.includes(currentItem.parent) : false
                         include = include && !excludeItemIds.includes(currentItem.id) && !hasParent
                     }
-    
+                    
                     return include
                 }),
-                ...newData
+                ...newData.filter(newItem => 
+                    !excludeItemIds.includes(newItem.id) || excludeItemIds.length == 0)
             ]
         }
         else {

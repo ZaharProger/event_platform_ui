@@ -20,18 +20,21 @@ export default function DefaultDocItem(props) {
             <Stack direction="row"
                 spacing={1} alignItems="center" justifyContent="center">
                 {
-                    getTool(
-                        deleteTool,
-                        () => props.delete_callback(
-                            (isRoadmap, dataToSync, currentData) => {
-                                return syncFunction(isRoadmap, dataToSync, currentData)
+                    props.is_editable ?
+                        getTool(
+                            deleteTool,
+                            () => props.delete_callback(
+                                (isRoadmap, dataToSync, currentData) => {
+                                    return syncFunction(isRoadmap, dataToSync, currentData)
+                                }
+                            ),
+                            {
+                                marginRight: 'auto!important',
+                                display: 'flex'
                             }
-                        ),
-                        {
-                            marginRight: 'auto!important',
-                            display: 'flex'
-                        }
-                    )
+                        )
+                        :
+                        null
                 }
                 <Stack spacing={2} direction="row" padding="10px"
                     bgcolor={theme.palette.primary.main}
