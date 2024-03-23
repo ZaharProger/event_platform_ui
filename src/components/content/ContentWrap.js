@@ -239,7 +239,7 @@ export default function ContentWrap() {
         if (location.pathname == routes.home) {
             if (userData !== null) {
                 if (userData.is_superuser) {
-                    navigate(routes.admin)
+                    navigate(routes.admin_group)
                 }
                 else if (listData.length == 0) {
                     if (showCompletedEvents) {
@@ -329,7 +329,7 @@ export default function ContentWrap() {
                     content = <EventForm event_data={null} is_edit={false} />
                 }
                 else if (userData.is_superuser) {
-                    navigate(routes.admin)
+                    navigate(routes.admin_group)
                 }
                 else {
                     navigate(routes.home)
@@ -339,7 +339,7 @@ export default function ContentWrap() {
         else if (location.pathname.includes(routes.event_card)) {
             if (userData !== null && foundItem.length != 0) {
                 if (userData.is_superuser) {
-                    navigate(routes.admin)
+                    navigate(routes.admin_group)
                 }
                 else if (!userData.is_superuser && !foundItem[0].is_complete) {
                     const isOrganizer = foundItem[0].users
@@ -617,20 +617,20 @@ export default function ContentWrap() {
 
                 callApi(route, 'GET', null, null).then(resData => {
                     if (resData.status == 200) {
+                        if (responseData.data !== userData) {
+                            dispatch(changeUser(responseData.data.data))
+                        }
                         dispatch(changeData(resData.data.data))
+
+                        if (location.pathname === routes.auth) {
+                            navigate(responseData.data.data.is_superuser ? routes.admin_group : routes.home)
+                        }
                     }
                     else {
                         dispatch(changeData(Array()))
                         navigate('-1')
                     }
                 })
-
-                if (responseData.data !== userData) {
-                    dispatch(changeUser(responseData.data.data))
-                }
-                if (location.pathname === routes.auth) {
-                    navigate(responseData.data.data.is_superuser ? routes.admin_group : routes.home)
-                }
             }
             else {
                 if (location.pathname !== routes.auth) {
@@ -639,7 +639,7 @@ export default function ContentWrap() {
                 }
             }
         })
-    }, [location.pathname, eventId, eventDocId, groupDocId])
+    }, [location.pathname, eventId, groupName])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.settings}`, 'GET', null, null).then(responseData => {
