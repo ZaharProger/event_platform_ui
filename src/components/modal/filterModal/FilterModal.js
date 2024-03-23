@@ -29,7 +29,7 @@ export default function FilterModal(props) {
         :
         []
     taskStates.push({
-        value: 'С задержкой',
+        value: 'Скоро дедлайн',
         color: 'error'
     })
 

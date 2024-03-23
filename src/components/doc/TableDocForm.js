@@ -197,7 +197,31 @@ export default function TableDocForm(props) {
                         let users = true
 
                         if (filterList.task_states !== undefined) {
-                            taskStates = filterList.task_states.includes(docField.state)
+                            let is_deadline = false
+                            if (filterList.task_states.includes('Скоро дедлайн')) {
+                                const currentTimestamp = new Date().getTime() / 1000
+                                let timestampDelta = currentTimestamp
+                                if (docField.datetime_end === null) {
+                                    if (event_data.datetime_end !== null) {
+                                        timestampDelta = currentTimestamp - event_data.datetime_end
+                                    }
+                                }
+                                else {
+                                    timestampDelta = currentTimestamp - docField.datetime_end
+                                }
+
+                                taskStates = timestampDelta >= -604800
+                                is_deadline = true
+                            }
+                            
+                            if (is_deadline) {
+                                taskStates = taskStates || filterList.task_states
+                                    .includes(docField.state)
+                            }
+                            else {
+                                taskStates = filterList.task_states
+                                    .includes(docField.state)
+                            }
                         }
                         if (filterList.users !== undefined) {
                             users = docField.users
@@ -222,6 +246,7 @@ export default function TableDocForm(props) {
                             user={user}
                             nested_task={nested_task}
                             event_tasks={docFields}
+                            event_datetime_end={event_data.datetime_end}
                             event_users={event_data.users}
                             nested_callback={(syncFunction) => {
                                 nestedTaskHandler(syncFunction)
@@ -240,7 +265,7 @@ export default function TableDocForm(props) {
                             name: docFields[j].name,
                             value: docFields[j].values[i].value,
                             field_type: docFields[j].field_type,
-                            is_fullwidth: is_money? j == 0 : j == 0 || j == 1
+                            is_fullwidth: is_money ? j == 0 : j == 0 || j == 1
                         })
                     }
                     data.push(dataGroup)
@@ -335,7 +360,7 @@ export default function TableDocForm(props) {
                     :
                     <DocFormHeader doc_data={doc_data}
                         user={user}
-                        additional_value_callback={is_money ? () => getTotal() : () => {}}
+                        additional_value_callback={is_money ? () => getTotal() : () => { }}
                         is_roadmap={is_roadmap}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}

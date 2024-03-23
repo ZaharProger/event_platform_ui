@@ -50,8 +50,35 @@ export default function Task(props) {
         }
     })
 
-    const [taskColor, setTaskColor] = useState(task === null ? taskStates[0].color :
-        taskStates.filter(stateItem => task.state == stateItem.value)[0].color)
+    const [taskColor, setTaskColor] = useState(() => {
+        let newTaskColor
+        if (task === null) {
+            newTaskColor = taskStates[0].color 
+        }
+        else {
+            const currentTimestamp = new Date().getTime() / 1000
+            let timestampDelta = currentTimestamp
+            if (task.datetime_end === null) {
+                if (props.event_datetime_end !== null) {
+                    timestampDelta = currentTimestamp - props.event_datetime_end
+                }
+            }
+            else {
+                timestampDelta = currentTimestamp - task.datetime_end
+            }
+
+            if (timestampDelta >= -604800) {
+                newTaskColor = colors[3]
+            }
+            else {
+                newTaskColor = taskStates
+                    .filter(stateItem => task.state == stateItem.value)[0]
+                    .color
+            }  
+        }
+
+        return newTaskColor
+    })
 
     const taskToolStyles = {
         backgroundColor: theme.palette.info.main,
@@ -104,6 +131,7 @@ export default function Task(props) {
                 task_tool_styles={taskToolStyles}
                 text_field_styles={textFieldStyles}
                 task_states={taskStates}
+                error_task_color={colors[3]}
                 task_state={taskState}
                 task_color_callback={(newValue) => setTaskColor(newValue)}
                 nested_callback={(taskName) => {

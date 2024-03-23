@@ -158,91 +158,109 @@ export default function TaskInfo(props) {
                     <TextField
                         id="state"
                         select
-                        onChange={(event) => task_color_callback(task_states.filter(item => {
-                            return item.value == event.target.value
-                        })[0].color)}
-                        disabled={!user.is_staff}
-                        label={selectLabel}
-                        sx={{
-                            ...text_field_styles,
-                            display: 'flex',
-                            marginRight: 'auto!important'
-                        }}
-                        defaultValue={task_state}
-                        SelectProps={{
-                            native: true,
-                        }}>
-                        {
-                            task_states.map((stateFromSelect) => {
-                                const { label, value } = stateFromSelect
-                                return <option key={label} value={value}>
-                                    {
-                                        value
-                                    }
-                                </option>
-                            })
-                        }
-                    </TextField>
-                </Stack>
-                <Stack direction="column" spacing={1} width="100%"
-                    justifyContent="center" alignItems="center">
-                    <Stack spacing={2} direction="row"
-                        justifyContent="center" marginRight="auto!important"
-                        alignItems="center" useFlexGap flexWrap="wrap">
-                        <Stack direction="column" spacing={1}
-                            justifyContent="center" alignItems="center">
-                            {
-                                getTaskUserIcons()
+                        onChange={(event) => {
+                            const currentTimestamp = new Date().getTime() / 1000
+                            let timestampDelta = currentTimestamp
+                            if (task.datetime_end === null) {
+                                if (props.event_datetime_end !== null) {
+                                    timestampDelta = currentTimestamp - props.event_datetime_end
+                                }
                             }
+                            else {
+                                timestampDelta = currentTimestamp - task.datetime_end
+                            }
+
+                            if (timestampDelta >= -604800) {
+                                task_color_callback(props.error_task_color)
+                            }
+                            else {
+                                task_color_callback(task_states.filter(item => {
+                                    return item.value == event.target.value
+                                })[0].color)
+                            }
+                        }}
+                    disabled={!user.is_staff}
+                    label={selectLabel}
+                    sx={{
+                        ...text_field_styles,
+                        display: 'flex',
+                        marginRight: 'auto!important'
+                    }}
+                    defaultValue={task_state}
+                    SelectProps={{
+                        native: true,
+                    }}>
+                    {
+                        task_states.map((stateFromSelect) => {
+                            const { label, value } = stateFromSelect
+                            return <option key={label} value={value}>
+                                {
+                                    value
+                                }
+                            </option>
+                        })
+                    }
+                </TextField>
+            </Stack>
+            <Stack direction="column" spacing={1} width="100%"
+                justifyContent="center" alignItems="center">
+                <Stack spacing={2} direction="row"
+                    justifyContent="center" marginRight="auto!important"
+                    alignItems="center" useFlexGap flexWrap="wrap">
+                    <Stack direction="column" spacing={1}
+                        justifyContent="center" alignItems="center">
+                        {
+                            getTaskUserIcons()
+                        }
+                        {
+                            task !== null ?
+                                <Typography color="secondary"
+                                    variant="caption" textAlign="center">
+                                    {
+                                        `Всего исполнителей: ${getTaskUsersAmount()}`
+                                    }
+                                </Typography>
+                                :
+                                null
+                        }
+                    </Stack>
+                    {
+                        getTool(
+                            user.is_staff ? assignTool : viewTool,
+                            () => users_side_callback(),
+                            task_tool_styles
+                        )
+                    }
+                </Stack>
+                {
+                    nested_task === null ?
+                        <Stack direction="row" spacing={2} marginRight="auto!important"
+                            justifyContent="center" alignItems="center"
+                            useFlexGap flexWrap="wrap">
                             {
                                 task !== null ?
-                                    <Typography color="secondary"
-                                        variant="caption" textAlign="center">
+                                    <Typography color="secondary" variant="caption"
+                                        textAlign="center">
                                         {
-                                            `Всего исполнителей: ${getTaskUsersAmount()}`
+                                            `Всего подзадач: ${getNestedTasksAmount()}`
                                         }
                                     </Typography>
                                     :
                                     null
                             }
+                            {
+                                getTool(
+                                    addNestedTool,
+                                    () => nested_callback(taskName),
+                                    task_tool_styles
+                                )
+                            }
                         </Stack>
-                        {
-                            getTool(
-                                user.is_staff ? assignTool : viewTool,
-                                () => users_side_callback(),
-                                task_tool_styles
-                            )
-                        }
-                    </Stack>
-                    {
-                        nested_task === null ?
-                            <Stack direction="row" spacing={2} marginRight="auto!important"
-                                justifyContent="center" alignItems="center"
-                                useFlexGap flexWrap="wrap">
-                                {
-                                    task !== null ?
-                                        <Typography color="secondary" variant="caption"
-                                            textAlign="center">
-                                            {
-                                                `Всего подзадач: ${getNestedTasksAmount()}`
-                                            }
-                                        </Typography>
-                                        :
-                                        null
-                                }
-                                {
-                                    getTool(
-                                        addNestedTool,
-                                        () => nested_callback(taskName),
-                                        task_tool_styles
-                                    )
-                                }
-                            </Stack>
-                            :
-                            null
-                    }
-                </Stack>
+                        :
+                        null
+                }
             </Stack>
-        </Fade>
+        </Stack>
+        </Fade >
     )
 }
