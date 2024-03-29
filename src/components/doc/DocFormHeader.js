@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react'
 import useButton from '../../hooks/useButton'
 import useValidation from '../../hooks/useValidation'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
-import { saveButton, addButton, filterButton, sortButton } from '../buttons'
+import { saveButton, addButton, filterButton, 
+    sortButton, downloadTemplateButton, uploadTemplateButton } from '../buttons'
 import { useSelector } from 'react-redux'
 import useSync from '../../hooks/useSync'
 
@@ -42,6 +43,18 @@ export default function DocFormHeader(props) {
                     })
                 )
             )
+            if (props.user.is_superuser) {
+                buttons.push(
+                    getButton(
+                        downloadTemplateButton,
+                        () => props.download_callback()
+                    ),
+                    getButton(
+                        uploadTemplateButton,
+                        () => props.upload_callback()
+                    )
+                )
+            }
         }
         if (props.is_roadmap) {
             buttons.push(

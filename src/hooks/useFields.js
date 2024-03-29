@@ -3,10 +3,10 @@ import { prepareDatetime } from '../utils'
 import { TextField, Typography } from "@mui/material"
 
 export default function useFields() {
-    return function(fieldsData, styles={}, editable=false, updateCallback=null) {
+    return function (fieldsData, styles = {}, editable = false, updateCallback = null) {
         return fieldsData.fields.map(field => {
             let component
-            
+
             if (field.field_type == 'date') {
                 const datetimeEndLabel = <Typography variant="subtitle2"
                     fontSize="0.8em" color="secondary">
@@ -21,6 +21,34 @@ export default function useFields() {
                     type="datetime-local"
                     helperText={datetimeEndLabel} variant="outlined"
                     color="secondary" sx={{ ...styles }} />
+            }
+            else if (field.field_type == 'select') {
+                component = <TextField id={`${field.id}`} key={`field_${uuidV4()}`}
+                    className="DocField"
+                    disabled={!editable}
+                    select
+                    onChange={(event) => {
+                        
+                    }}
+                    variant="outlined"
+                    color="secondary" 
+                    sx={{ ...styles }}
+                    label={field.name}
+                    defaultValue={field.value}
+                    SelectProps={{
+                        native: true,
+                    }}>
+                    {
+                        field.select_values.map((selectItem) => {
+                            const { label, value } = selectItem
+                            return <option key={label} value={value}>
+                                {
+                                    value
+                                }
+                            </option>
+                        })
+                    }
+                </TextField>
             }
             else {
                 component = <TextField id={field.id}
@@ -38,7 +66,7 @@ export default function useFields() {
                     label={field.name} variant="outlined"
                     color="secondary" sx={{ ...styles }} />
             }
-    
+
             return component
         })
     }

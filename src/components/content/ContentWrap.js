@@ -43,6 +43,7 @@ import useUsersList from '../../hooks/useUsersList'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 import useRoute from '../../hooks/useRoute'
 import GroupForm from '../group/GroupForm'
+import GroupDocForm from '../group/GroupDocForm'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -64,7 +65,7 @@ export default function ContentWrap() {
     const navigate = useRoute()
     const eventId = useParams().id
     const eventDocId = useParams().eventDocId
-    const groupDocId = useParams().groupDocId
+    const groupDocName = useParams().groupDocName
     const groupName = useParams().name
     const userId = useParams().userId
 
@@ -482,7 +483,7 @@ export default function ContentWrap() {
 
                                                     const downloadRef = document.createElement('a')
                                                     downloadRef.href = URL.createObjectURL(responseData.data)
-                                                    downloadRef.download = 'doc.xlsx'
+                                                    downloadRef.download = `doc.${doc.is_table? 'xlsx' : 'docx'}`
                                                     downloadRef.style.display = 'none'
                                                     contentWrap.appendChild(downloadRef)
 
@@ -586,7 +587,16 @@ export default function ContentWrap() {
                             )
                         }
                         else {
-                            if (location.pathname.includes(routes.admin_group_docs) || groupName === undefined) {
+                            if (groupDocName !== undefined) {
+                                const groupDocData = preparedListData.filter(listItem => {
+                                    return listItem.name == groupDocName
+                                })
+                                content = <GroupDocForm user={userData}
+                                    doc_name={groupDocName}
+                                    group_name={groupName}
+                                    data={groupDocData[0]} />
+                            }
+                            else if (location.pathname.includes(routes.admin_group_docs) || groupName === undefined) {
                                 content = <ContentList data={preparedListData.map(listItem => {
                                     const buttons = [
                                         getButton(deleteButton, () => {
@@ -626,7 +636,7 @@ export default function ContentWrap() {
                                                 route += `${listItem}`
                                             }
                                             else {
-                                                route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
+                                                route += `${groupName}${routes.admin_group_docs}/${listItem.name}`
                                             }
 
                                             navigate(route)
@@ -660,7 +670,7 @@ export default function ContentWrap() {
 
         return content
     }, [location, listData, userData, showCompletedEvents,
-        foundItem, nestedTask, eventDocId, groupDocId, groupName])
+        foundItem, nestedTask, eventDocId, groupDocName, groupName])
 
     useEffect(() => {
         callApi(`${host}${backendEndpoints.user_account}`, 'GET', null, null).then(responseData => {
@@ -722,6 +732,7 @@ export default function ContentWrap() {
                 localStorage.setItem('event_types', JSON.stringify(responseData.data.data.event_types))
                 localStorage.setItem('task_states', JSON.stringify(responseData.data.data.task_states))
                 localStorage.setItem('doc_types', JSON.stringify(responseData.data.data.doc_types))
+                localStorage.setItem('field_types', JSON.stringify(responseData.data.data.field_types))
             }
         })
     }, [])

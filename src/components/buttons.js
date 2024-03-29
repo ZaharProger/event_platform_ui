@@ -7,6 +7,7 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import SearchIcon from '@mui/icons-material/Search'
 import SortIcon from '@mui/icons-material/Sort'
+import FileUploadIcon from '@mui/icons-material/FileUpload'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
@@ -76,6 +77,16 @@ export const signOutButton = {
 export const downloadButton = {
     icon: DownloadForOfflineIcon,
     label: 'Выгрузить'
+}
+
+export const downloadTemplateButton = {
+    icon: DownloadForOfflineIcon,
+    label: 'Текущий шаблон'
+}
+
+export const uploadTemplateButton = {
+    icon: FileUploadIcon,
+    label: 'Загрузить шаблон'
 }
 
 export const filterButton = {
