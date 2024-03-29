@@ -14,7 +14,7 @@ export default function Footer() {
                     gutterBottom textAlign='center'>
                     Платформа поддержки организации мероприятий
                     <br />
-                    2023
+                    { new Date().getFullYear() }
                 </Typography>
             </Stack>
         </Box>
