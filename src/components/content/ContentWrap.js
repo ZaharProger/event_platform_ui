@@ -42,6 +42,7 @@ import RegisterModal from '../modal/registerModal/RegisterModal'
 import useUsersList from '../../hooks/useUsersList'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 import useRoute from '../../hooks/useRoute'
+import GroupForm from '../group/GroupForm'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -84,29 +85,35 @@ export default function ContentWrap() {
     if (location.pathname.includes(routes.event_card)) {
         foundItem = listData.filter(listItem => listItem.id == eventId)
     }
-    else if (location.pathname.includes(routes.admin_group_docs)) {
-        foundItem = {
-            name: listData.name,
-            objects: listData.docs !== undefined ?
-                listData.docs.map(groupDoc => {
-                    return {
-                        ...groupDoc
-                    }
-                })
-                :
-                []
+    else if (location.pathname.includes(routes.admin_group)) {
+        if (location.pathname.includes(routes.admin_group_docs)) {
+            foundItem = {
+                objects: listData.docs !== undefined ?
+                    listData.docs.map(groupDoc => {
+                        return {
+                            ...groupDoc
+                        }
+                    })
+                    :
+                    []
+            }
         }
-    }
-    else if (location.pathname.includes(routes.admin_group_users)) {
-        foundItem = {
-            objects: listData.users !== undefined ?
-                listData.users.map(groupUser => {
-                    return {
-                        ...groupUser
-                    }
-                })
-                :
-                []
+        else if (location.pathname.includes(routes.admin_group_users)) {
+            foundItem = {
+                objects: listData.users !== undefined ?
+                    listData.users.map(groupUser => {
+                        return {
+                            ...groupUser
+                        }
+                    })
+                    :
+                    []
+            }
+        }
+        else {
+            foundItem = {
+                name: listData.name
+            }
         }
     }
 
@@ -276,20 +283,27 @@ export default function ContentWrap() {
             }
         }
         else if (location.pathname.includes(routes.admin_group)) {
-            if (location.pathname.includes(routes.admin_group_docs)) {
+            if (location.pathname.includes(routes.admin_group_users)) {
                 tools.unshift(
                     getTool(backTool),
-                    getTool(docsTool, () => { }, {}, selectedTab),
+                    getTool(registerUserTool, () => setIsRegisterModalOpened(true))
+                )
+            }
+            else if (location.pathname.includes(routes.admin_group_docs)) {
+                tools.unshift(getTool(backTool))
+            }
+            else if (groupName !== undefined) {
+                tools.unshift(
+                    getTool(backTool),
+                    getTool(mainTool, () => { }, {}, selectedTab),
+                    getTool(docsTool, () => {
+                        const route = `${routes.admin_group}/${groupName}${routes.admin_group_docs}`
+                        navigate(route)
+                    }),
                     getTool(usersTool, () => {
                         const route = `${routes.admin_group}/${groupName}${routes.admin_group_users}`
                         navigate(route)
                     })
-                )
-            }
-            else if (location.pathname.includes(routes.admin_group_users)) {
-                tools.unshift(
-                    getTool(backTool),
-                    getTool(registerUserTool, () => setIsRegisterModalOpened(true))
                 )
             }
             else {
@@ -301,7 +315,7 @@ export default function ContentWrap() {
         }
 
         return tools
-    }, [userData, location, showCompletedEvents, selectedTab,
+    }, [userData, location, showCompletedEvents, selectedTab, groupName,
         foundItem, nestedTask, userId, eventDocId])
 
     const getContent = useCallback(() => {
@@ -414,7 +428,7 @@ export default function ContentWrap() {
                         const isOrganizer = foundItem[0].users
                             .filter(user => user.is_organizer && user.user.id == userData.user.id)
                             .length != 0
-    
+
                         if (location.pathname.includes(routes.event_card_docs)) {
                             dispatch(changeSelectedCardTab(docsTool.label))
                             if (eventDocId !== undefined) {
@@ -437,7 +451,7 @@ export default function ContentWrap() {
                                         moneyDocType = docTypes.filter(docType => docType.label == 'Money')
                                         moneyDocType = moneyDocType[0].value.toLowerCase()
                                     }
-    
+
                                     let isRoadmap = false
                                     let isMoney = false
                                     if (foundDoc.doc_type.toLowerCase().includes(roadMapDocType)) {
@@ -465,13 +479,13 @@ export default function ContentWrap() {
                                             callApi(route, 'GET', null, null, true).then(responseData => {
                                                 if (responseData.status == 200) {
                                                     const contentWrap = document.querySelector('#Content-wrap')
-    
+
                                                     const downloadRef = document.createElement('a')
                                                     downloadRef.href = URL.createObjectURL(responseData.data)
                                                     downloadRef.download = 'doc.xlsx'
                                                     downloadRef.style.display = 'none'
                                                     contentWrap.appendChild(downloadRef)
-    
+
                                                     downloadRef.click()
                                                     URL.revokeObjectURL(downloadRef.href);
                                                     contentWrap.removeChild(downloadRef)
@@ -529,7 +543,8 @@ export default function ContentWrap() {
                 if (userData.is_superuser) {
                     let areObjectListEmpty = false
 
-                    if (location.pathname != routes.admin_group) {
+                    if (location.pathname.includes(routes.admin_group_docs) ||
+                        location.pathname.includes(routes.admin_group_users)) {
                         if (foundItem !== undefined) {
                             areObjectListEmpty = foundItem.objects.length == 0
                         }
@@ -554,14 +569,11 @@ export default function ContentWrap() {
                     else {
                         let preparedListData
                         if (location.pathname == routes.admin_group) {
-                            preparedListData = listData instanceof Array ?
-                                listData.map(listItem => listItem.name)
-                                :
-                                [listData.name]
+                            preparedListData = listData.map(listItem => listItem.name)
                         }
                         else {
-                            if (location.pathname.includes(routes.admin_group_docs)) {
-                                dispatch(changeSelectedCardTab(docsTool.label))
+                            if (groupName !== undefined) {
+                                dispatch(changeSelectedCardTab(mainTool.label))
                             }
                             preparedListData = foundItem.objects
                         }
@@ -574,64 +586,69 @@ export default function ContentWrap() {
                             )
                         }
                         else {
-                            content = <ContentList data={preparedListData.map(listItem => {
-                                const buttons = [
-                                    getButton(deleteButton, () => {
-                                        setIsConfirmModalOpened(true)
-                                        let route = `${host}`
-                                        let modalHeader
-                                        let modalContent
+                            if (location.pathname.includes(routes.admin_group_docs) || groupName === undefined) {
+                                content = <ContentList data={preparedListData.map(listItem => {
+                                    const buttons = [
+                                        getButton(deleteButton, () => {
+                                            setIsConfirmModalOpened(true)
+                                            let route = `${host}`
+                                            let modalHeader
+                                            let modalContent
 
-                                        if (location.pathname == routes.admin_group) {
-                                            route += `${backendEndpoints.user_groups}?name=${listItem}`
-                                            modalHeader = 'Удаление группы'
-                                            modalContent = 'Вы действительно хотите удалить эту группу?'
-                                        }
-                                        else {
-                                            route += `${backendEndpoints.templates}?id=${listItem.id}`
-                                            modalHeader = 'Удаление шаблона документа'
-                                            modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
-                                        }
-
-                                        setConfirmCallback(() => {
-                                            return () => {
-                                                callApi(route, 'DELETE', null, null).then(_ => {
-                                                    setIsConfirmModalOpened(false)
-                                                    navigate(null)
-                                                })
+                                            if (location.pathname == routes.admin_group) {
+                                                route += `${backendEndpoints.user_groups}?name=${listItem}`
+                                                modalHeader = 'Удаление группы'
+                                                modalContent = 'Вы действительно хотите удалить эту группу?'
                                             }
+                                            else {
+                                                route += `${backendEndpoints.templates}?id=${listItem.id}`
+                                                modalHeader = 'Удаление шаблона документа'
+                                                modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
+                                            }
+
+                                            setConfirmCallback(() => {
+                                                return () => {
+                                                    callApi(route, 'DELETE', null, null).then(_ => {
+                                                        setIsConfirmModalOpened(false)
+                                                        navigate(null)
+                                                    })
+                                                }
+                                            })
+
+                                            setModalHeader(modalHeader)
+                                            setModalContent(modalContent)
+                                        }),
+                                        getButton(editButton, () => {
+                                            let route = `${routes.admin_group}/`
+
+                                            if (location.pathname == routes.admin_group) {
+                                                dispatch(changeSelectedCardTab(mainTool.label))
+                                                route += `${listItem}`
+                                            }
+                                            else {
+                                                route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
+                                            }
+
+                                            navigate(route)
                                         })
+                                    ]
 
-                                        setModalHeader(modalHeader)
-                                        setModalContent(modalContent)
-                                    }),
-                                    getButton(editButton, () => {
-                                        let route = `${routes.admin_group}/`
-
-                                        if (location.pathname == routes.admin_group) {
-                                            dispatch(changeSelectedCardTab(docsTool.label))
-                                            route += `${listItem}${routes.admin_group_docs}`
-                                        }
-                                        else {
-                                            route += `${groupName}${routes.admin_group_docs}/${listItem.id}`
-                                        }
-
-                                        navigate(route)
-                                    })
-                                ]
-
-                                const itemData = {
-                                    item_info: location.pathname == routes.admin_group ?
-                                        <GroupShortInfo data={{ group_info: listItem }} />
-                                        :
-                                        <DocShortInfo data={{
-                                            doc_info: listItem
-                                        }} />,
-                                    item_buttons: <ListItemButtons buttons={buttons} />
-                                }
-                                return <ContentListItem key={`list_item_${uuidV4()}`}
-                                    data={itemData} />
-                            })} />
+                                    const itemData = {
+                                        item_info: location.pathname == routes.admin_group ?
+                                            <GroupShortInfo data={{ group_info: listItem }} />
+                                            :
+                                            <DocShortInfo data={{
+                                                doc_info: listItem
+                                            }} />,
+                                        item_buttons: <ListItemButtons buttons={buttons} />
+                                    }
+                                    return <ContentListItem key={`list_item_${uuidV4()}`}
+                                        data={itemData} />
+                                })} />
+                            }
+                            else {
+                                content = <GroupForm group_info={foundItem} />
+                            }
                         }
                     }
                 }
@@ -675,7 +692,7 @@ export default function ContentWrap() {
                                 .map(item => item.user.id)
                             dispatch(changeFilterUsers(eventUserIds))
                         }
-                        
+
                         if (location.pathname === routes.auth) {
                             navigate(responseData.data.data.is_superuser ? routes.admin_group : routes.home)
                         }

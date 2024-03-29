@@ -27,6 +27,7 @@ export default function App() {
                 <Route path={`${routes.event_card}:id${routes.event_card_docs}:eventDocId`} element={<ContentWrap />} />
                 <Route path={`${routes.event_card}:id${routes.event_card_participants}`} element={<ContentWrap />} />
                 <Route path={routes.admin_group} element={<ContentWrap />} />
+                <Route path={`${routes.admin_group}/:name`} element={<ContentWrap />} />
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_users}`} element={<ContentWrap />} />
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}`} element={<ContentWrap />} />
                 <Route path={`${routes.admin_group}/:name${routes.admin_group_docs}/:groupDocId`} element={<ContentWrap />} />
