@@ -25,7 +25,11 @@ export default function DefaultDocItem(props) {
                             deleteTool,
                             () => props.delete_callback(
                                 (isRoadmap, dataToSync, currentData) => {
-                                    return syncFunction(isRoadmap, dataToSync, currentData)
+                                    return syncFunction(
+                                        isRoadmap, 
+                                        dataToSync, 
+                                        currentData
+                                    )
                                 }
                             ),
                             {

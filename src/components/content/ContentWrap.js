@@ -43,7 +43,6 @@ import useUsersList from '../../hooks/useUsersList'
 import useTextFieldStyles from '../../hooks/useTextFieldStyles'
 import useRoute from '../../hooks/useRoute'
 import GroupForm from '../group/GroupForm'
-import GroupDocForm from '../group/GroupDocForm'
 
 export default function ContentWrap() {
     const theme = useTheme()
@@ -594,43 +593,21 @@ export default function ContentWrap() {
                                 const groupDocData = preparedListData.filter(listItem => {
                                     return listItem.name == groupDocName
                                 })
-                                content = <GroupDocForm user={userData}
+                                content = <TableDocForm data={{
+                                    doc_data: groupDocData[0],
+                                    user: userData,
+                                    event_data: {}
+                                }}
+                                    nested_task={null}
+                                    is_admin={true}
+                                    is_money={false}
                                     doc_name={groupDocName}
                                     group_name={groupName}
-                                    data={groupDocData[0]} />
+                                    is_roadmap={false} />
                             }
                             else if (location.pathname.includes(routes.admin_group_docs) || groupName === undefined) {
                                 content = <ContentList data={preparedListData.map(listItem => {
                                     const buttons = [
-                                        getButton(deleteButton, () => {
-                                            setIsConfirmModalOpened(true)
-                                            let route = `${host}`
-                                            let modalHeader
-                                            let modalContent
-
-                                            if (location.pathname == routes.admin_group) {
-                                                route += `${backendEndpoints.user_groups}?name=${listItem}`
-                                                modalHeader = 'Удаление группы'
-                                                modalContent = 'Вы действительно хотите удалить эту группу?'
-                                            }
-                                            else {
-                                                route += `${backendEndpoints.templates}?id=${listItem.id}`
-                                                modalHeader = 'Удаление шаблона документа'
-                                                modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
-                                            }
-
-                                            setConfirmCallback(() => {
-                                                return () => {
-                                                    callApi(route, 'DELETE', null, null).then(_ => {
-                                                        setIsConfirmModalOpened(false)
-                                                        navigate(null)
-                                                    })
-                                                }
-                                            })
-
-                                            setModalHeader(modalHeader)
-                                            setModalContent(modalContent)
-                                        }),
                                         getButton(editButton, () => {
                                             let route = `${routes.admin_group}/`
 
@@ -645,6 +622,40 @@ export default function ContentWrap() {
                                             navigate(route)
                                         })
                                     ]
+
+                                    if (!location.pathname.includes(routes.admin_group_docs)) {
+                                        buttons.unshift(
+                                            getButton(deleteButton, () => {
+                                                setIsConfirmModalOpened(true)
+                                                let route = `${host}`
+                                                let modalHeader
+                                                let modalContent
+    
+                                                if (location.pathname == routes.admin_group) {
+                                                    route += `${backendEndpoints.user_groups}?name=${listItem}`
+                                                    modalHeader = 'Удаление группы'
+                                                    modalContent = 'Вы действительно хотите удалить эту группу?'
+                                                }
+                                                else {
+                                                    route += `${backendEndpoints.templates}?id=${listItem.id}`
+                                                    modalHeader = 'Удаление шаблона документа'
+                                                    modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
+                                                }
+    
+                                                setConfirmCallback(() => {
+                                                    return () => {
+                                                        callApi(route, 'DELETE', null, null).then(_ => {
+                                                            setIsConfirmModalOpened(false)
+                                                            navigate(null)
+                                                        })
+                                                    }
+                                                })
+    
+                                                setModalHeader(modalHeader)
+                                                setModalContent(modalContent)
+                                            })
+                                        )
+                                    }
 
                                     const itemData = {
                                         item_info: location.pathname == routes.admin_group ?

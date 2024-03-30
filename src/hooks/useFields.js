@@ -27,9 +27,6 @@ export default function useFields() {
                     className="DocField"
                     disabled={!editable}
                     select
-                    onChange={(event) => {
-                        
-                    }}
                     variant="outlined"
                     color="secondary" 
                     sx={{ ...styles }}

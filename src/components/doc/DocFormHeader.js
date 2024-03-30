@@ -107,7 +107,7 @@ export default function DocFormHeader(props) {
                 <Stack spacing={1} direction="row" useFlexGap flexWrap="wrap"
                     justifyContent="center" alignItems="center">
                     {
-                        props.user.is_staff ?
+                        props.user.is_staff && !props.user.is_superuser ?
                             <TextField id="name" required fullWidth={!isNearMobile}
                                 onInput={(event) => nameValidation.set(event.target.value)}
                                 defaultValue={props.doc_data !== null ? props.doc_data.name : ''}

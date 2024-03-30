@@ -4,6 +4,7 @@ import { Stack } from "@mui/material"
 import { v4 as uuidV4 } from "uuid"
 import DocFormHeader from './DocFormHeader'
 import ConfirmModal from "../modal/confirmModal/ConfirmModal"
+import UploadModal from '../modal/uploadModal/UploadModal'
 import Task from '../task/Task'
 import { backendEndpoints, host } from "../routes"
 import useApi from '../../hooks/useApi'
@@ -23,10 +24,33 @@ export default function TableDocForm(props) {
     const dispatch = useDispatch()
     const navigate = useRoute()
 
-    const [docFields, setDocFields] = useState(is_roadmap ?
-        [...event_data.tasks] : [...doc_data.fields]
-    )
+    const [docFields, setDocFields] = useState(() => {
+        let newFields = []
+        if (is_roadmap) {
+            newFields = [...event_data.tasks]
+        }
+        else {
+            newFields = doc_data.fields.map(field => {
+                const newValues = field.values.map(value => {
+                    return {
+                        ...value
+                    }
+                })
+                newValues.sort((first, second) => first.id - second.id)
+
+                return {
+                    ...field,
+                    values: newValues
+                }
+            })
+            newFields.sort((first, second) => first.id - second.id)
+        }
+
+        return newFields
+    })
+
     const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false)
+    const [isUploadModalOpened, setIsUploadModalOpened] = useState(false)
     const [deleteItemIds, setDeleteItemIds] = useState(Array())
     const [isFilterModalOpened, setIsFilterModalOpened] = useState(false)
     const [filterList, setFilterList] = useState({})
@@ -89,10 +113,6 @@ export default function TableDocForm(props) {
             deleteItemIds
         )
 
-        if (deleteItemIds.length != 0) {
-            console.log(actualDocData);
-        }
-
         if (is_roadmap) {
             dispatch(changeAssignationFlag(false))
         }
@@ -110,11 +130,21 @@ export default function TableDocForm(props) {
     }, [is_roadmap, docFields])
 
     const saveButtonHandler = useCallback((syncFunction) => {
-        const formData = {
-            event_id: event_data.id,
-            doc_id: doc_data.id,
-            name: document.querySelector('#Doc-form-header').querySelector('input').value,
+        let formData
+        if (props.is_admin === true) {
+            formData = {
+                group_name: props.group_name,
+                doc_name: props.doc_name,
+            }
         }
+        else {
+            formData = {
+                event_id: event_data.id,
+                doc_id: doc_data.id,
+                name: document.querySelector('#Doc-form-header').querySelector('input').value,
+            }
+        }
+
         let route
 
         if (is_roadmap) {
@@ -123,7 +153,7 @@ export default function TableDocForm(props) {
         }
         else {
             formData.fields = syncFunction(is_roadmap, getActualDocData(), docFields)
-            route = backendEndpoints.docs
+            route = props.is_admin ? backendEndpoints.templates : backendEndpoints.docs
         }
 
         callApi(`${host}${route}`, 'PUT', JSON.stringify(formData), {
@@ -134,7 +164,7 @@ export default function TableDocForm(props) {
             }
         })
 
-    }, [docFields, event_data, doc_data, is_roadmap])
+    }, [docFields, event_data, doc_data, is_roadmap, props.is_admin])
 
     const addButtonHandler = useCallback((syncFunction) => {
         const actualDocData = syncFunction(is_roadmap, getActualDocData(), docFields)
@@ -162,7 +192,7 @@ export default function TableDocForm(props) {
         }
 
         setDocFields(actualDocData)
-    }, [is_roadmap, getActualDocData, docFields, nested_task])
+    }, [is_roadmap, getActualDocData, docFields, nested_task, props.is_admin])
 
     const filterButtonHandler = useCallback((syncFunction) => {
         setDocFields(syncFunction(is_roadmap, getActualDocData(), docFields))
@@ -213,7 +243,7 @@ export default function TableDocForm(props) {
                                 taskStates = timestampDelta >= -604800
                                 is_deadline = true
                             }
-                            
+
                             if (is_deadline) {
                                 taskStates = taskStates || filterList.task_states
                                     .includes(docField.state)
@@ -260,13 +290,21 @@ export default function TableDocForm(props) {
                 for (let i = 0; i < docFields[0].values.length; ++i) {
                     const dataGroup = []
                     for (let j = 0; j < docFields.length; ++j) {
-                        dataGroup.push({
+                        const dataGroupItem = {
                             id: docFields[j].values[i].id,
                             name: docFields[j].name,
                             value: docFields[j].values[i].value,
                             field_type: docFields[j].field_type,
                             is_fullwidth: is_money ? j == 0 : j == 0 || j == 1
-                        })
+                        }
+                        if (dataGroupItem.field_type == 'select') {
+                            const selectValues = localStorage.getItem('field_types') !== null ?
+                                JSON.parse(localStorage.getItem('field_types'))
+                                :
+                                [{ label: '', value: '' }]
+                            dataGroupItem.select_values = selectValues
+                        }
+                        dataGroup.push(dataGroupItem)
                     }
                     data.push(dataGroup)
                 }
@@ -284,15 +322,26 @@ export default function TableDocForm(props) {
                                 ids: fieldsIds
                             }} />
                         :
-                        <DefaultDocItem key={`money_${uuidV4()}`}
-                            is_editable={user.is_staff}
-                            delete_callback={(syncFunction) => {
-                                deleteButtonHandler(fieldsIds, syncFunction)
-                            }}
-                            data={{
-                                fields,
-                                ids: fieldsIds
-                            }} />
+                        props.is_admin === true ?
+                            <DefaultDocItem key={`template_field_${uuidV4()}`}
+                                is_editable={true}
+                                delete_callback={(syncFunction) => {
+                                    deleteButtonHandler(fieldsIds, syncFunction)
+                                }}
+                                data={{
+                                    fields,
+                                    ids: fieldsIds
+                                }} />
+                            :
+                            <DefaultDocItem key={`money_${uuidV4()}`}
+                                is_editable={user.is_staff}
+                                delete_callback={(syncFunction) => {
+                                    deleteButtonHandler(fieldsIds, syncFunction)
+                                }}
+                                data={{
+                                    fields,
+                                    ids: fieldsIds
+                                }} />
                 })
             }
         }
@@ -305,7 +354,7 @@ export default function TableDocForm(props) {
             }
         </Stack>
     }, [docFields, user, event_data, is_roadmap, is_money,
-        isAscending, filterList, nested_task])
+        isAscending, filterList, nested_task, props.is_admin])
 
     const getTotal = useCallback((init = false) => {
         let total = 0
@@ -344,6 +393,37 @@ export default function TableDocForm(props) {
         return `ИТОГО: ${total.toFixed(2)}`
     }, [docFields])
 
+    const downloadButtonHandler = useCallback(() => {
+        const docTemplate = doc_data.doc_template
+        const route = `${host}${backendEndpoints.templates}`
+        const requestData = {
+            doc_template: docTemplate,
+            upload: false
+        }
+
+        callApi(route, 'POST', JSON.stringify(requestData), {
+            'Content-Type': 'application/json'
+        }, true).then(responseData => {
+            if (responseData.status == 200) {
+                const contentWrap = document.querySelector('#Content-wrap')
+
+                const downloadRef = document.createElement('a')
+                downloadRef.href = URL.createObjectURL(responseData.data)
+                downloadRef.download = `doc.${docTemplate.split('.').pop()}`
+                downloadRef.style.display = 'none'
+                contentWrap.appendChild(downloadRef)
+
+                downloadRef.click()
+                URL.revokeObjectURL(downloadRef.href);
+                contentWrap.removeChild(downloadRef)
+            }
+        })
+    }, [doc_data])
+
+    const uploadButtonHandler = useCallback(() => {
+        setIsUploadModalOpened(true)
+    }, [])
+
     return (
         <Stack direction="column" spacing={2} justifyContent="center"
             alignItems="center">
@@ -358,10 +438,13 @@ export default function TableDocForm(props) {
                         sort_callback={(syncFunction) => sortButtonHandler(syncFunction)}
                         additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
                     :
-                    <DocFormHeader doc_data={doc_data}
+                    <DocFormHeader doc_data={{ ...doc_data, is_table: false }}
                         user={user}
+                        has_template={props.is_admin ? doc_data.doc_template !== null : false}
                         additional_value_callback={is_money ? () => getTotal() : () => { }}
                         is_roadmap={is_roadmap}
+                        download_callback={() => downloadButtonHandler()}
+                        upload_callback={() => uploadButtonHandler()}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                         filter_callback={(syncFunction) => filterButtonHandler(syncFunction)}
                         sort_callback={(syncFunction) => sortButtonHandler(syncFunction)}
@@ -377,6 +460,14 @@ export default function TableDocForm(props) {
                 modal_content={
                     `Вы действительно хотите удалить эту ${is_roadmap ? 'задачу' : 'запись'}?`
                 } />
+            {
+                props.is_admin === true ?
+                    <UploadModal is_opened={isUploadModalOpened}
+                        group_name={props.group_name}
+                        close_callback={() => setIsUploadModalOpened(false)} />
+                    :
+                    null
+            }
             {
                 is_roadmap ?
                     <FilterModal is_opened={isFilterModalOpened}
