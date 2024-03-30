@@ -44,11 +44,15 @@ export default function DocFormHeader(props) {
                 )
             )
             if (props.user.is_superuser) {
+                if (props.has_template) {
+                    buttons.push(
+                        getButton(
+                            downloadTemplateButton,
+                            () => props.download_callback()
+                        )
+                    )
+                }
                 buttons.push(
-                    getButton(
-                        downloadTemplateButton,
-                        () => props.download_callback()
-                    ),
                     getButton(
                         uploadTemplateButton,
                         () => props.upload_callback()

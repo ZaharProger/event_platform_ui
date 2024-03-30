@@ -570,7 +570,10 @@ export default function ContentWrap() {
                     else {
                         let preparedListData
                         if (location.pathname == routes.admin_group) {
-                            preparedListData = listData.map(listItem => listItem.name)
+                            preparedListData = listData instanceof Array?
+                                listData.map(listItem => listItem.name)
+                                :
+                                []
                         }
                         else {
                             if (groupName !== undefined) {

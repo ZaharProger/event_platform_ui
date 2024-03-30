@@ -77,6 +77,7 @@ export default function GroupDocForm(props) {
                 user={props.user}
                 additional_value_callback={() => { }}
                 is_roadmap={false}
+                has_template={props.data.doc_template !== null}
                 // save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
                 // additional_callback={(syncFunction) => addButtonHandler(syncFunction)}
                 download_callback={() => downloadButtonHandler()}
