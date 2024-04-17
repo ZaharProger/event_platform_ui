@@ -744,6 +744,8 @@ export default function ContentWrap() {
         callApi(`${host}${backendEndpoints.settings}`, 'GET', null, null).then(responseData => {
             if (responseData.status == 200) {
                 localStorage.setItem('event_types', JSON.stringify(responseData.data.data.event_types))
+                localStorage.setItem('event_levels', JSON.stringify(responseData.data.data.event_levels))
+                localStorage.setItem('event_characters', JSON.stringify(responseData.data.data.event_characters))
                 localStorage.setItem('task_states', JSON.stringify(responseData.data.data.task_states))
                 localStorage.setItem('doc_types', JSON.stringify(responseData.data.data.doc_types))
                 localStorage.setItem('field_types', JSON.stringify(responseData.data.data.field_types))

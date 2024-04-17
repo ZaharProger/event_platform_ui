@@ -25,9 +25,16 @@ export default function EventForm(props) {
         props.event_data !== null ? props.event_data.place : '',
         /^[A-Za-zА-Яа-я\d\s@~`"'/\\!#$%^&*()\[\]{}\-_+=:;><.,№]+$/
     )
+    const eventFormValidation = useValidation(
+        props.event_data !== null ? props.event_data.event_form : '',
+        /^[a-zA-Zа-яА-Я\d\s]+$/
+    )
+
     const errorMessage = useError()
     const isOnline = useValidation(props.event_data !== null ?
         props.event_data.is_online : false, null)
+    const forStudents = useValidation(props.event_data !== null ?
+        props.event_data.for_students : false, null)
 
     const eventTypes = localStorage.getItem('event_types') !== null ?
         JSON.parse(localStorage.getItem('event_types')) : [{ label: '', value: '' }]
@@ -36,6 +43,22 @@ export default function EventForm(props) {
             eventTypes.filter(type => type.value == props.event_data.event_type)[0].value
             :
             eventTypes[0].value
+    )
+    const eventLevels = localStorage.getItem('event_levels') !== null ?
+        JSON.parse(localStorage.getItem('event_levels')) : [{ label: '', value: '' }]
+    const eventLevel = useValidation(
+        props.event_data !== null ?
+            eventLevels.filter(level => level.value == props.event_data.event_level)[0].value
+            :
+            eventLevels[0].value
+    )
+    const eventCharacters = localStorage.getItem('event_characters') !== null ?
+        JSON.parse(localStorage.getItem('event_characters')) : [{ label: '', value: '' }]
+    const eventCharacter = useValidation(
+        props.event_data !== null ?
+            eventCharacters.filter(character => character.value == props.event_data.event_character)[0].value
+            :
+            eventCharacters[0].value
     )
 
     const getButton = useButton(false)
@@ -100,7 +123,7 @@ export default function EventForm(props) {
     const button = getButton(
         saveButton,
         () => saveButtonHandler(),
-        () => !(placeValidation.validate() && nameValidation.validate())
+        () => !(placeValidation.validate() && nameValidation.validate() && eventFormValidation.validate())
     )
 
     const selectLabel = <Typography variant="subtitle2"
@@ -108,9 +131,13 @@ export default function EventForm(props) {
         Тип мероприятия
     </Typography>
 
-    const checkboxLabel = <Typography variant="subtitle2"
+    const isOnlineCheckboxLabel = <Typography variant="subtitle2"
         fontSize="0.8em" color="secondary">
         Онлайн мероприятие
+    </Typography>
+    const forStudentsCheckboxLabel = <Typography variant="subtitle2"
+        fontSize="0.8em" color="secondary">
+        Для студентов
     </Typography>
 
     const datetimeStartLabel = <Typography variant="subtitle2"
@@ -148,6 +175,11 @@ export default function EventForm(props) {
                                 defaultValue={props.event_data !== null ? props.event_data.name : ''}
                                 fullWidth label="Название" variant="outlined"
                                 color="secondary" sx={{ ...textFieldStyles }} />
+                            <TextField id="event_form" fullWidth required
+                                onInput={(event) => eventFormValidation.set(event.target.value)}
+                                defaultValue={props.event_data !== null ? props.event_data.event_form : ''}
+                                label="Форма мероприятия" variant="outlined"
+                                multiline rows={7} color="secondary" sx={{ ...textFieldStyles }} />
                             <TextField id="place" fullWidth required
                                 onInput={(event) => placeValidation.set(event.target.value)}
                                 defaultValue={props.event_data !== null ? props.event_data.place : ''}
@@ -161,7 +193,39 @@ export default function EventForm(props) {
                     </Grid>
                     <Grid item width="600px">
                         <Stack direction="column" spacing={2} useFlexGap flexWrap="wrap">
-                            <Stack direction="row" spacing={2}>
+                            <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
+                                <TextField
+                                    id="event_level"
+                                    select
+                                    label={selectLabel}
+                                    sx={{ ...textFieldStyles }}
+                                    onChange={(event) => eventLevel.set(event.target.value)}
+                                    defaultValue={eventLevel.get()}
+                                    SelectProps={{
+                                        native: true,
+                                    }}>
+                                    {eventLevels.map((eventLevel) => (
+                                        <option key={eventLevel.label} value={eventLevel.value}>
+                                            {eventLevel.value}
+                                        </option>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    id="event_character"
+                                    select
+                                    label={selectLabel}
+                                    sx={{ ...textFieldStyles }}
+                                    onChange={(event) => eventCharacter.set(event.target.value)}
+                                    defaultValue={eventCharacter.get()}
+                                    SelectProps={{
+                                        native: true,
+                                    }}>
+                                    {eventCharacters.map((eventCharacter) => (
+                                        <option key={eventCharacter.label} value={eventCharacter.value}>
+                                            {eventCharacter.value}
+                                        </option>
+                                    ))}
+                                </TextField>
                                 <TextField
                                     id="event_type"
                                     select
@@ -188,7 +252,18 @@ export default function EventForm(props) {
                                                 color: theme.palette.action.main,
                                             }
                                         }} />}
-                                    label={checkboxLabel} />
+                                    label={isOnlineCheckboxLabel} />
+                                <FormControlLabel sx={{ display: 'flex', alignItems: 'center' }}
+                                    control={<Checkbox id="for_students"
+                                        onChange={() => forStudents.set(!forStudents.get())}
+                                        checked={forStudents.get()}
+                                        sx={{
+                                            color: theme.palette.secondary.main,
+                                            "&.Mui-checked": {
+                                                color: theme.palette.action.main,
+                                            }
+                                        }} />}
+                                    label={forStudentsCheckboxLabel} />
                             </Stack>
                             <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
                                 <TextField id="datetime_start"

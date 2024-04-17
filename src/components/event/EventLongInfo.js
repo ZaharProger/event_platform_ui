@@ -6,7 +6,8 @@ import ModalBlockItem from '../modal/ModalBlockItem'
 
 export default function EventLongInfo(props) {
     const { place, datetime_start, datetime_end, users, docs,
-        is_complete, description, is_online, event_type } = props.data.event_info
+        is_complete, description, is_online, event_type, 
+        event_form, event_level, event_character, for_students } = props.data.event_info
     const { user } = props.data.user
 
     const getAdditionalData = useCallback(() => {
@@ -22,6 +23,7 @@ export default function EventLongInfo(props) {
             `Количество участников организационного комитета: ${users.length}`,
             `Количество документов: ${docs.length}`,
             is_online ? 'Online-мероприятие' : 'Очное мероприятие',
+            for_students ? 'Для студентов' : ''
         ]
 
         if (is_complete) {
@@ -29,7 +31,7 @@ export default function EventLongInfo(props) {
         }
 
         return additionalData
-    }, [is_online, docs, users, user, is_complete])
+    }, [is_online, docs, users, user, is_complete, for_students])
 
     return (
         <Stack spacing={2} overflow="auto" maxHeight="600px"
@@ -56,6 +58,9 @@ export default function EventLongInfo(props) {
                     :
                     null
             }
+            <ModalBlockItem item_name={'Форма мероприятия'} item_values={[event_form]} />
+            <ModalBlockItem item_name={'Уровень мероприятия'} item_values={[event_level]} />
+            <ModalBlockItem item_name={'Характер мероприятия'} item_values={[event_character]} />
             <ModalBlockItem item_name={'Тип мероприятия'} item_values={[event_type]} />
             <ModalBlockItem item_name={'Дополнительно'} item_values={getAdditionalData()} />
         </Stack>
