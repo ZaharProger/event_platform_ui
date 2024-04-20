@@ -5,7 +5,7 @@ import {
 import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
-import { saveButton } from '../buttons'
+import { createButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
@@ -66,7 +66,7 @@ export default function EventForm(props) {
     const callApi = useApi()
     const navigate = useRoute()
 
-    const saveButtonHandler = useCallback(() => {
+    const createButtonHandler = useCallback(() => {
         const bodyData = props.is_edit ? {} : new FormData()
         document.querySelector('.Event-form')
             .querySelectorAll('input, select, textarea')
@@ -121,8 +121,8 @@ export default function EventForm(props) {
     }, [])
 
     const button = getButton(
-        saveButton,
-        () => saveButtonHandler(),
+        createButton,
+        () => createButtonHandler(),
         () => !(placeValidation.validate() && nameValidation.validate() && eventFormValidation.validate())
     )
 

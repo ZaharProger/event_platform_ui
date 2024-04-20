@@ -15,6 +15,11 @@ export const addButton = {
     label: 'Добавить'
 }
 
+export const createButton = {
+    icon: AddCircleRoundedIcon,
+    label: 'создать'
+}
+
 export const searchButton = {
     icon: SearchIcon,
     label: 'Поиск'
