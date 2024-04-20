@@ -465,6 +465,7 @@ export default function ContentWrap() {
                                     content = <TableDocForm data={docData}
                                         nested_task={nestedTask}
                                         is_money={isMoney}
+                                        is_admin={false}
                                         is_roadmap={isRoadmap} />
                                 }
                                 else {

@@ -44,6 +44,9 @@ export default function DocFormHeader(props) {
                 )
             )
             if (props.user.is_superuser) {
+                if (props.is_roadmap) {
+                    buttons.pop()
+                }
                 if (props.has_template) {
                     buttons.push(
                         getButton(
@@ -60,7 +63,7 @@ export default function DocFormHeader(props) {
                 )
             }
         }
-        if (props.is_roadmap) {
+        if (props.is_roadmap && !props.user.is_superuser) {
             buttons.push(
                 getButton(filterButton, () => props.filter_callback(
                     (isRoadmap, dataToSync, currentData) => {

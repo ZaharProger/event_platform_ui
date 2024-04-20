@@ -58,7 +58,7 @@ export default function RegisterModal(props) {
 
     return (
         <Dialog open={props.is_opened} onClose={props.close_callback}>
-            <DialogTitle color="secondary">Создать новую группу</DialogTitle>
+            <DialogTitle color="secondary">Зарегистрировать пользователя</DialogTitle>
             <DialogContent>
                 <DialogContentText color="secondary">
                     В случае успешной регистрации, пользователь получит на указанную

@@ -295,7 +295,7 @@ export default function TableDocForm(props) {
                             name: docFields[j].name,
                             value: docFields[j].values[i].value,
                             field_type: docFields[j].field_type,
-                            is_fullwidth: is_money ? j == 0 : j == 0 || j == 1
+                            is_fullwidth: is_money ? j == 0 : j <= docFields.length - 2
                         }
                         if (dataGroupItem.field_type == 'select') {
                             const selectValues = localStorage.getItem('field_types') !== null ?
@@ -442,7 +442,7 @@ export default function TableDocForm(props) {
                         user={user}
                         has_template={props.is_admin ? doc_data.doc_template !== null : false}
                         additional_value_callback={is_money ? () => getTotal() : () => { }}
-                        is_roadmap={is_roadmap}
+                        is_roadmap={is_roadmap || doc_data.name.toLowerCase() == 'дорожная карта'}
                         download_callback={() => downloadButtonHandler()}
                         upload_callback={() => uploadButtonHandler()}
                         save_callback={(syncFunction) => saveButtonHandler(syncFunction)}
