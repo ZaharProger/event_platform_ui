@@ -19,6 +19,7 @@ export const backendEndpoints = {
     auth: '/users/auth/',
     logout: '/users/logout/',
     events: '/events/',
+    copy_event: '/events/copy',
     participants: '/events/invite',
     join_event: '/events/join',
     complete_event: '/events/complete',

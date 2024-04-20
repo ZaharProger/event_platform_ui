@@ -62,6 +62,9 @@ export default function DocFormHeader(props) {
                     )
                 )
             }
+            else if (!props.doc_data.is_table) {
+                buttons.pop()
+            }
         }
         if (props.is_roadmap && !props.user.is_superuser) {
             buttons.push(

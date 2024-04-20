@@ -325,6 +325,7 @@ export default function TableDocForm(props) {
                         props.is_admin === true ?
                             <DefaultDocItem key={`template_field_${uuidV4()}`}
                                 is_editable={true}
+                                is_table={true}
                                 delete_callback={(syncFunction) => {
                                     deleteButtonHandler(fieldsIds, syncFunction)
                                 }}
@@ -333,8 +334,9 @@ export default function TableDocForm(props) {
                                     ids: fieldsIds
                                 }} />
                             :
-                            <DefaultDocItem key={`money_${uuidV4()}`}
+                            <DefaultDocItem key={`field_${uuidV4()}`}
                                 is_editable={user.is_staff}
+                                is_table={doc_data.is_table}
                                 delete_callback={(syncFunction) => {
                                     deleteButtonHandler(fieldsIds, syncFunction)
                                 }}
@@ -438,7 +440,7 @@ export default function TableDocForm(props) {
                         sort_callback={(syncFunction) => sortButtonHandler(syncFunction)}
                         additional_callback={(syncFunction) => addButtonHandler(syncFunction)} />
                     :
-                    <DocFormHeader doc_data={{ ...doc_data, is_table: false }}
+                    <DocFormHeader doc_data={doc_data}
                         user={user}
                         has_template={props.is_admin ? doc_data.doc_template !== null : false}
                         additional_value_callback={is_money ? () => getTotal() : () => { }}
@@ -464,6 +466,7 @@ export default function TableDocForm(props) {
                 props.is_admin === true ?
                     <UploadModal is_opened={isUploadModalOpened}
                         group_name={props.group_name}
+                        doc_name={doc_data.name}
                         close_callback={() => setIsUploadModalOpened(false)} />
                     :
                     null

@@ -20,7 +20,7 @@ export default function DefaultDocItem(props) {
             <Stack direction="row"
                 spacing={1} alignItems="center" justifyContent="center">
                 {
-                    props.is_editable ?
+                    props.is_editable && props.is_table?
                         getTool(
                             deleteTool,
                             () => props.delete_callback(

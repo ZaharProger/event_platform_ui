@@ -21,7 +21,8 @@ import {
 } from '../toolbar/tools'
 import {
     aboutEventButton, editButton, deleteButton,
-    downloadButton, viewButton, applyButton
+    downloadButton, viewButton, applyButton,
+    CopyButton
 } from '../buttons'
 import { routes, backendEndpoints, host } from '../routes'
 import EventForm from '../event/EventForm'
@@ -392,6 +393,20 @@ export default function ContentWrap() {
                                 }))
                             }
 
+                            if (isOrganizer) {
+                                buttons.push(
+                                    getButton(
+                                        CopyButton,
+                                        () => {
+                                            const route = `${host}${backendEndpoints.copy_event}?id=${listItem.id}`
+                                            callApi(route, 'GET', null, null).then(_ => {
+                                                navigate(null)
+                                            })
+                                        }
+                                    )
+                                )
+                            }
+
                             const itemData = {
                                 item_info: <EventShortInfo data={{
                                     event_info: listItem,
@@ -483,7 +498,7 @@ export default function ContentWrap() {
 
                                                     const downloadRef = document.createElement('a')
                                                     downloadRef.href = URL.createObjectURL(responseData.data)
-                                                    downloadRef.download = `doc.${doc.is_table? 'xlsx' : 'docx'}`
+                                                    downloadRef.download = `doc.${doc.is_table ? 'xlsx' : 'docx'}`
                                                     downloadRef.style.display = 'none'
                                                     contentWrap.appendChild(downloadRef)
 
@@ -570,7 +585,7 @@ export default function ContentWrap() {
                     else {
                         let preparedListData
                         if (location.pathname == routes.admin_group) {
-                            preparedListData = listData instanceof Array?
+                            preparedListData = listData instanceof Array ?
                                 listData.map(listItem => listItem.name)
                                 :
                                 []
@@ -631,7 +646,7 @@ export default function ContentWrap() {
                                                 let route = `${host}`
                                                 let modalHeader
                                                 let modalContent
-    
+
                                                 if (location.pathname == routes.admin_group) {
                                                     route += `${backendEndpoints.user_groups}?name=${listItem}`
                                                     modalHeader = 'Удаление группы'
@@ -642,7 +657,7 @@ export default function ContentWrap() {
                                                     modalHeader = 'Удаление шаблона документа'
                                                     modalContent = 'Вы действительно хотите удалить шаблон этого документа?'
                                                 }
-    
+
                                                 setConfirmCallback(() => {
                                                     return () => {
                                                         callApi(route, 'DELETE', null, null).then(_ => {
@@ -651,7 +666,7 @@ export default function ContentWrap() {
                                                         })
                                                     }
                                                 })
-    
+
                                                 setModalHeader(modalHeader)
                                                 setModalContent(modalContent)
                                             })

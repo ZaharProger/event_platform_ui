@@ -20,8 +20,9 @@ export default function UploadModal(props) {
     const continueButtonHandler = useCallback(() => {
         const formData = new FormData()
         formData.append('upload', 'true')
-        formData.append('name', props.group_name)
+        formData.append('group_name', props.group_name)
         formData.append('doc_template', document.getElementById('doc-template').files[0])
+        formData.append('doc_name', props.doc_name)
 
         callApi(`${host}${backendEndpoints.templates}`, 'POST', formData, null, true)
             .then(responseData => {

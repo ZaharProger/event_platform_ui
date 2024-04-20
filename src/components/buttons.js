@@ -8,6 +8,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import SearchIcon from '@mui/icons-material/Search'
 import SortIcon from '@mui/icons-material/Sort'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 export const addButton = {
     icon: AddCircleRoundedIcon,
@@ -97,4 +98,9 @@ export const filterButton = {
 export const sortButton = {
     icon: SortIcon,
     label: 'Сортировка'
+}
+
+export const CopyButton = {
+    icon: ContentCopyIcon,
+    label: 'Копировать'
 }
