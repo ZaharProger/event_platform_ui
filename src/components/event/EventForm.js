@@ -5,7 +5,7 @@ import {
 import React, { useCallback } from 'react'
 
 import useButton from '../../hooks/useButton'
-import { createButton } from '../buttons'
+import { createButton, editButton } from '../buttons'
 import useValidation from '../../hooks/useValidation'
 import useError from '../../hooks/useError'
 import useApi from '../../hooks/useApi'
@@ -121,7 +121,7 @@ export default function EventForm(props) {
     }, [])
 
     const button = getButton(
-        createButton,
+        props.is_edit? editButton : createButton,
         () => createButtonHandler(),
         () => !(placeValidation.validate() && nameValidation.validate() && eventFormValidation.validate())
     )
